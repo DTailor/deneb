@@ -161,4 +161,4 @@ bh_unicode_properties.cache
 GitHub.sublime-settings
 
 # Project Files
-src/spotify_keys.sh
+scripts/spotify_keys.sh
