@@ -41,6 +41,8 @@ def get_sp_client(username, token=None):
         # check client stil good
         sp_client.current_user()
     except SpotifyException:
+        if token in _SPOTI_CACHE:
+            del _SPOTI_CACHE[token]
         # token may expire, ask for new
         token = fetch_token(username)
         sp_client = spotipy.Spotify(auth=token)
