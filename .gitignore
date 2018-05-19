@@ -166,3 +166,5 @@ scripts/spotify_keys.sh
 /.cache-*
 
 /.project
+
+/src/.cache-*

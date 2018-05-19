@@ -1,3 +1,6 @@
 export SPOTIPY_CLIENT_ID=''
 export SPOTIPY_CLIENT_SECRET=''
 export SPOTIPY_REDIRECT_URI=''
+export DB_NAME=''
+export DB_USER=''
+export DB_PASSWORD=''

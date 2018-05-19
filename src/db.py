@@ -1,12 +1,25 @@
 """Database handling."""
 import datetime
+import os
 
 from peewee import (
     BooleanField, CharField, CompositeKey, DateField, DateTimeField,
     ForeignKeyField, ManyToManyField, Model, PostgresqlDatabase
 )
 
-db = PostgresqlDatabase('spotter', user='postgres', password='postgres')
+
+assert os.environ['DB_NAME']
+assert os.environ['DB_USER']
+assert os.environ['DB_PASSWORD']
+
+_DB = None
+
+
+def get_db():
+    global _DB
+    if _DB is None:
+        _DB = PostgresqlDatabase(os.environ['DB_NAME'], user=os.environ['DB_USER'], password=os.environ['DB_PASSWORD'])
+    return _DB
 
 
 def get_or_create_user(fb_id):
@@ -23,7 +36,7 @@ class Artist(Model):
     timestamp = DateTimeField(default=datetime.datetime.now)
 
     class Meta:
-        database = db  # This model uses the "people.db" database.
+        database = get_db()  # This model uses the "people.db" database.
 
     def __repr__(self):
         return '{}'.format(self.name)
@@ -33,7 +46,7 @@ class Market(Model):
     name = CharField()
 
     class Meta:
-        database = db
+        database = get_db()
 
     def __repr__(self):
         return self.name
@@ -47,7 +60,7 @@ class Album(Model):
     timestamp = DateTimeField(default=datetime.datetime.now)
 
     class Meta:
-        database = db
+        database = get_db()
 
     def __repr__(self):
         artists = [a.name for a in self.artists()]
@@ -107,7 +120,7 @@ class AlbumArtist(Model):
     artist = ForeignKeyField(Artist)
 
     class Meta:
-        database = db
+        database = get_db()
         primary_key = CompositeKey('album', 'artist')
 
 
@@ -116,7 +129,7 @@ class AvailableMarket(Model):
     market = ForeignKeyField(Market)
 
     class Meta:
-        database = db
+        database = get_db()
         primary_key = CompositeKey('album', 'market')
 
     def __repr__(self):
@@ -215,7 +228,7 @@ class User(Model):
         SeenAlbum.create(user=self, album=album)
 
     class Meta:
-        database = db
+        database = get_db()
 
     def __repr__(self):
         return self.fb_id
@@ -229,7 +242,7 @@ class SeenAlbum(Model):
     user = ForeignKeyField(User)
 
     class Meta:
-        database = db
+        database = get_db()
 
 
 Artist.create_table(fail_silently=True)
@@ -241,10 +254,3 @@ SeenAlbum.create_table(fail_silently=True)
 ArtistFollowers.create_table(fail_silently=True)
 AlbumArtist.create_table(fail_silently=True)
 
-
-def get_db():
-    global db
-    return db
-
-
-get_db()
