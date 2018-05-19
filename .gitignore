@@ -162,3 +162,5 @@ GitHub.sublime-settings
 
 # Project Files
 scripts/spotify_keys.sh
+
+/.cache-*
