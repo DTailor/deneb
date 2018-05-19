@@ -3,3 +3,5 @@ ipdb
 isort
 pylint
 spotipy
+peewee
+psycopg2-binary
