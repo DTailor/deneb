@@ -41,6 +41,19 @@ class Artist(Model):
     def __repr__(self):
         return '{}'.format(self.name)
 
+    def can_upate(self, hours_delta=4):
+        """check if artist can be updated
+
+        returns True if last update time is bigger
+        the the hours_delta, else False
+        """
+        if not self.timestamp:
+            return True
+        delta = datetime.datetime.now() - self.timestamp
+        if delta.total_seconds() / 3600 < hours_delta:
+            return True
+        return False
+
 
 class Market(Model):
     name = CharField()
@@ -153,7 +166,6 @@ class User(Model):
         )
 
     def on_date_release(self, date):
-        date = datetime.datetime.strptime(date, '%Y-%m-%d')
         return (
             Album
             .select()
