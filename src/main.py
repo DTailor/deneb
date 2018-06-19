@@ -7,10 +7,10 @@ from sp import get_sp_client
 
 
 def main(username, fb_id):
-    sp, token = get_sp_client(username)
+    sp_client, token = get_sp_client(username)
     user = get_or_create_user(fb_id)
-    user.update_market(sp.current_user())
-    fetch_user_followed_artists(user, sp)
+    user.update_market(sp_client.current_user())
+    fetch_user_followed_artists(user, sp_client)
 
 
 main('', '')
