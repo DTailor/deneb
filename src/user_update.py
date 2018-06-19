@@ -3,6 +3,7 @@ from db import Artist
 
 
 def fetch_artists(sp_client):
+    """fetch user followed artists"""
     artists = list()
     artists_data = sp_client.current_user_followed_artists(limit=50)
 
@@ -19,18 +20,20 @@ def fetch_artists(sp_client):
 
 
 def extract_new_follows_objects(followed_artists, following_ids):
+    """returns artists not present in following_ids"""
     new_follows = [a for a in followed_artists if a['id'] not in following_ids]
     return new_follows
 
 
 def extract_lost_follows_artists(followed_artists, following_ids):
+    """returns artists not present in following_ids"""
     lost_follows = [a for a in followed_artists if not a['id'] in following_ids]
     return lost_follows
 
 
-def fetch_user_followed_artists(user, sp):
+def fetch_user_followed_artists(user, sp_client):
     """fetch artists followed by user"""
-    followed_artists = fetch_artists(sp)
+    followed_artists = fetch_artists(sp_client)
     following_ids = [a.spotify_id for a in user.following]
 
     # followed_artists - following_ids = new follows
@@ -49,4 +52,3 @@ def fetch_user_followed_artists(user, sp):
     # spotify might not return the artist
     # user.remove_follows(lost_follows_db)
     # print('lost follows {}: {}'.format(user, len(lost_follows_db)))
-
