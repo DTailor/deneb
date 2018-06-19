@@ -1,9 +1,7 @@
 """Entry point to deneb spotify watcher"""
-import datetime
-
-from user_update import fetch_user_followed_artists
 from db import get_or_create_user
 from sp import get_sp_client
+from user_update import fetch_user_followed_artists
 
 
 def main(username, fb_id):
