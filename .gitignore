@@ -167,4 +167,4 @@ scripts/spotify_keys.sh
 
 /.project
 
-/src/.cache-*
+/deneb/.cache-*
