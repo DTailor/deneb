@@ -54,6 +54,17 @@ class Artist(Model):
             return True
         return False
 
+    @classmethod
+    def to_object(cls, artist):
+        db_artist = None
+        try:
+            db_artist = cls.get(cls.spotify_id == artist['id'])
+        except:
+            db_artist = cls(
+                name=artist['name'], spotify_id=artist['id'])
+            db_artist.save()
+        return db_artist
+
 
 class Market(Model):
     name = CharField()
@@ -63,6 +74,17 @@ class Market(Model):
 
     def __repr__(self):
         return self.name
+
+    @classmethod
+    def to_obj(cls, market_name):
+        market = None
+        try:
+            market = cls.get(cls.name == market_name)
+        except:
+            market = cls.create(name=market_name)
+            market.save()
+
+        return market
 
 
 class Album(Model):
@@ -185,6 +207,10 @@ class User(Model):
             .distinct()
         )
 
+    def update_market(self, user_data):
+        self.market = Market.to_obj(user_data['country'])
+        self.save()
+
     def new_albums(self, date=None, seen=False):
         return (
             Album
@@ -239,11 +265,21 @@ class User(Model):
     def add_seen_album(self, album):
         SeenAlbum.create(user=self, album=album)
 
+
+    def add_follows(self, artists):
+        for artist in artists:
+            self.following.add(artist)
+
+    def remove_follows(self, artists):
+        for artist in artists:
+            self.following.remove(artists)
+
+
     class Meta:
         database = get_db()
 
     def __repr__(self):
-        return self.fb_id
+        return '<{}; following: {} artists>'.format(self.fb_id, len(self.following))
 
 
 ArtistFollowers = User.following.get_through_model()
