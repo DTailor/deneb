@@ -1,8 +1,8 @@
 """Module to handle user related updates"""
 from itertools import zip_longest
 
-from db import Artist
-from tools import grouper
+from db import Artist    #pylint: disable=import-error
+from tools import grouper    #pylint: disable=import-error
 
 
 def fetch_artists(sp_client):
@@ -16,7 +16,6 @@ def fetch_artists(sp_client):
         artists.extend(artists_data['artists']['items'])
         artists_data = sp_client.next(artists_data['artists'])
 
-    # TODO: spotify return same artists more times, why?
     clean_artists = list({v['id']:v for v in artists}.values())
     return clean_artists
 
@@ -40,7 +39,7 @@ def check_follows(sp_client, artists):
     lost_follows = []
     for batch in grouper(50, artists):
         artists_ids = ','.join([a.spotify_id for a in batch if a is not None])
-        result = sp_client._get("me/following/contains", type='artist', ids=artists_ids)
+        result = sp_client._get("me/following/contains", type='artist', ids=artists_ids)    #pylint: disable=protected-access
         for artist, is_followed in zip_longest(batch, result, fillvalue=None):
             if artist is None:
                 break
@@ -61,12 +60,15 @@ def fetch_user_followed_artists(user, sp_client):
     new_follows_db = [Artist.to_object(a) for a in new_follows]
 
     user.add_follows(new_follows_db)
-    print('new follows {}: {} '.format(user.fb_id, len(new_follows_db)))
+    print('new follows {} ({}): {}'.format(
+        user.fb_id, len(new_follows_db), ', '.join(str(a) for a in new_follows_db)))
 
     # following_ids - followed_artists = lost follows
     lost_follows_db = extract_lost_follows_artists(followed_artists, user.following)
     # add second unfollow verification
     # spotify might not return the artist
     lost_follows_db_clean = check_follows(sp_client, lost_follows_db)
-    user.remove_follows(lost_follows_db)
-    print('lost follows {}: {}'.format(user, len(lost_follows_db)))
+    user.remove_follows(lost_follows_db_clean)
+    print('lost follows {} ({}): {}'.format(
+        user.fb_id, len(lost_follows_db_clean),
+        ', '.join(str(a) for a in lost_follows_db_clean)))
