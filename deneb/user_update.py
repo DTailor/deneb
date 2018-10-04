@@ -35,6 +35,7 @@ def extract_lost_follows_artists(followed_artists, current_following):
     lost_follows = [a for a in current_following if a.spotify_id in lost_follows_ids]
     return lost_follows
 
+
 def check_follows(sp_client, artists):
     """check with spotify api if artists are followed"""
     lost_follows = []
