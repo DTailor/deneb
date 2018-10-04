@@ -1,4 +1,5 @@
 """Module to handle user related updates"""
+
 from itertools import zip_longest
 
 from db import Artist    #pylint: disable=import-error
