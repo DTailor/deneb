@@ -97,7 +97,7 @@ class Album(Model):
     class Meta:
         database = get_db()
 
-    def __repr__(self):
+    def __str__(self):
         artists = [a.name for a in self.artists()]
         album_type = 'track' if self.type == 'track' else 'album'
         return '<spotify:{}:{}> {} - {} ({})'.format(
