@@ -38,7 +38,7 @@ class Artist(Model):
     class Meta:
         database = get_db()  # This model uses the "people.db" database.
 
-    def __repr__(self):
+    def __str__(self):
         return '{}'.format(self.name)
 
     def can_upate(self, hours_delta=4):
