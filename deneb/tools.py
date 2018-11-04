@@ -10,7 +10,7 @@ def clean(iterable):
     return [a for a in iterable if a]
 
 
-def is_present(value: str, artists: [dict], search_by: str):
+def is_present(value: str, artists: [dict], search_by: str) -> bool:
     """
     utility to check if value is present in a list of values from a dict by key
     """
