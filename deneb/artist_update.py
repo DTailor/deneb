@@ -3,6 +3,7 @@
 from spotipy import Spotify
 
 from db import Album, Artist  # pylint: disable=import-error
+from tools import grouper, clean, is_present
 
 
 def fetch_all(sp_client: Spotify, data: dict) -> list:
@@ -29,11 +30,35 @@ def fetch_albums(
     return albums
 
 
+
+def fetch_detailed_album(sp_client: Spotify, albums: Album) -> dict:
+    for albums_chunk in grouper(20, albums):
+        albums_chunk = clean(albums_chunk)
+        data = sp_client.albums(albums=[a['id'] for a in albums_chunk])
+        for album in data['albums']:
+            yield album
+
+
+def is_in_artists_list(artist: Artist, item: dict):
+    """True if appears in artists list, else False"""
+    return is_present(artist.spotify_id, item['artists'], 'id')
+
+
 def update_artist_albums(sp_client: Spotify, artist: Artist) -> None:
     """update artist albums"""
     albums = fetch_albums(sp_client, artist)
-    for album in albums:
-        print('{}: {}'.format(artist, album))
+
+    for detailed_album in fetch_detailed_album(sp_client, albums):
+        if not is_in_artists_list(artist, detailed_album):
+            # Some releases are not directly related to the artist himself.
+            # It happens that if an artist has some feature songs on an album
+            # for a different artist, it will be returned to the artist in cause
+            # as well, so that this function checks that, and returns only feature
+            # songs if it's the case.
+            pass
+        else:
+            # print(f"{artist.name} - {detailed_album['name']}")
+            pass
 
 
 def get_new_releases(sp_client: Spotify) -> None:
