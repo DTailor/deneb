@@ -39,9 +39,23 @@ def fetch_detailed_album(sp_client: Spotify, albums: Album) -> dict:
             yield album
 
 
-def is_in_artists_list(artist: Artist, item: dict):
+def is_in_artists_list(artist: Artist, item: dict) -> bool:
     """True if appears in artists list, else False"""
     return is_present(artist.spotify_id, item['artists'], 'id')
+
+
+def get_featuring_songs(
+    sp_client: Spotify, artist: Artist, album: dict
+) -> [dict]:
+    """get feature tracks from an album with the artist"""
+    tracks = fetch_all(sp_client, album['tracks'])
+    feature_tracks = []
+
+    for track in tracks:
+        if is_in_artists_list(artist, track):
+            feature_tracks.append(track)
+
+    return feature_tracks
 
 
 def update_artist_albums(sp_client: Spotify, artist: Artist) -> None:
@@ -55,7 +69,7 @@ def update_artist_albums(sp_client: Spotify, artist: Artist) -> None:
             # for a different artist, it will be returned to the artist in cause
             # as well, so that this function checks that, and returns only feature
             # songs if it's the case.
-            pass
+            tracks = get_featuring_songs(sp_client, artist, detailed_album)
         else:
             # print(f"{artist.name} - {detailed_album['name']}")
             pass
