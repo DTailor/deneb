@@ -168,3 +168,5 @@ scripts/spotify_keys.sh
 /.project
 
 /deneb/.cache-*
+
+/logfile.log
