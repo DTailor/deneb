@@ -7,7 +7,6 @@ from peewee import (
     ForeignKeyField, ManyToManyField, Model, PostgresqlDatabase
 )
 
-
 assert os.environ['DB_NAME']
 assert os.environ['DB_USER']
 assert os.environ['DB_PASSWORD']
@@ -86,6 +85,13 @@ class Market(Model):
 
         return market
 
+    @classmethod
+    def save_to_db(cls, market_name, no_db=False):
+        if no_db:
+            db_market = cls(name=market_name)
+        else:
+            db_market = cls.create(name=market_name)
+        return db_market
 
 class Album(Model):
     name = CharField()
@@ -97,11 +103,15 @@ class Album(Model):
     class Meta:
         database = get_db()
 
-    def __repr__(self):
+    def __str__(self):
         artists = [a.name for a in self.artists()]
         album_type = 'track' if self.type == 'track' else 'album'
         return '<spotify:{}:{}> {} - {} ({})'.format(
             album_type, self.spotify_id, ', '.join(artists), self.name, self.release)
+
+    def update_timestamp(self):
+        self.timestamp = datetime.datetime.now()
+        self.save()
 
     def add_artist(self, artist):
         return AlbumArtist.create(album=self, artist=artist)
@@ -149,6 +159,22 @@ class Album(Model):
             .where(AvailableMarket.album == self)
         )
 
+    @classmethod
+    def save_to_db(                                         # pylint: disable=C0111
+            cls, name, release_date, a_type,
+            spotify_id, no_db=False
+        ):                                                  # pylint: disable=R0913
+        if no_db:
+            db_album = cls(
+                name=name, release=release_date,
+                type=a_type, spotify_id=spotify_id
+            )
+        else:
+            db_album = cls.create(
+                name=name, release=release_date,
+                type=a_type, spotify_id=spotify_id
+            )
+        return db_album
 
 class AlbumArtist(Model):
     album = ForeignKeyField(Album)
@@ -301,4 +327,3 @@ AvailableMarket.create_table(fail_silently=True)
 SeenAlbum.create_table(fail_silently=True)
 ArtistFollowers.create_table(fail_silently=True)
 AlbumArtist.create_table(fail_silently=True)
-
