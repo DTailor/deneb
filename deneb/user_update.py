@@ -3,7 +3,10 @@
 from itertools import zip_longest
 
 from db import Artist  # pylint: disable=import-error
+from logger import get_logger
 from tools import grouper  # pylint: disable=import-error
+
+_LOGGER = get_logger(__name__)
 
 
 def fetch_artists(sp_client):
@@ -59,16 +62,12 @@ def fetch_user_followed_artists(user, sp_client):
 
     # followed_artaists - following_ids = new follows
     new_follows = extract_new_follows_objects(followed_artists, following_ids)
-
     # convert artists to db objects
     new_follows_db = [Artist.to_object(a) for a in new_follows]
 
     user.add_follows(new_follows_db)
-    print(
-        "new follows {} ({}): {}".format(
-            user.fb_id, len(new_follows_db), ", ".join(str(a) for a in new_follows_db)
-        )
-    )
+    new_follows_str = ", ".join(str(a) for a in new_follows_db)
+    _LOGGER.info(f"new follows for {user} ({len(new_follows_db)}): {new_follows_str}")
 
     # following_ids - followed_artists = lost follows
     lost_follows_db = extract_lost_follows_artists(followed_artists, user.following)
@@ -76,10 +75,5 @@ def fetch_user_followed_artists(user, sp_client):
     # spotify might not return the artist
     lost_follows_db_clean = check_follows(sp_client, lost_follows_db)
     user.remove_follows(lost_follows_db_clean)
-    print(
-        "lost follows {} ({}): {}".format(
-            user.fb_id,
-            len(lost_follows_db_clean),
-            ", ".join(str(a) for a in lost_follows_db_clean),
-        )
-    )
+    lost_follows_str = ", ".join(str(a) for a in lost_follows_db_clean)
+    _LOGGER.info(f"lost follows for {user} ({len(lost_follows_db_clean)}): {lost_follows_str}")

@@ -7,12 +7,14 @@ from peewee import (
     ForeignKeyField, ManyToManyField, Model, PostgresqlDatabase
 )
 
+from logger import get_logger
+
 assert os.environ['DB_NAME']
 assert os.environ['DB_USER']
 assert os.environ['DB_PASSWORD']
 
 _DB = None
-
+_LOGGER = get_logger(__name__)
 
 def get_db():
     global _DB
@@ -26,6 +28,7 @@ def get_or_create_user(fb_id):
     try:
         user = User.get(User.fb_id == fb_id)
     except User.DoesNotExist:
+        _LOGGER.info(f"new user created in db: {user}")
         user = User.create(fb_id=fb_id)
         created = True
     return user, created

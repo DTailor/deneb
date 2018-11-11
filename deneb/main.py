@@ -16,6 +16,7 @@ def main(username, fb_id):
     user, created = get_or_create_user(fb_id)
     _LOGGER.info(f"Using {user}; created status is {created}")
     user.update_market(sp_client.current_user())
+    _LOGGER.info(f"Updated marketplace for {user}")
     fetch_user_followed_artists(user, sp_client)
     get_new_releases(sp_client)
 

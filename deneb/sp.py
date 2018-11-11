@@ -7,6 +7,8 @@ import spotipy
 from spotipy import util
 from spotipy.client import SpotifyException
 
+from logger import get_logger
+
 # check spotify environ keys are set
 assert os.environ['SPOTIPY_CLIENT_ID']
 assert os.environ['SPOTIPY_CLIENT_SECRET']
@@ -14,6 +16,7 @@ assert os.environ['SPOTIPY_REDIRECT_URI']
 
 _SPOTI_CACHE = weakref.WeakValueDictionary()
 
+_LOGGER = get_logger(__name__)
 
 def fetch_token(username):
     """gen an access token"""
@@ -31,6 +34,8 @@ def get_sp_client(username, token=None):
     """returns new sp client plus the token for it"""
     if token is None:
         token = fetch_token(username)
+        _LOGGER.info(f"{username}: NEW TOKEN FETCHED: {token}")
+
 
     if token in _SPOTI_CACHE:
         sp_client = _SPOTI_CACHE[token]
@@ -43,8 +48,10 @@ def get_sp_client(username, token=None):
     except SpotifyException:
         if token in _SPOTI_CACHE:
             del _SPOTI_CACHE[token]
+        _LOGGER.warning(f"{username}: TOKEN EXPIRED")
         # token may expire, ask for new
         token = fetch_token(username)
+        _LOGGER.info(f"{username}: NEW TOKEN FETCHED: {token}")
         sp_client = spotipy.Spotify(auth=token)
         _SPOTI_CACHE[token] = sp_client
     return sp_client, token
