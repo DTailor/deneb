@@ -85,6 +85,13 @@ class Market(Model):
 
         return market
 
+    @classmethod
+    def save_to_db(cls, market_name, no_db=False):
+        if no_db:
+            db_market = cls(name=market_name)
+        else:
+            db_market = cls.create(name=market_name)
+        return db_market
 
 class Album(Model):
     name = CharField()
@@ -101,6 +108,10 @@ class Album(Model):
         album_type = 'track' if self.type == 'track' else 'album'
         return '<spotify:{}:{}> {} - {} ({})'.format(
             album_type, self.spotify_id, ', '.join(artists), self.name, self.release)
+
+    def update_timestamp(self):
+        self.timestamp = datetime.datetime.now()
+        self.save()
 
     def add_artist(self, artist):
         return AlbumArtist.create(album=self, artist=artist)

@@ -1,7 +1,7 @@
 """Module to handle artist related updates"""
 from spotipy import Spotify
 
-from db import Album, Artist  # pylint: disable=import-error
+from db import Album, Artist, Market  # pylint: disable=import-error
 from tools import clean, generate_release_date, grouper, is_present
 
 
@@ -55,8 +55,10 @@ def get_featuring_songs(
 
     for track in tracks:
         if is_in_artists_list(artist, track):
+            # track has no release date, so grab it
+            track['release_date'] = album['release_date']
+            track['release_date_precision'] = album['release_date_precision']
             feature_tracks.append(track)
-
     return feature_tracks
 
 
@@ -82,18 +84,65 @@ def get_or_create_album(
     return created, db_album
 
 
+def get_or_create_market(marketname: str, dry_run: bool = False) -> Market:
+    """Retrieve or init marketplace instance"""
+    try:
+        market = Market.get(Market.name == marketname)
+    except:
+        market = Market.save_to_db(market_name=marketname, no_db=dry_run)
+
+    return market
+
+
+def update_album_marketplace(
+        album: Album,
+        new_marketplace_ids: [str],
+        dry_run: bool = False
+) -> None:
+    """Update an album markeplaces with the newly fetched ones"""
+    old_markets = [a for a in album.get_markets()]
+    old_markets_ids = set([a.name for a in old_markets])
+    new_marketplace_ids = set(new_marketplace_ids)
+
+    to_add = new_marketplace_ids - old_markets_ids
+    to_remove = old_markets_ids - new_marketplace_ids
+
+    if dry_run:
+        return
+
+    for old_market in old_markets:
+        if old_market.name in to_remove:
+            album.remove_market(old_market)
+
+    for marketname in to_add:
+        market = get_or_create_market(marketname)
+        album.add_market(market)
+
+
 def sync_with_db(
         albums: [dict],
+        artist: Artist,
         dry_run: bool = False
 ) -> [Album]:
-    """Adds new albums to db, and returns the inserts"""
+    """Adds new albums to db, and returns db instances and new inserts"""
+    db_albums = []
     new_inserts = []
 
     for album in albums:
+        # get or init album
         created, db_album = get_or_create_album(album, dry_run)
+        db_albums.append(db_albums)
         if created:
             new_inserts.append(db_album)
-    return new_inserts
+
+        if not db_album.has_artist(artist):
+            db_album.add_artist(artist)
+
+        # update it's marketplaces, for availability
+        update_album_marketplace(db_album, album['available_markets'])
+        db_album.update_timestamp()
+
+    return db_albums, new_inserts
 
 
 def update_artist_albums(
@@ -116,10 +165,15 @@ def update_artist_albums(
         else:
             processed_albums.append(detailed_album)
 
-    new_inserts = sync_with_db(processed_albums, dry_run)
+    _, new_inserts = sync_with_db(processed_albums, artist, dry_run)
+
     return new_inserts
 
 def get_new_releases(sp_client: Spotify, dry_run: bool = False) -> None:
     """update artists with released albums"""
     for artist in Artist.select():
-        update_artist_albums(sp_client, artist, dry_run)
+        new_additions = update_artist_albums(sp_client, artist, dry_run)
+        if new_additions:
+            print(f"New entries for {artist}:")
+            for album in new_additions:
+                print(f"    - {album}")
