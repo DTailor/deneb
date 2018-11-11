@@ -4,7 +4,7 @@ import datetime
 from spotipy import Spotify
 
 from db import Album, Artist  # pylint: disable=import-error
-from tools import grouper, clean, is_present
+from tools import clean, grouper, is_present
 
 
 def fetch_all(sp_client: Spotify, data: dict) -> list:

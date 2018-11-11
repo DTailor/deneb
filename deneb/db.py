@@ -7,7 +7,6 @@ from peewee import (
     ForeignKeyField, ManyToManyField, Model, PostgresqlDatabase
 )
 
-
 assert os.environ['DB_NAME']
 assert os.environ['DB_USER']
 assert os.environ['DB_PASSWORD']
@@ -317,4 +316,3 @@ AvailableMarket.create_table(fail_silently=True)
 SeenAlbum.create_table(fail_silently=True)
 ArtistFollowers.create_table(fail_silently=True)
 AlbumArtist.create_table(fail_silently=True)
-
