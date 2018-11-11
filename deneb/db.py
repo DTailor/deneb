@@ -149,6 +149,22 @@ class Album(Model):
             .where(AvailableMarket.album == self)
         )
 
+    @classmethod
+    def save_to_db(                                         # pylint: disable=C0111
+            cls, name, release_date, a_type,
+            spotify_id, no_db=False
+        ):                                                  # pylint: disable=R0913
+        if no_db:
+            db_album = cls(
+                name=name, release=release_date,
+                type=a_type, spotify_id=spotify_id
+            )
+        else:
+            db_album = cls.create(
+                name=name, release=release_date,
+                type=a_type, spotify_id=spotify_id
+            )
+        return db_album
 
 class AlbumArtist(Model):
     album = ForeignKeyField(Album)

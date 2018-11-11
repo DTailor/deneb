@@ -1,4 +1,5 @@
 """Module to handle artist related updates"""
+import datetime
 
 from spotipy import Spotify
 
@@ -16,8 +17,10 @@ def fetch_all(sp_client: Spotify, data: dict) -> list:
 
 
 def fetch_albums(
-        sp_client: Spotify, artist: Artist, retry: bool = False
-) -> list(Album):
+        sp_client: Spotify,
+        artist: Artist,
+        retry: bool = False
+) -> [Album]:
     """fetches artist albums from spotify"""
     try:
         data = sp_client.artist_albums(artist.spotify_id, limit=50)
@@ -58,10 +61,60 @@ def get_featuring_songs(
     return feature_tracks
 
 
-def update_artist_albums(sp_client: Spotify, artist: Artist) -> None:
-    """update artist albums"""
-    albums = fetch_albums(sp_client, artist)
+def generate_release_date(date: str, precision: str) -> datetime.datetime:
+    suffix = {
+        'year': '-01-01',
+        'month': '-01',
+        'day': ''
+    }
+    return datetime.datetime.strptime(
+        '{}{}'.format(date, suffix[precision]), '%Y-%m-%d')
 
+
+def get_or_create_album(
+        album: dict,
+        dry_run: bool = False
+) -> Album:
+    """return db instance and create if new, with dry-run"""
+    created = False
+    try:
+        db_album = Album.get(spotify_id=album['id'])
+    except:
+        release_date = generate_release_date(
+            album['release_date'],
+            album['release_date_precision']
+            )
+        db_album = Album.save_to_db(
+            name=album['name'], release_date=release_date,
+            a_type=album['type'], spotify_id=album['id'],
+            no_db=dry_run
+        )
+        created = True
+    return created, db_album
+
+
+def sync_with_db(
+        albums: [dict],
+        dry_run: bool = False
+) -> [Album]:
+    """Adds new albums to db, and returns the inserts"""
+    new_inserts = []
+
+    for album in albums:
+        created, db_album = get_or_create_album(album, dry_run)
+        if created:
+            new_inserts.append(db_album)
+    return new_inserts
+
+
+def update_artist_albums(
+        sp_client: Spotify,
+        artist: Artist,
+        dry_run: bool = False
+) -> None:
+    """update artist albums by adding them to the db"""
+    albums = fetch_albums(sp_client, artist)
+    processed_albums = []
     for detailed_album in fetch_detailed_album(sp_client, albums):
         if not is_in_artists_list(artist, detailed_album):
             # Some releases are not directly related to the artist himself.
@@ -70,12 +123,14 @@ def update_artist_albums(sp_client: Spotify, artist: Artist) -> None:
             # as well, so that this function checks that, and returns only feature
             # songs if it's the case.
             tracks = get_featuring_songs(sp_client, artist, detailed_album)
+            processed_albums.extend(tracks)
         else:
-            # print(f"{artist.name} - {detailed_album['name']}")
-            pass
+            processed_albums.append(detailed_album)
 
+    new_inserts = sync_with_db(processed_albums, dry_run)
+    return new_inserts
 
-def get_new_releases(sp_client: Spotify) -> None:
+def get_new_releases(sp_client: Spotify, dry_run: bool = False) -> None:
     """update artists with released albums"""
     for artist in Artist.select():
-        update_artist_albums(sp_client, artist)
+        update_artist_albums(sp_client, artist, dry_run)
