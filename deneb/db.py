@@ -22,11 +22,13 @@ def get_db():
 
 
 def get_or_create_user(fb_id):
+    created = False
     try:
         user = User.get(User.fb_id == fb_id)
     except User.DoesNotExist:
         user = User.create(fb_id=fb_id)
-    return user
+        created = True
+    return user, created
 
 
 class Artist(Model):
@@ -202,6 +204,9 @@ class User(Model):
     market = ForeignKeyField(Market, null=True)
     initialised = BooleanField(default=False)
     following = ManyToManyField(Artist)
+
+    def __str__(self):
+        return f"<user:{self.fb_id}:{self.market.name}>"
 
     def get_seen_albums(self):
         return (
