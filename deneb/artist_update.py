@@ -1,10 +1,8 @@
 """Module to handle artist related updates"""
-import datetime
-
 from spotipy import Spotify
 
 from db import Album, Artist  # pylint: disable=import-error
-from tools import clean, grouper, is_present
+from tools import clean, generate_release_date, grouper, is_present
 
 
 def fetch_all(sp_client: Spotify, data: dict) -> list:
@@ -35,6 +33,7 @@ def fetch_albums(
 
 
 def fetch_detailed_album(sp_client: Spotify, albums: Album) -> dict:
+    """Fetch detailed album view from spotify for a simplified album list"""
     for albums_chunk in grouper(20, albums):
         albums_chunk = clean(albums_chunk)
         data = sp_client.albums(albums=[a['id'] for a in albums_chunk])
@@ -48,7 +47,7 @@ def is_in_artists_list(artist: Artist, item: dict) -> bool:
 
 
 def get_featuring_songs(
-    sp_client: Spotify, artist: Artist, album: dict
+        sp_client: Spotify, artist: Artist, album: dict
 ) -> [dict]:
     """get feature tracks from an album with the artist"""
     tracks = fetch_all(sp_client, album['tracks'])
@@ -59,16 +58,6 @@ def get_featuring_songs(
             feature_tracks.append(track)
 
     return feature_tracks
-
-
-def generate_release_date(date: str, precision: str) -> datetime.datetime:
-    suffix = {
-        'year': '-01-01',
-        'month': '-01',
-        'day': ''
-    }
-    return datetime.datetime.strptime(
-        '{}{}'.format(date, suffix[precision]), '%Y-%m-%d')
 
 
 def get_or_create_album(
