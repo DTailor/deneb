@@ -1,0 +1,295 @@
+2018-11-12 20:45:31,040 __main__     INFO     
+2018-11-12 20:45:31,041 __main__     INFO     ------------ RUN ---------------
+2018-11-12 20:45:31,041 __main__     INFO     
+2018-11-12 20:45:31,396 sp           INFO     dann.croitoru: NEW TOKEN FETCHED: BQCpP_sbnqXXM2raNASBA-tzK_rm4I8NBiONX5S3b1Np7Z2gSgqjFSDWhxS8NDGUmgc4K0duW34vjG8Pb9oJ2I2c2bzf1zUBDWOf3ZbPlamYIKMDmX9IMJLAYRud6dSzedSotfXvjb-oK_FbauJfC_gkqUba2B0_khsY29XOJoI
+2018-11-12 20:45:31,907 __main__     INFO     Using <user:dann.croitoru1111:RO>; created status is False
+2018-11-12 20:45:32,337 __main__     INFO     Updated marketplace for <user:dann.croitoru1111:RO>
+2018-11-12 20:45:35,604 user_update  INFO     new follows for <user:dann.croitoru1111:RO> (1): Giggs
+2018-11-12 20:45:35,815 user_update  INFO     lost follows for <user:dann.croitoru1111:RO> (0): 
+2018-11-12 20:45:35,822 artist_update INFO     start update for Black Mountain
+2018-11-12 20:45:35,982 artist_update INFO     fetched 15 albums for Black Mountain
+2018-11-12 20:45:36,606 artist_update INFO     start update for Serge Gainsbourg
+2018-11-12 20:45:36,978 artist_update INFO     fetched 71 albums for Serge Gainsbourg
+2018-11-12 20:45:39,477 artist_update INFO     start update for Kamaal Williams
+2018-11-12 20:45:39,641 artist_update INFO     fetched 5 albums for Kamaal Williams
+2018-11-12 20:45:39,843 artist_update INFO     start update for Common Market
+2018-11-12 20:45:39,962 artist_update INFO     fetched 6 albums for Common Market
+2018-11-12 20:45:40,185 artist_update INFO     start update for Junior Kimbrough
+2018-11-12 20:45:40,325 artist_update INFO     fetched 14 albums for Junior Kimbrough
+2018-11-12 20:45:40,743 artist_update INFO     start update for Iceage
+2018-11-12 20:45:40,921 artist_update INFO     fetched 14 albums for Iceage
+2018-11-12 20:45:41,276 artist_update INFO     start update for Fucked Up
+2018-11-12 20:45:41,446 artist_update INFO     fetched 28 albums for Fucked Up
+2018-11-12 20:45:42,221 artist_update INFO     start update for Rival Consoles
+2018-11-12 20:45:42,369 artist_update INFO     fetched 49 albums for Rival Consoles
+2018-11-12 20:45:43,653 artist_update INFO     start update for LCD Soundsystem
+2018-11-12 20:45:43,779 artist_update INFO     fetched 45 albums for LCD Soundsystem
+2018-11-12 20:45:44,942 artist_update INFO     start update for Machinedrum
+2018-11-12 20:45:45,365 artist_update INFO     fetched 105 albums for Machinedrum
+2018-11-12 20:45:49,184 artist_update INFO     start update for Ecstatic Vision
+2018-11-12 20:45:49,312 artist_update INFO     fetched 4 albums for Ecstatic Vision
+2018-11-12 20:45:49,509 artist_update INFO     start update for God Is An Astronaut
+2018-11-12 20:45:49,662 artist_update INFO     fetched 16 albums for God Is An Astronaut
+2018-11-12 20:45:50,028 artist_update INFO     start update for Loess
+2018-11-12 20:45:50,177 artist_update INFO     fetched 5 albums for Loess
+2018-11-12 20:45:50,365 artist_update INFO     start update for Ulrika Spacek
+2018-11-12 20:45:50,507 artist_update INFO     fetched 12 albums for Ulrika Spacek
+2018-11-12 20:45:50,761 artist_update INFO     start update for Salem
+2018-11-12 20:45:50,898 artist_update INFO     fetched 14 albums for Salem
+2018-11-12 20:45:51,205 artist_update INFO     start update for Khonnor
+2018-11-12 20:45:51,340 artist_update INFO     fetched 4 albums for Khonnor
+2018-11-12 20:45:51,517 artist_update INFO     start update for Dead Meadow
+2018-11-12 20:45:51,671 artist_update INFO     fetched 17 albums for Dead Meadow
+2018-11-12 20:45:52,604 artist_update INFO     start update for Russian Circles
+2018-11-12 20:45:52,738 artist_update INFO     fetched 11 albums for Russian Circles
+2018-11-12 20:45:53,011 artist_update INFO     start update for Wall of Death
+2018-11-12 20:45:53,136 artist_update INFO     fetched 12 albums for Wall of Death
+2018-11-12 20:45:53,465 artist_update INFO     start update for Psychic Ills
+2018-11-12 20:45:53,615 artist_update INFO     fetched 13 albums for Psychic Ills
+2018-11-12 20:45:53,954 artist_update INFO     start update for The KVB
+2018-11-12 20:45:54,101 artist_update INFO     fetched 28 albums for The KVB
+2018-11-12 20:45:55,174 artist_update INFO     start update for envy
+2018-11-12 20:45:55,370 artist_update INFO     fetched 12 albums for envy
+2018-11-12 20:45:55,719 artist_update INFO     start update for Holy Wave
+2018-11-12 20:45:55,861 artist_update INFO     fetched 6 albums for Holy Wave
+2018-11-12 20:45:56,227 artist_update INFO     start update for Самое большое простое число
+2018-11-12 20:45:56,383 artist_update INFO     fetched 20 albums for Самое большое простое число
+2018-11-12 20:45:56,826 artist_update INFO     start update for Epic45
+2018-11-12 20:45:56,970 artist_update INFO     fetched 18 albums for Epic45
+2018-11-12 20:45:57,375 artist_update INFO     start update for Tess Parks
+2018-11-12 20:45:57,520 artist_update INFO     fetched 5 albums for Tess Parks
+2018-11-12 20:45:57,699 artist_update INFO     start update for sleepmakeswaves
+2018-11-12 20:45:57,820 artist_update INFO     fetched 12 albums for sleepmakeswaves
+2018-11-12 20:45:58,113 artist_update INFO     start update for Gojira
+2018-11-12 20:45:58,264 artist_update INFO     fetched 19 albums for Gojira
+2018-11-12 20:45:59,033 artist_update INFO     start update for Dot Legacy
+2018-11-12 20:45:59,187 artist_update INFO     fetched 16 albums for Dot Legacy
+2018-11-12 20:45:59,633 artist_update INFO     start update for Jordy Thelight
+2018-11-12 20:45:59,776 artist_update INFO     fetched 2 albums for Jordy Thelight
+2018-11-12 20:45:59,948 artist_update INFO     start update for Julianna Barwick
+2018-11-12 20:46:00,093 artist_update INFO     fetched 21 albums for Julianna Barwick
+2018-11-12 20:46:00,752 artist_update INFO     start update for Nosaj Thing
+2018-11-12 20:46:00,887 artist_update INFO     fetched 46 albums for Nosaj Thing
+2018-11-12 20:46:02,260 artist_update INFO     start update for Grinderman
+2018-11-12 20:46:02,397 artist_update INFO     fetched 9 albums for Grinderman
+2018-11-12 20:46:02,968 artist_update INFO     start update for Milo
+2018-11-12 20:46:03,113 artist_update INFO     fetched 22 albums for Milo
+2018-11-12 20:46:04,207 artist_update INFO     start update for GAS
+2018-11-12 20:46:04,354 artist_update INFO     fetched 8 albums for GAS
+2018-11-12 20:46:04,612 artist_update INFO     start update for Spoon
+2018-11-12 20:46:04,767 artist_update INFO     fetched 35 albums for Spoon
+2018-11-12 20:46:05,755 artist_update INFO     start update for WITCH
+2018-11-12 20:46:05,902 artist_update INFO     fetched 4 albums for WITCH
+2018-11-12 20:46:06,153 artist_update INFO     start update for Black Pistol Fire
+2018-11-12 20:46:06,278 artist_update INFO     fetched 8 albums for Black Pistol Fire
+2018-11-12 20:46:06,523 artist_update INFO     start update for Damon Albarn
+2018-11-12 20:46:06,670 artist_update INFO     fetched 49 albums for Damon Albarn
+2018-11-12 20:46:36,235 __main__     INFO     
+2018-11-12 20:46:36,237 __main__     INFO     ------------ RUN ---------------
+2018-11-12 20:46:36,237 __main__     INFO     
+2018-11-12 20:46:36,241 sp           INFO     dann.croitoru: NEW TOKEN FETCHED: BQCpP_sbnqXXM2raNASBA-tzK_rm4I8NBiONX5S3b1Np7Z2gSgqjFSDWhxS8NDGUmgc4K0duW34vjG8Pb9oJ2I2c2bzf1zUBDWOf3ZbPlamYIKMDmX9IMJLAYRud6dSzedSotfXvjb-oK_FbauJfC_gkqUba2B0_khsY29XOJoI
+2018-11-12 20:46:36,436 __main__     INFO     Using <user:dann.croitoru1111:RO>; created status is False
+2018-11-12 20:46:44,032 __main__     INFO     
+2018-11-12 20:46:44,035 __main__     INFO     ------------ RUN ---------------
+2018-11-12 20:46:44,035 __main__     INFO     
+2018-11-12 20:46:44,039 sp           INFO     dann.croitoru: NEW TOKEN FETCHED: BQCpP_sbnqXXM2raNASBA-tzK_rm4I8NBiONX5S3b1Np7Z2gSgqjFSDWhxS8NDGUmgc4K0duW34vjG8Pb9oJ2I2c2bzf1zUBDWOf3ZbPlamYIKMDmX9IMJLAYRud6dSzedSotfXvjb-oK_FbauJfC_gkqUba2B0_khsY29XOJoI
+2018-11-12 20:46:44,218 __main__     INFO     Using <user:dann.croitoru1111:RO>; created status is False
+2018-11-12 20:46:44,370 __main__     INFO     Updated marketplace for <user:dann.croitoru1111:RO>
+2018-11-12 20:46:46,957 user_update  INFO     new follows for <user:dann.croitoru1111:RO> (0): 
+2018-11-12 20:46:47,140 user_update  INFO     lost follows for <user:dann.croitoru1111:RO> (0): 
+2018-11-12 20:46:47,147 artist_update INFO     start update for Black Mountain
+2018-11-12 20:46:47,281 artist_update INFO     fetched 15 albums for Black Mountain
+2018-11-12 20:46:47,634 artist_update INFO     start update for Serge Gainsbourg
+2018-11-12 20:46:47,907 artist_update INFO     fetched 71 albums for Serge Gainsbourg
+2018-11-12 20:46:50,211 artist_update INFO     start update for Kamaal Williams
+2018-11-12 20:46:50,352 artist_update INFO     fetched 5 albums for Kamaal Williams
+2018-11-12 20:46:50,554 artist_update INFO     start update for Common Market
+2018-11-12 20:46:50,694 artist_update INFO     fetched 6 albums for Common Market
+2018-11-12 20:46:50,910 artist_update INFO     start update for Junior Kimbrough
+2018-11-12 20:46:51,097 artist_update INFO     fetched 14 albums for Junior Kimbrough
+2018-11-12 20:46:51,635 artist_update INFO     start update for Iceage
+2018-11-12 20:46:51,775 artist_update INFO     fetched 14 albums for Iceage
+2018-11-12 20:46:52,372 artist_update INFO     start update for Fucked Up
+2018-11-12 20:46:52,533 artist_update INFO     fetched 28 albums for Fucked Up
+2018-11-12 20:46:53,373 artist_update INFO     start update for Rival Consoles
+2018-11-12 20:46:53,498 artist_update INFO     fetched 49 albums for Rival Consoles
+2018-11-12 20:46:54,766 artist_update INFO     start update for LCD Soundsystem
+2018-11-12 20:46:54,917 artist_update INFO     fetched 45 albums for LCD Soundsystem
+2018-11-12 20:46:56,226 artist_update INFO     start update for Machinedrum
+2018-11-12 20:46:56,624 artist_update INFO     fetched 105 albums for Machinedrum
+2018-11-12 20:46:59,601 artist_update INFO     start update for Ecstatic Vision
+2018-11-12 20:46:59,751 artist_update INFO     fetched 4 albums for Ecstatic Vision
+2018-11-12 20:46:59,949 artist_update INFO     start update for God Is An Astronaut
+2018-11-12 20:47:00,101 artist_update INFO     fetched 16 albums for God Is An Astronaut
+2018-11-12 20:47:00,492 artist_update INFO     start update for Loess
+2018-11-12 20:47:00,639 artist_update INFO     fetched 5 albums for Loess
+2018-11-12 20:47:00,852 artist_update INFO     start update for Ulrika Spacek
+2018-11-12 20:47:00,971 artist_update INFO     fetched 12 albums for Ulrika Spacek
+2018-11-12 20:47:01,222 artist_update INFO     start update for Salem
+2018-11-12 20:47:01,472 artist_update INFO     fetched 14 albums for Salem
+2018-11-12 20:47:01,975 artist_update INFO     start update for Khonnor
+2018-11-12 20:47:02,123 artist_update INFO     fetched 4 albums for Khonnor
+2018-11-12 20:47:02,317 artist_update INFO     start update for Dead Meadow
+2018-11-12 20:47:02,460 artist_update INFO     fetched 17 albums for Dead Meadow
+2018-11-12 20:47:05,039 artist_update INFO     start update for Russian Circles
+2018-11-12 20:47:05,217 artist_update INFO     fetched 11 albums for Russian Circles
+2018-11-12 20:47:06,508 artist_update INFO     start update for Wall of Death
+2018-11-12 20:47:06,640 artist_update INFO     fetched 12 albums for Wall of Death
+2018-11-12 20:47:07,891 artist_update INFO     start update for Psychic Ills
+2018-11-12 20:47:08,062 artist_update INFO     fetched 13 albums for Psychic Ills
+2018-11-12 20:47:08,417 artist_update INFO     start update for The KVB
+2018-11-12 20:47:08,567 artist_update INFO     fetched 28 albums for The KVB
+2018-11-12 20:47:09,189 artist_update INFO     start update for envy
+2018-11-12 20:47:09,323 artist_update INFO     fetched 12 albums for envy
+2018-11-12 20:47:09,684 artist_update INFO     start update for Holy Wave
+2018-11-12 20:47:09,829 artist_update INFO     fetched 6 albums for Holy Wave
+2018-11-12 20:47:10,235 artist_update INFO     start update for Самое большое простое число
+2018-11-12 20:47:10,371 artist_update INFO     fetched 20 albums for Самое большое простое число
+2018-11-12 20:47:10,760 artist_update INFO     start update for Epic45
+2018-11-12 20:47:10,898 artist_update INFO     fetched 18 albums for Epic45
+2018-11-12 20:47:11,727 artist_update INFO     start update for Tess Parks
+2018-11-12 20:47:52,626 __main__     INFO     
+2018-11-12 20:47:52,627 __main__     INFO     ------------ RUN ---------------
+2018-11-12 20:47:52,627 __main__     INFO     
+2018-11-12 20:47:52,627 sp           INFO     dann.croitoru: NEW TOKEN FETCHED: BQCpP_sbnqXXM2raNASBA-tzK_rm4I8NBiONX5S3b1Np7Z2gSgqjFSDWhxS8NDGUmgc4K0duW34vjG8Pb9oJ2I2c2bzf1zUBDWOf3ZbPlamYIKMDmX9IMJLAYRud6dSzedSotfXvjb-oK_FbauJfC_gkqUba2B0_khsY29XOJoI
+2018-11-12 20:47:52,806 __main__     INFO     Using <user:dann.croitoru1111:RO>; created status is False
+2018-11-12 20:47:52,951 __main__     INFO     Updated marketplace for <user:dann.croitoru1111:RO>
+2018-11-12 20:47:55,536 user_update  INFO     new follows for <user:dann.croitoru1111:RO> (0): 
+2018-11-12 20:47:55,744 user_update  INFO     lost follows for <user:dann.croitoru1111:RO> (0): 
+2018-11-12 20:47:55,748 artist_update INFO     start update for Black Mountain
+2018-11-12 20:47:55,874 artist_update INFO     fetched 15 albums for Black Mountain
+2018-11-12 20:47:56,191 artist_update INFO     start update for Serge Gainsbourg
+2018-11-12 20:47:56,454 artist_update INFO     fetched 71 albums for Serge Gainsbourg
+2018-11-12 20:47:59,363 artist_update INFO     start update for Kamaal Williams
+2018-11-12 20:47:59,495 artist_update INFO     fetched 5 albums for Kamaal Williams
+2018-11-12 20:47:59,756 artist_update INFO     start update for Common Market
+2018-11-12 20:47:59,894 artist_update INFO     fetched 6 albums for Common Market
+2018-11-12 20:48:00,123 artist_update INFO     start update for Junior Kimbrough
+2018-11-12 20:48:00,269 artist_update INFO     fetched 14 albums for Junior Kimbrough
+2018-11-12 20:48:00,720 artist_update INFO     start update for Iceage
+2018-11-12 20:48:00,863 artist_update INFO     fetched 14 albums for Iceage
+2018-11-12 20:48:01,204 artist_update INFO     start update for Fucked Up
+2018-11-12 20:48:01,358 artist_update INFO     fetched 28 albums for Fucked Up
+2018-11-12 20:48:02,397 artist_update INFO     start update for Rival Consoles
+2018-11-12 20:48:02,555 artist_update INFO     fetched 49 albums for Rival Consoles
+2018-11-12 20:48:04,067 artist_update INFO     start update for LCD Soundsystem
+2018-11-12 20:48:04,269 artist_update INFO     fetched 45 albums for LCD Soundsystem
+2018-11-12 20:48:05,538 artist_update INFO     start update for Machinedrum
+2018-11-12 20:48:05,995 artist_update INFO     fetched 105 albums for Machinedrum
+2018-11-12 20:48:09,014 artist_update INFO     start update for Ecstatic Vision
+2018-11-12 20:48:09,164 artist_update INFO     fetched 4 albums for Ecstatic Vision
+2018-11-12 20:48:09,407 artist_update INFO     start update for God Is An Astronaut
+2018-11-12 20:48:09,555 artist_update INFO     fetched 16 albums for God Is An Astronaut
+2018-11-12 20:48:09,915 artist_update INFO     start update for Loess
+2018-11-12 20:48:10,048 artist_update INFO     fetched 5 albums for Loess
+2018-11-12 20:48:10,278 artist_update INFO     start update for Ulrika Spacek
+2018-11-12 20:48:10,428 artist_update INFO     fetched 12 albums for Ulrika Spacek
+2018-11-12 20:48:10,730 artist_update INFO     start update for Salem
+2018-11-12 20:48:10,904 artist_update INFO     fetched 14 albums for Salem
+2018-11-12 20:48:11,245 artist_update INFO     start update for Khonnor
+2018-11-12 20:48:11,402 artist_update INFO     fetched 4 albums for Khonnor
+2018-11-12 20:48:11,623 artist_update INFO     start update for Dead Meadow
+2018-11-12 20:48:11,777 artist_update INFO     fetched 17 albums for Dead Meadow
+2018-11-12 20:48:12,642 artist_update INFO     start update for Russian Circles
+2018-11-12 20:48:12,768 artist_update INFO     fetched 11 albums for Russian Circles
+2018-11-12 20:48:13,296 artist_update INFO     start update for Wall of Death
+2018-11-12 20:48:13,423 artist_update INFO     fetched 12 albums for Wall of Death
+2018-11-12 20:48:13,944 artist_update INFO     start update for Psychic Ills
+2018-11-12 20:48:14,048 artist_update INFO     fetched 13 albums for Psychic Ills
+2018-11-12 20:48:14,312 artist_update INFO     start update for The KVB
+2018-11-12 20:48:14,430 artist_update INFO     fetched 28 albums for The KVB
+2018-11-12 20:48:15,058 artist_update INFO     start update for envy
+2018-11-12 20:48:15,184 artist_update INFO     fetched 12 albums for envy
+2018-11-12 20:48:15,564 artist_update INFO     start update for Holy Wave
+2018-11-12 20:48:15,703 artist_update INFO     fetched 6 albums for Holy Wave
+2018-11-12 20:48:16,122 artist_update INFO     start update for Самое большое простое число
+2018-11-12 20:48:16,250 artist_update INFO     fetched 20 albums for Самое большое простое число
+2018-11-12 20:48:16,726 artist_update INFO     start update for Epic45
+2018-11-12 20:48:16,863 artist_update INFO     fetched 18 albums for Epic45
+2018-11-12 20:48:17,285 artist_update INFO     start update for Tess Parks
+2018-11-12 20:48:17,450 artist_update INFO     fetched 5 albums for Tess Parks
+2018-11-12 20:48:17,658 artist_update INFO     start update for sleepmakeswaves
+2018-11-12 20:48:17,796 artist_update INFO     fetched 12 albums for sleepmakeswaves
+2018-11-12 20:48:18,074 artist_update INFO     start update for Gojira
+2018-11-12 20:48:18,205 artist_update INFO     fetched 19 albums for Gojira
+2018-11-12 20:48:18,913 artist_update INFO     start update for Dot Legacy
+2018-11-12 20:48:19,044 artist_update INFO     fetched 16 albums for Dot Legacy
+2018-11-12 20:48:19,492 artist_update INFO     start update for Jordy Thelight
+2018-11-12 20:48:19,632 artist_update INFO     fetched 2 albums for Jordy Thelight
+2018-11-12 20:48:19,775 artist_update INFO     start update for Julianna Barwick
+2018-11-12 20:48:19,910 artist_update INFO     fetched 21 albums for Julianna Barwick
+2018-11-12 20:48:20,535 artist_update INFO     start update for Nosaj Thing
+2018-11-12 20:48:20,670 artist_update INFO     fetched 46 albums for Nosaj Thing
+2018-11-12 20:51:07,595 __main__     INFO     
+2018-11-12 20:51:07,597 __main__     INFO     ------------ RUN ---------------
+2018-11-12 20:51:07,597 __main__     INFO     
+2018-11-12 20:51:07,601 sp           INFO     dann.croitoru: NEW TOKEN FETCHED: BQCpP_sbnqXXM2raNASBA-tzK_rm4I8NBiONX5S3b1Np7Z2gSgqjFSDWhxS8NDGUmgc4K0duW34vjG8Pb9oJ2I2c2bzf1zUBDWOf3ZbPlamYIKMDmX9IMJLAYRud6dSzedSotfXvjb-oK_FbauJfC_gkqUba2B0_khsY29XOJoI
+2018-11-12 20:51:07,798 __main__     INFO     Using <user:dann.croitoru1111:RO>; created status is False
+2018-11-12 20:51:08,058 __main__     INFO     Updated marketplace for <user:dann.croitoru1111:RO>
+2018-11-12 20:51:10,829 user_update  INFO     new follows for <user:dann.croitoru1111:RO> (0): 
+2018-11-12 20:51:11,002 user_update  INFO     lost follows for <user:dann.croitoru1111:RO> (0): 
+2018-11-12 20:51:11,008 artist_update INFO     start update for Black Mountain
+2018-11-12 20:51:11,114 artist_update INFO     fetched 15 albums for Black Mountain
+2018-11-12 20:51:11,451 artist_update INFO     start update for Serge Gainsbourg
+2018-11-12 20:51:11,706 artist_update INFO     fetched 71 albums for Serge Gainsbourg
+2018-11-12 20:51:14,352 artist_update INFO     start update for Kamaal Williams
+2018-11-12 20:51:14,487 artist_update INFO     fetched 5 albums for Kamaal Williams
+2018-11-12 20:51:14,669 artist_update INFO     start update for Common Market
+2018-11-12 20:51:14,793 artist_update INFO     fetched 6 albums for Common Market
+2018-11-12 20:51:15,033 artist_update INFO     start update for Junior Kimbrough
+2018-11-12 20:51:15,169 artist_update INFO     fetched 14 albums for Junior Kimbrough
+2018-11-12 20:51:15,631 artist_update INFO     start update for Iceage
+2018-11-12 20:51:15,757 artist_update INFO     fetched 14 albums for Iceage
+2018-11-12 20:51:16,089 artist_update INFO     start update for Fucked Up
+2018-11-12 20:51:16,227 artist_update INFO     fetched 28 albums for Fucked Up
+2018-11-12 20:51:16,931 artist_update INFO     start update for Rival Consoles
+2018-11-12 20:51:17,095 artist_update INFO     fetched 49 albums for Rival Consoles
+2018-11-12 20:51:18,297 artist_update INFO     start update for LCD Soundsystem
+2018-11-12 20:51:18,457 artist_update INFO     fetched 45 albums for LCD Soundsystem
+2018-11-12 20:51:19,634 artist_update INFO     start update for Machinedrum
+2018-11-12 20:51:20,093 artist_update INFO     fetched 105 albums for Machinedrum
+2018-11-12 20:51:22,914 artist_update INFO     start update for Ecstatic Vision
+2018-11-12 20:51:23,045 artist_update INFO     fetched 4 albums for Ecstatic Vision
+2018-11-12 20:51:23,232 artist_update INFO     start update for God Is An Astronaut
+2018-11-12 20:51:23,386 artist_update INFO     fetched 16 albums for God Is An Astronaut
+2018-11-12 20:51:23,766 artist_update INFO     start update for Loess
+2018-11-12 20:51:23,894 artist_update INFO     fetched 5 albums for Loess
+2018-11-12 20:51:24,154 artist_update INFO     start update for Ulrika Spacek
+2018-11-12 20:51:24,278 artist_update INFO     fetched 12 albums for Ulrika Spacek
+2018-11-12 20:51:24,548 artist_update INFO     start update for Salem
+2018-11-12 20:51:24,692 artist_update INFO     fetched 14 albums for Salem
+2018-11-12 20:51:25,028 artist_update INFO     start update for Khonnor
+2018-11-12 20:51:25,162 artist_update INFO     fetched 4 albums for Khonnor
+2018-11-12 20:51:25,399 artist_update INFO     start update for Dead Meadow
+2018-11-12 20:51:25,535 artist_update INFO     fetched 17 albums for Dead Meadow
+2018-11-12 20:51:26,304 artist_update INFO     start update for Russian Circles
+2018-11-12 20:51:26,441 artist_update INFO     fetched 11 albums for Russian Circles
+2018-11-12 20:51:26,690 artist_update INFO     start update for Wall of Death
+2018-11-12 20:51:26,822 artist_update INFO     fetched 12 albums for Wall of Death
+2018-11-12 20:51:27,132 artist_update INFO     start update for Psychic Ills
+2018-11-12 20:51:27,313 artist_update INFO     fetched 13 albums for Psychic Ills
+2018-11-12 20:51:27,601 artist_update INFO     start update for The KVB
+2018-11-12 20:51:27,742 artist_update INFO     fetched 28 albums for The KVB
+2018-11-12 20:51:28,354 artist_update INFO     start update for envy
+2018-11-12 20:51:28,517 artist_update INFO     fetched 12 albums for envy
+2018-11-12 20:51:28,829 artist_update INFO     start update for Holy Wave
+2018-11-12 20:51:28,962 artist_update INFO     fetched 6 albums for Holy Wave
+2018-11-12 20:51:29,312 artist_update INFO     start update for Самое большое простое число
+2018-11-12 20:51:29,469 artist_update INFO     fetched 20 albums for Самое большое простое число
+2018-11-12 20:51:30,361 artist_update INFO     start update for Epic45
+2018-11-12 20:51:30,492 artist_update INFO     fetched 18 albums for Epic45
+2018-11-12 20:51:30,857 artist_update INFO     start update for Tess Parks
+2018-11-12 20:51:30,979 artist_update INFO     fetched 5 albums for Tess Parks
+2018-11-12 20:51:31,207 artist_update INFO     start update for sleepmakeswaves
+2018-11-12 20:51:31,351 artist_update INFO     fetched 12 albums for sleepmakeswaves
+2018-11-12 20:51:31,742 artist_update INFO     start update for Gojira
+2018-11-12 20:51:31,878 artist_update INFO     fetched 19 albums for Gojira
+2018-11-12 20:51:32,579 artist_update INFO     start update for Dot Legacy
+2018-11-12 20:51:32,737 artist_update INFO     fetched 16 albums for Dot Legacy
+2018-11-12 20:51:33,066 artist_update INFO     start update for Jordy Thelight
+2018-11-12 20:51:33,258 artist_update INFO     fetched 2 albums for Jordy Thelight
+2018-11-12 20:51:33,479 artist_update INFO     start update for Julianna Barwick
+2018-11-12 20:51:33,649 artist_update INFO     fetched 21 albums for Julianna Barwick
+2018-11-12 20:51:34,476 artist_update INFO     start update for Nosaj Thing
+2018-11-12 20:51:34,663 artist_update INFO     fetched 46 albums for Nosaj Thing
+2018-11-12 20:51:35,769 artist_update INFO     start update for Grinderman
