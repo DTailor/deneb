@@ -15,7 +15,7 @@ def fetch_all(sp_client: Spotify, data: dict) -> list:
     contents = []
     while data:
         contents.extend(data["items"])
-        data = sp_client.next(data)
+        data = sp_client.next(data)                         # noqa: B305
     return contents
 
 
@@ -74,7 +74,7 @@ def get_or_create_album(
     created = False
     try:
         db_album = Album.get(spotify_id=album['id'])
-    except:
+    except Exception:
         release_date = generate_release_date(
             album['release_date'],
             album['release_date_precision']
@@ -92,7 +92,7 @@ def get_or_create_market(marketname: str, dry_run: bool = False) -> Market:
     """Retrieve or init marketplace instance"""
     try:
         market = Market.get(Market.name == marketname)
-    except:
+    except Exception:
         market = Market.save_to_db(market_name=marketname, no_db=dry_run)
 
     return market
