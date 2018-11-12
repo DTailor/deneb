@@ -12,9 +12,9 @@ logzero = "*"
 [dev-packages]
 ipdb = "*"
 ipython = "*"
-pylint = "*"
 isort = "*"
 jupyter = "*"
+"flake8" = "*"
 
 [requires]
 python_version = "3.7"
