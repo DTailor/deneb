@@ -1,13 +1,11 @@
 """Module to handle artist related updates"""
 from spotipy import Spotify
 
-from db import Album, Artist, Market  # pylint: disable=import-error
+from db import Album, Artist, Market
 from tools import clean, generate_release_date, grouper, is_present
 from logger import get_logger
 
 _LOGGER = get_logger(__name__)
-
-# pylint: disable=W1203
 
 
 def fetch_all(sp_client: Spotify, data: dict) -> list:
@@ -181,6 +179,4 @@ def get_new_releases(sp_client: Spotify, dry_run: bool = False) -> None:
         _LOGGER.info(f"start update for {artist}")
         new_additions = update_artist_albums(sp_client, artist, dry_run)
         if new_additions:
-            _LOGGER.info(f"NEW ALBUMS fetched for {artist}")
-            for album in new_additions:
-                _LOGGER.info(f"{album}")
+            _LOGGER.info(f"{len(new_additions)} fetched for {artist}")
