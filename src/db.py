@@ -28,9 +28,12 @@ def get_or_create_user(fb_id):
     try:
         user = User.get(User.fb_id == fb_id)
     except User.DoesNotExist:
-        _LOGGER.info(f"new user created in db: {user}")
         user = User.create(fb_id=fb_id)
+        _LOGGER.info(f"new user created in db: {user}")
         created = True
+    except Exception as exc:
+        _LOGGER.exception(f"user {fb_id} failed to create {exc}")
+
     return user, created
 
 
@@ -45,7 +48,11 @@ class Artist(Model):
     def __str__(self):
         return '{}'.format(self.name)
 
-    def can_upate(self, hours_delta=4):
+    def update_timestamp(self):
+        self.timestamp = datetime.datetime.now()
+        self.save()
+
+    def can_update(self, hours_delta=4):
         """check if artist can be updated
 
         returns True if last update time is bigger
@@ -165,10 +172,10 @@ class Album(Model):
         )
 
     @classmethod
-    def save_to_db(                                         # pylint: disable=C0111
+    def save_to_db(
             cls, name, release_date, a_type,
             spotify_id, no_db=False
-        ):                                                  # pylint: disable=R0913
+        ):
         if no_db:
             db_album = cls(
                 name=name, release=release_date,

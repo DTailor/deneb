@@ -14,9 +14,8 @@ def main(username, fb_id):
     _LOGGER.info('')
     sp_client, token = get_sp_client(username)
     user, created = get_or_create_user(fb_id)
-    _LOGGER.info(f"Using {user}; created status is {created}")
     user.update_market(sp_client.current_user())
-    _LOGGER.info(f"Updated marketplace for {user}")
+    _LOGGER.info(f"Using {user}; created status is {created}")
     fetch_user_followed_artists(user, sp_client)
     get_new_releases(sp_client)
 

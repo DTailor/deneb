@@ -175,8 +175,14 @@ def update_artist_albums(
 
 def get_new_releases(sp_client: Spotify, dry_run: bool = False) -> None:
     """update artists with released albums"""
+    updated_nr = 0
     for artist in Artist.select():
+        # if artist.can_update():
         _LOGGER.info(f"start update for {artist}")
         new_additions = update_artist_albums(sp_client, artist, dry_run)
         if new_additions:
             _LOGGER.info(f"{len(new_additions)} fetched for {artist}")
+        artist.update_timestamp()
+        updated_nr += 1
+
+    _LOGGER.info(f"Updated {updated_nr} artists")
