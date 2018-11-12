@@ -7,12 +7,14 @@ from peewee import (
     ForeignKeyField, ManyToManyField, Model, PostgresqlDatabase
 )
 
+from logger import get_logger
+
 assert os.environ['DB_NAME']
 assert os.environ['DB_USER']
 assert os.environ['DB_PASSWORD']
 
 _DB = None
-
+_LOGGER = get_logger(__name__)
 
 def get_db():
     global _DB
@@ -22,11 +24,14 @@ def get_db():
 
 
 def get_or_create_user(fb_id):
+    created = False
     try:
         user = User.get(User.fb_id == fb_id)
     except User.DoesNotExist:
+        _LOGGER.info(f"new user created in db: {user}")
         user = User.create(fb_id=fb_id)
-    return user
+        created = True
+    return user, created
 
 
 class Artist(Model):
@@ -202,6 +207,9 @@ class User(Model):
     market = ForeignKeyField(Market, null=True)
     initialised = BooleanField(default=False)
     following = ManyToManyField(Artist)
+
+    def __str__(self):
+        return f"<user:{self.fb_id}:{self.market.name}>"
 
     def get_seen_albums(self):
         return (

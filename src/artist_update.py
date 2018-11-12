@@ -3,7 +3,11 @@ from spotipy import Spotify
 
 from db import Album, Artist, Market  # pylint: disable=import-error
 from tools import clean, generate_release_date, grouper, is_present
+from logger import get_logger
 
+_LOGGER = get_logger(__name__)
+
+# pylint: disable=W1203
 
 def fetch_all(sp_client: Spotify, data: dict) -> list:
     """iterates till gets all the albums"""
@@ -152,6 +156,7 @@ def update_artist_albums(
 ) -> None:
     """update artist albums by adding them to the db"""
     albums = fetch_albums(sp_client, artist)
+    _LOGGER.info(f"fetched {len(albums)} albums for {artist}")
     processed_albums = []
     for detailed_album in fetch_detailed_album(sp_client, albums):
         if not is_in_artists_list(artist, detailed_album):
@@ -172,8 +177,9 @@ def update_artist_albums(
 def get_new_releases(sp_client: Spotify, dry_run: bool = False) -> None:
     """update artists with released albums"""
     for artist in Artist.select():
+        _LOGGER.info(f"start update for {artist}")
         new_additions = update_artist_albums(sp_client, artist, dry_run)
         if new_additions:
-            print(f"New entries for {artist}:")
+            _LOGGER.info(f"NEW ALBUMS fetched for {artist}")
             for album in new_additions:
-                print(f"    - {album}")
+                _LOGGER.info(f"{album}")
