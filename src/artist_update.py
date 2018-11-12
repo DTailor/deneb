@@ -9,6 +9,7 @@ _LOGGER = get_logger(__name__)
 
 # pylint: disable=W1203
 
+
 def fetch_all(sp_client: Spotify, data: dict) -> list:
     """iterates till gets all the albums"""
     contents = []
@@ -33,7 +34,6 @@ def fetch_albums(
             raise
         albums = fetch_albums(artist, True)
     return albums
-
 
 
 def fetch_detailed_album(sp_client: Spotify, albums: Album) -> dict:
@@ -173,6 +173,7 @@ def update_artist_albums(
     _, new_inserts = sync_with_db(processed_albums, artist, dry_run)
 
     return new_inserts
+
 
 def get_new_releases(sp_client: Spotify, dry_run: bool = False) -> None:
     """update artists with released albums"""
