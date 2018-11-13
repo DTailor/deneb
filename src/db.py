@@ -61,7 +61,7 @@ class Artist(Model):
         if not self.timestamp:
             return True
         delta = datetime.datetime.now() - self.timestamp
-        if delta.total_seconds() / 3600 < hours_delta:
+        if delta.total_seconds() / 3600 > hours_delta:
             return True
         return False
 
