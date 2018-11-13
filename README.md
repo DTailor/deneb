@@ -1,5 +1,13 @@
 Spotify user followed artists for new daily releases tracker
 
+### db
+
+ - `createdb deneb`
+ - `psql`
+ - `create database deneb`
+ - `CREATE USER voyager with PASSWORD "<password>";`
+ - `grant ALL ON DATABASE deneb TO voyager ;`
+
 
 ### Set up
  - `mkvirtualenv danube --python=python3`

@@ -1,20 +1,19 @@
 """Module to handle artist related updates"""
 from spotipy import Spotify
 
-from db import Album, Artist, Market  # pylint: disable=import-error
+from db import Album, Artist, Market
 from tools import clean, generate_release_date, grouper, is_present
 from logger import get_logger
 
 _LOGGER = get_logger(__name__)
 
-# pylint: disable=W1203
 
 def fetch_all(sp_client: Spotify, data: dict) -> list:
     """iterates till gets all the albums"""
     contents = []
     while data:
         contents.extend(data["items"])
-        data = sp_client.next(data)
+        data = sp_client.next(data)                         # noqa: B305
     return contents
 
 
@@ -33,7 +32,6 @@ def fetch_albums(
             raise
         albums = fetch_albums(artist, True)
     return albums
-
 
 
 def fetch_detailed_album(sp_client: Spotify, albums: Album) -> dict:
@@ -74,7 +72,7 @@ def get_or_create_album(
     created = False
     try:
         db_album = Album.get(spotify_id=album['id'])
-    except:
+    except Exception:
         release_date = generate_release_date(
             album['release_date'],
             album['release_date_precision']
@@ -92,7 +90,7 @@ def get_or_create_market(marketname: str, dry_run: bool = False) -> Market:
     """Retrieve or init marketplace instance"""
     try:
         market = Market.get(Market.name == marketname)
-    except:
+    except Exception:
         market = Market.save_to_db(market_name=marketname, no_db=dry_run)
 
     return market
@@ -174,12 +172,19 @@ def update_artist_albums(
 
     return new_inserts
 
+
 def get_new_releases(sp_client: Spotify, dry_run: bool = False) -> None:
     """update artists with released albums"""
+    updated_nr = 0
+    albums_nr = 0
     for artist in Artist.select():
-        _LOGGER.info(f"start update for {artist}")
-        new_additions = update_artist_albums(sp_client, artist, dry_run)
-        if new_additions:
-            _LOGGER.info(f"NEW ALBUMS fetched for {artist}")
-            for album in new_additions:
-                _LOGGER.info(f"{album}")
+        if artist.can_update():
+            _LOGGER.info(f"start update for {artist}")
+            new_additions = update_artist_albums(sp_client, artist, dry_run)
+            if new_additions:
+                _LOGGER.info(f"{len(new_additions)} fetched for {artist}")
+                albums_nr += len(new_additions)
+            artist.update_timestamp()
+            updated_nr += 1
+
+    _LOGGER.info(f"fetched {albums_nr} for {updated_nr} artists")
