@@ -2,23 +2,23 @@
 
 from itertools import zip_longest
 
-from db import Artist  # pylint: disable=import-error
+from db import Artist
 from logger import get_logger
-from tools import grouper  # pylint: disable=import-error
+from tools import grouper
 
 _LOGGER = get_logger(__name__)
 
 
-def fetch_artists(sp_client):
+def fetch_artists(sp):
     """fetch user followed artists"""
     artists = list()
-    artists_data = sp_client.current_user_followed_artists(limit=50)
+    artists_data = sp.client.current_user_followed_artists(limit=50)
 
     while True:
         if not artists_data["artists"]["next"]:
             break
         artists.extend(artists_data["artists"]["items"])
-        artists_data = sp_client.next(artists_data["artists"])
+        artists_data = sp.client.next(artists_data["artists"])          # noqa:B305
 
     clean_artists = list({v["id"]: v for v in artists}.values())
     return clean_artists
@@ -39,12 +39,12 @@ def extract_lost_follows_artists(followed_artists, current_following):
     return lost_follows
 
 
-def check_follows(sp_client, artists):
+def check_follows(sp, artists):
     """check with spotify api if artists are followed"""
     lost_follows = []
     for batch in grouper(50, artists):
         artists_ids = ",".join([a.spotify_id for a in batch if a is not None])
-        result = sp_client._get(  # pylint: disable=protected-access
+        result = sp.client._get(
             "me/following/contains", type="artist", ids=artists_ids
         )
         for artist, is_followed in zip_longest(batch, result, fillvalue=None):
@@ -55,9 +55,9 @@ def check_follows(sp_client, artists):
     return lost_follows
 
 
-def fetch_user_followed_artists(user, sp_client):
+def fetch_user_followed_artists(user, sp):
     """fetch artists followed by user"""
-    followed_artists = fetch_artists(sp_client)
+    followed_artists = fetch_artists(sp)
     following_ids = [a.spotify_id for a in user.following]
 
     # followed_artaists - following_ids = new follows
@@ -73,7 +73,7 @@ def fetch_user_followed_artists(user, sp_client):
     lost_follows_db = extract_lost_follows_artists(followed_artists, user.following)
     # add second unfollow verification
     # spotify might not return the artist
-    lost_follows_db_clean = check_follows(sp_client, lost_follows_db)
+    lost_follows_db_clean = check_follows(sp, lost_follows_db)
     user.remove_follows(lost_follows_db_clean)
     lost_follows_str = ", ".join(str(a) for a in lost_follows_db_clean)
     _LOGGER.info(f"lost follows for {user} ({len(lost_follows_db_clean)}): {lost_follows_str}")
