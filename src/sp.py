@@ -16,7 +16,13 @@ assert os.environ['SPOTIPY_CLIENT_SECRET']
 assert os.environ['SPOTIPY_REDIRECT_URI']
 
 _SPOTI_CACHE = weakref.WeakValueDictionary()
-
+_SP_SCOPE = ' '.join([
+    'user-follow-read',
+    'user-read-private',
+    'playlist-modify-public',
+    'playlist-modify-private'
+    ]
+)
 _LOGGER = get_logger(__name__)
 
 
@@ -24,7 +30,7 @@ def fetch_token(username):
     """gen an access token"""
     token = util.prompt_for_user_token(
         username=username,
-        scope='user-follow-read user-read-private playlist-modify-public',
+        scope=_SP_SCOPE,
         client_id=os.environ['SPOTIPY_CLIENT_ID'],
         client_secret=os.environ['SPOTIPY_CLIENT_SECRET'],
         redirect_uri=os.environ['SPOTIPY_REDIRECT_URI']
