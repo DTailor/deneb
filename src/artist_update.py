@@ -2,26 +2,17 @@
 from spotipy import Spotify
 
 from db import Album, Artist, Market
-from tools import clean, generate_release_date, grouper, is_present
+from tools import clean, generate_release_date, grouper, is_present, fetch_all
 from logger import get_logger
 
 _LOGGER = get_logger(__name__)
-
-
-def fetch_all(sp: Spotify, data: dict) -> list:
-    """iterates till gets all the albums"""
-    contents = []
-    while data:
-        contents.extend(data["items"])
-        data = sp.client.next(data)                         # noqa: B305
-    return contents
 
 
 def fetch_albums(
         sp: Spotify,
         artist: Artist,
         retry: bool = False
-) -> [Album]:
+) -> [dict]:
     """fetches artist albums from spotify"""
     try:
         data = sp.client.artist_albums(artist.spotify_id, limit=50)
