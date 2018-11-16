@@ -1,7 +1,8 @@
 """Helper tools"""
 import datetime
 from itertools import zip_longest
-from typing import Optional, List
+from typing import List, Optional
+
 from spotipy import Spotify
 
 
