@@ -1,9 +1,11 @@
 """Module to handle artist related updates"""
+from typing import Iterable, List, Optional, Tuple
+
 from spotipy import Spotify
 
 from db import Album, Artist, Market
-from tools import clean, generate_release_date, grouper, is_present, fetch_all
 from logger import get_logger
+from tools import clean, fetch_all, generate_release_date, grouper, is_present
 
 _LOGGER = get_logger(__name__)
 
@@ -12,7 +14,7 @@ def fetch_albums(
         sp: Spotify,
         artist: Artist,
         retry: bool = False
-) -> [dict]:
+) -> List[Optional[dict]]:
     """fetches artist albums from spotify"""
     try:
         data = sp.client.artist_albums(artist.spotify_id, limit=50)
@@ -25,7 +27,7 @@ def fetch_albums(
     return albums
 
 
-def fetch_detailed_album(sp: Spotify, albums: Album) -> dict:
+def fetch_detailed_album(sp: Spotify, albums: Album) -> Iterable[dict]:
     """Fetch detailed album view from spotify for a simplified album list"""
     for albums_chunk in grouper(20, albums):
         albums_chunk = clean(albums_chunk)
@@ -41,7 +43,7 @@ def is_in_artists_list(artist: Artist, item: dict) -> bool:
 
 def get_featuring_songs(
         sp: Spotify, artist: Artist, album: dict
-) -> [dict]:
+) -> List[dict]:
     """get feature tracks from an album with the artist"""
     tracks = fetch_all(sp, album['tracks'])
     feature_tracks = []
@@ -89,7 +91,7 @@ def get_or_create_market(marketname: str, dry_run: bool = False) -> Market:
 
 def update_album_marketplace(
         album: Album,
-        new_marketplace_ids: [str],
+        new_marketplace_ids: Iterable[str],
         dry_run: bool = False
 ) -> None:
     """Update an album markeplaces with the newly fetched ones"""
@@ -113,12 +115,12 @@ def update_album_marketplace(
 
 
 def sync_with_db(
-        albums: [dict],
+        albums: List[dict],
         artist: Artist,
         dry_run: bool = False
-) -> [Album]:
+) -> Tuple[List[Album], List[Album]]:
     """Adds new albums to db, and returns db instances and new inserts"""
-    db_albums = []
+    db_albums = []      # type: list
     new_inserts = []
 
     for album in albums:
@@ -142,10 +144,9 @@ def update_artist_albums(
         sp: Spotify,
         artist: Artist,
         dry_run: bool = False
-) -> None:
+) -> List[dict]:
     """update artist albums by adding them to the db"""
     albums = fetch_albums(sp, artist)
-    _LOGGER.info(f"fetched {len(albums)} albums for {artist}")
     processed_albums = []
     for detailed_album in fetch_detailed_album(sp, albums):
         if not is_in_artists_list(artist, detailed_album):
