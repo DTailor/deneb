@@ -1,11 +1,11 @@
 """Helper tools"""
 import datetime
 from itertools import zip_longest
-from typing import Optional
+from typing import Optional, List
 from spotipy import Spotify
 
 
-def grouper(n, iterable, padvalue=None):                                           # pylint: disable=C0103
+def grouper(n, iterable, padvalue=None):                        # pylint: disable=C0103
     "grouper(3, 'abcdefg', 'x') --> ('a','b','c'), ('d','e','f'), ('g','x','x')"
     return zip_longest(*[iter(iterable)]*n, fillvalue=padvalue)
 
@@ -15,12 +15,11 @@ def clean(iterable):
     return [a for a in iterable if a]
 
 
-
-def is_present(value: str, items: [dict], search_by: str) -> Optional[dict]:
+def is_present(value: str, items: List[dict], search_by: str) -> dict:
     """
     utility to check if value is present in a list of values from a dict by key
     """
-    found = None
+    found = dict()      # type: dict
     for item in items:
         if value == item[search_by]:
             found = item
@@ -38,9 +37,9 @@ def generate_release_date(date: str, precision: str) -> datetime.datetime:
         '{}{}'.format(date, suffix[precision]), '%Y-%m-%d')
 
 
-def fetch_all(sp: Spotify, data: dict) -> list:
+def fetch_all(sp: Spotify, data: dict) -> List[Optional[dict]]:
     """iterates till gets all the albums"""
-    contents = []
+    contents = []   # type: list
     while data:
         contents.extend(data["items"])
         data = sp.client.next(data)                         # noqa: B305
