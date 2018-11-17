@@ -2,7 +2,6 @@
 
 import os
 import weakref
-from enum import Enum
 
 import spotipy
 from spotipy import util
@@ -15,7 +14,7 @@ assert os.environ['SPOTIPY_CLIENT_ID']
 assert os.environ['SPOTIPY_CLIENT_SECRET']
 assert os.environ['SPOTIPY_REDIRECT_URI']
 
-_SPOTI_CACHE = weakref.WeakValueDictionary()
+_SPOTI_CACHE = weakref.WeakValueDictionary()    # type: weakref.WeakValueDictionary
 _SP_SCOPE = ' '.join([
     'user-follow-read',
     'user-read-private',

@@ -6,7 +6,7 @@ from typing import List, Optional
 from spotipy import Spotify
 
 
-def grouper(n, iterable, padvalue=None):                        # pylint: disable=C0103
+def grouper(n, iterable, padvalue=None):
     "grouper(3, 'abcdefg', 'x') --> ('a','b','c'), ('d','e','f'), ('g','x','x')"
     return zip_longest(*[iter(iterable)]*n, fillvalue=padvalue)
 
