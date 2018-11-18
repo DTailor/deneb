@@ -47,7 +47,6 @@ def get_sp_client(username, token=None):
     """returns new sp client plus the token for it"""
     if token is None:
         token = fetch_token(username)
-        _LOGGER.info(f"{username}: NEW TOKEN FETCHED: {token}")
 
     if token in _SPOTI_CACHE:
         sp = _SPOTI_CACHE[token]
@@ -58,13 +57,12 @@ def get_sp_client(username, token=None):
     try:
         # check client stil good
         sp.client.current_user()
-    except SpotifyException:
+    except SpotifyException as exc:
         if token in _SPOTI_CACHE:
             del _SPOTI_CACHE[token]
-        _LOGGER.warning(f"{username}: TOKEN EXPIRED")
+        _LOGGER.warning(f"bad token for <{username}>: {exc}")
         # token may expire, ask for new
         token = fetch_token(username)
-        _LOGGER.info(f"{username}: NEW TOKEN FETCHED: {token}")
         sp_client = spotipy.Spotify(auth=token)
         sp = Spotter(username, sp_client)
         _SPOTI_CACHE[token] = sp
