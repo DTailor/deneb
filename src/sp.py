@@ -6,7 +6,7 @@ import weakref
 import spotipy
 from spotipy import util
 from spotipy.client import SpotifyException
-
+from typing import Tuple
 from logger import get_logger
 
 # check spotify environ keys are set
@@ -25,7 +25,7 @@ _SP_SCOPE = ' '.join([
 _LOGGER = get_logger(__name__)
 
 
-def fetch_token(username):
+def fetch_token(username: str) -> str:
     """gen an access token"""
     token = util.prompt_for_user_token(
         username=username,
@@ -38,12 +38,12 @@ def fetch_token(username):
 
 
 class Spotter:
-    def __init__(self, username, client):
+    def __init__(self, username: str, client: spotipy.Spotify) -> None:
         self.username = username
         self.client = client
 
 
-def get_sp_client(username, token=None):
+def get_sp_client(username: str, token: str = None)-> Tuple[spotipy.Spotify, str]:
     """returns new sp client plus the token for it"""
     if token is None:
         token = fetch_token(username)
