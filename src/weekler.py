@@ -3,6 +3,7 @@ import calendar
 from datetime import datetime as dt
 from math import ceil
 from typing import List, Optional
+from db import get_or_create_user
 
 from logger import get_logger
 from sp import Spotter, get_sp_client
@@ -57,8 +58,15 @@ def main(username, fb_id):
     playlist = is_present(playlist_name, user_playlists, 'name')
     if not playlist:
         playlist = sp.client.user_playlist_create(sp.username, playlist_name)
-    # tracks = get_tracks(sp, playlist)
+    
+    user, _ = get_or_create_user(fb_id)
+    today = dt.now()
+    monday_date = today.day - today.weekday()
+    monday = today.replace(day=monday_date)
+    week_tracks_db = user.released_from_weekday(monday)
+    for track in week_tracks_db:
+        try:
+            sp.client.user_playlist_add_tracks(sp.username, playlist['uri'], [track.uri])
+        except Exception as exc:
+            _LOGGER.exception(f"trying to add {track}: {track.id}; failed: {exc}")
     return
-
-
-main('dann.croitoru', 'dann.croitoru1111')

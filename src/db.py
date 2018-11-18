@@ -1,6 +1,7 @@
 """Database handling."""
 import datetime
 import os
+from typing import List
 
 from peewee import (
     BooleanField, CharField, CompositeKey, DateField, DateTimeField,
@@ -115,11 +116,14 @@ class Album(Model):
     class Meta:
         database = get_db()
 
+    @property
+    def uri(self):
+        return f"spotify:{self.type}:{self.spotify_id}"
+
     def __str__(self):
         artists = [a.name for a in self.artists()]
-        album_type = 'track' if self.type == 'track' else 'album'
-        return '<spotify:{}:{}> {} - {} ({})'.format(
-            album_type, self.spotify_id, ', '.join(artists), self.name, self.release)
+        return '<{}> - {} ({})'.format(
+            self.uri, ', '.join(artists), self.name, self.release)
 
     def update_timestamp(self):
         self.timestamp = datetime.datetime.now()
@@ -188,6 +192,7 @@ class Album(Model):
             )
         return db_album
 
+
 class AlbumArtist(Model):
     album = ForeignKeyField(Album)
     artist = ForeignKeyField(Artist)
@@ -213,10 +218,13 @@ class User(Model):
     fb_id = CharField()
     market = ForeignKeyField(Market, null=True)
     initialised = BooleanField(default=False)
-    following = ManyToManyField(Artist)
+    following = ManyToManyField(Artist, backref="followers")
 
     def __str__(self):
         return f"<user:{self.fb_id}:{self.market.name}>"
+
+    def following_ids(self: 'User') -> List[Artist]:
+        return self.following.select(Artist.id)
 
     def get_seen_albums(self):
         return (
@@ -228,7 +236,7 @@ class User(Model):
             .where(SeenAlbum.user == self)
         )
 
-    def on_date_release(self, date):
+    def released_from_weekday(self, date):
         return (
             Album
             .select()
@@ -239,11 +247,11 @@ class User(Model):
                 AlbumArtist, on=(AlbumArtist.album_id == Album.id)
             )
             .where(
-                AvailableMarket.market_id == self.market_id,
-                AlbumArtist.artist << self.following,
+                AvailableMarket.market == self.market,
+                AlbumArtist.artist_id << self.following_ids(),
                 (Album.release.year == date.year) &
                 (Album.release.month == date.month) &
-                (Album.release.day == date.day)
+                (Album.release.day >= date.day)
             )
             .distinct()
         )
@@ -257,55 +265,25 @@ class User(Model):
             Album
             .select()
             .join(
-                AvailableMarket, on=(AvailableMarket.album_id == Album.id)
-            )
-            .join(
                 AlbumArtist, on=(AlbumArtist.album_id == Album.id)
             )
-            .where(
-                AvailableMarket.market_id == self.market_id,
-                AlbumArtist.artist << self.following,
-                ~(AlbumArtist.album << self.get_seen_albums()),
-                # (Album.release.year == today.year) &
-                # (Album.release.month == today.month) &
-                # (Album.release.day == today.day)
-            )
-            .distinct()
+            .where()
         )
 
     def get_all_albums(self):
         return (
             Album
-            .select()
+            .select(Album.id)
             .join(
                 AlbumArtist, on=(AlbumArtist.album_id == Album.id)
             )
             .where(
-                AlbumArtist.artist << self.following
+                AlbumArtist.artist_id << self.following_ids()
             )
-            .distinct()
-        )
-
-    def get_all_albums_market(self):
-        return (
-            Album
-            .select()
-            .join(
-                AvailableMarket, on=(AvailableMarket.album_id == Album.id)
-            )
-            .join(
-                AlbumArtist, on=(AlbumArtist.album_id == Album.id)
-            )
-            .where(
-                AvailableMarket.market_id == self.market_id,
-                AlbumArtist.artist << self.following
-            )
-            .distinct()
         )
 
     def add_seen_album(self, album):
         SeenAlbum.create(user=self, album=album)
-
 
     def add_follows(self, artists):
         for artist in artists:
@@ -313,8 +291,7 @@ class User(Model):
 
     def remove_follows(self, artists):
         for artist in artists:
-            self.following.remove(artists)
-
+            self.following.remove(artist)
 
     class Meta:
         database = get_db()
