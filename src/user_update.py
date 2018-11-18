@@ -66,8 +66,6 @@ def fetch_user_followed_artists(user, sp):
     new_follows_db = [Artist.to_object(a) for a in new_follows]
 
     user.add_follows(new_follows_db)
-    new_follows_str = ", ".join(str(a) for a in new_follows_db)
-    _LOGGER.info(f"new follows for {user} ({len(new_follows_db)}): {new_follows_str}")
 
     # following_ids - followed_artists = lost follows
     lost_follows_db = extract_lost_follows_artists(followed_artists, user.following)
@@ -75,5 +73,5 @@ def fetch_user_followed_artists(user, sp):
     # spotify might not return the artist
     lost_follows_db_clean = check_follows(sp, lost_follows_db)
     user.remove_follows(lost_follows_db_clean)
-    lost_follows_str = ", ".join(str(a) for a in lost_follows_db_clean)
-    _LOGGER.info(f"lost follows for {user} ({len(lost_follows_db_clean)}): {lost_follows_str}")
+
+    return new_follows_db, lost_follows_db
