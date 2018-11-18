@@ -165,18 +165,16 @@ def update_artist_albums(
     return new_inserts
 
 
-def get_new_releases(sp: Spotify, dry_run: bool = False) -> None:
+def get_new_releases(sp: Spotify, dry_run: bool = False) -> Tuple[int, int]:
     """update artists with released albums"""
     updated_nr = 0
     albums_nr = 0
     for artist in Artist.select():
         if artist.can_update():
-            _LOGGER.info(f"start update for {artist}")
             new_additions = update_artist_albums(sp, artist, dry_run)
             if new_additions:
-                _LOGGER.info(f"{len(new_additions)} fetched for {artist}")
                 albums_nr += len(new_additions)
             artist.update_timestamp()
             updated_nr += 1
 
-    _LOGGER.info(f"fetched {albums_nr} for {updated_nr} artists")
+    return albums_nr, updated_nr

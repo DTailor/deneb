@@ -74,4 +74,4 @@ def fetch_user_followed_artists(user, sp):
     lost_follows_db_clean = check_follows(sp, lost_follows_db)
     user.remove_follows(lost_follows_db_clean)
 
-    return new_follows_db, lost_follows_db
+    return new_follows_db, lost_follows_db_clean

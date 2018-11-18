@@ -1,7 +1,7 @@
 """Database handling."""
 import datetime
 import os
-from typing import List
+from typing import List, Tuple
 
 from peewee import (
     BooleanField, CharField, CompositeKey, DateField, DateTimeField,
@@ -17,23 +17,28 @@ assert os.environ['DB_PASSWORD']
 _DB = None
 _LOGGER = get_logger(__name__)
 
-def get_db():
+
+def get_db() -> PostgresqlDatabase:
     global _DB
     if _DB is None:
-        _DB = PostgresqlDatabase(os.environ['DB_NAME'], user=os.environ['DB_USER'], password=os.environ['DB_PASSWORD'])
+        _DB = PostgresqlDatabase(
+            os.environ['DB_NAME'],
+            user=os.environ['DB_USER'],
+            password=os.environ['DB_PASSWORD']
+        )
     return _DB
 
 
-def get_or_create_user(fb_id):
+def get_or_create_user(fb_id: str, username: str) -> Tuple['User', bool]:
     created = False
     try:
         user = User.get(User.fb_id == fb_id)
     except User.DoesNotExist:
-        user = User.create(fb_id=fb_id)
-        _LOGGER.info(f"new user created in db: {user}")
+        user = User.create(fb_id=fb_id, username=username)
         created = True
     except Exception as exc:
         _LOGGER.exception(f"user {fb_id} failed to create {exc}")
+        raise
 
     return user, created
 
@@ -71,7 +76,7 @@ class Artist(Model):
         db_artist = None
         try:
             db_artist = cls.get(cls.spotify_id == artist['id'])
-        except:
+        except Exception:
             db_artist = cls(
                 name=artist['name'], spotify_id=artist['id'])
             db_artist.save()
@@ -92,7 +97,7 @@ class Market(Model):
         market = None
         try:
             market = cls.get(cls.name == market_name)
-        except:
+        except Exception:
             market = cls.create(name=market_name)
             market.save()
 
@@ -105,6 +110,7 @@ class Market(Model):
         else:
             db_market = cls.create(name=market_name)
         return db_market
+
 
 class Album(Model):
     name = CharField()
@@ -179,7 +185,7 @@ class Album(Model):
     def save_to_db(
             cls, name, release_date, a_type,
             spotify_id, no_db=False
-        ):
+    ):
         if no_db:
             db_album = cls(
                 name=name, release=release_date,
@@ -215,13 +221,14 @@ class AvailableMarket(Model):
 
 
 class User(Model):
+    username = CharField()
     fb_id = CharField()
     market = ForeignKeyField(Market, null=True)
     initialised = BooleanField(default=False)
     following = ManyToManyField(Artist, backref="followers")
 
-    def __str__(self):
-        return f"<user:{self.fb_id}:{self.market.name}>"
+    def __str__(self) -> str:
+        return f"<user:{self.username}:{self.fb_id}:{self.market.name}>"
 
     def following_ids(self: 'User') -> List[Artist]:
         return self.following.select(Artist.id)
