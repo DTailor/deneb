@@ -19,6 +19,7 @@ jupyter = "*"
 "flake8-mypy" = "*"
 jedi = "*"
 mypy = "*"
+rope = "*"
 
 [requires]
 python_version = "3.7"
