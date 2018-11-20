@@ -5,7 +5,7 @@ from itertools import chain
 from math import ceil
 from typing import List, Optional, Tuple
 
-from db import Album, get_or_create_user
+from db import Album, User
 from logger import get_logger
 from sp import Spotter, get_sp_client
 from tools import DefaultOrderedDict, clean, fetch_all, grouper, is_present
@@ -97,41 +97,36 @@ def generate_tracks_to_add(
     return tracks["album"], tracks["track"]
 
 
-def main(username, fb_id):
+def update_users_playlists():
     _LOGGER.info('')
     _LOGGER.info('------------ RUN ---------------')
     _LOGGER.info('')
+    for user in User.select():
+        # fetch new releases for current user
+        today = dt.now()
+        monday_date = today.day - today.weekday()
+        monday = today.replace(day=monday_date)
+        week_tracks_db = user.released_from_weekday(monday)
 
-    # fetch new releases for current user
-    user, _ = get_or_create_user(fb_id)
-    today = dt.now()
-    monday_date = today.day - today.weekday()
-    monday = today.replace(day=monday_date)
-    week_tracks_db = user.released_from_weekday(monday)
+        sp, token = get_sp_client(user.username)
+        playlist_name = generate_playlist_name()
 
-    sp, token = get_sp_client(username)
-    playlist_name = generate_playlist_name()
+        # fetch or create playlist
+        user_playlists = fetch_user_playlists(sp)
+        _LOGGER.info(f"updating playlist: {playlist_name} for <{user}>")
 
-    # fetch or create playlist
-    user_playlists = fetch_user_playlists(sp)
-    playlist = is_present(playlist_name, user_playlists, 'name')
-    if not playlist:
-        playlist = sp.client.user_playlist_create(sp.username, playlist_name)
-    playlist_tracks = get_tracks(sp, playlist)
-    albums, tracks = generate_tracks_to_add(sp, week_tracks_db, playlist_tracks)
-    # for track_id, track in tracks:
-    #     # at the moment add every single track separately
-    #     # there are some wrong ids on the way which break the
-    #     # whole batch of ids
-    #     # TODO: validate somehow the ids from the batch
-    #     try:
+        playlist = is_present(playlist_name, user_playlists, 'name')
+        if not playlist:
+            playlist = sp.client.user_playlist_create(sp.username, playlist_name)
+        playlist_tracks = get_tracks(sp, playlist)
+        albums, tracks = generate_tracks_to_add(sp, week_tracks_db, playlist_tracks)
 
-    for album_ids in grouper(100, chain(albums.keys(), tracks.keys())):
-        album_ids = clean(album_ids)
-        try:
-            sp.client.user_playlist_add_tracks(sp.username, playlist['uri'], album_ids)
-        except Exception as exc:
-            _LOGGER.exception(f"add to playlist '{album_ids}' failed with: {exc}")
+        for album_ids in grouper(100, chain(albums.keys(), tracks.keys())):
+            album_ids = clean(album_ids)
+            try:
+                sp.client.user_playlist_add_tracks(sp.username, playlist['uri'], album_ids)
+            except Exception as exc:
+                _LOGGER.exception(f"add to playlist '{album_ids}' failed with: {exc}")
 
 
-main('dann.croitoru', 'dann.croitoru1111')
+update_users_playlists()
