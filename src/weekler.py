@@ -99,7 +99,7 @@ def generate_tracks_to_add(
 
 def update_users_playlists():
     _LOGGER.info('')
-    _LOGGER.info('------------ RUN ---------------')
+    _LOGGER.info('------------ RUN USERS PLAYLIST UPDATE ---------------')
     _LOGGER.info('')
     for user in User.select():
         # fetch new releases for current user
@@ -113,7 +113,7 @@ def update_users_playlists():
 
         # fetch or create playlist
         user_playlists = fetch_user_playlists(sp)
-        _LOGGER.info(f"updating playlist: {playlist_name} for <{user}>")
+        _LOGGER.info(f"updating playlist: <{playlist_name}> for {user}")
 
         playlist = is_present(playlist_name, user_playlists, 'name')
         if not playlist:
