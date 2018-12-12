@@ -15,7 +15,7 @@ def update_users_follows():
     _LOGGER.info('')
     for user in User.select():
         _LOGGER.info(f"Updating {user} ...")
-        sp, token = get_sp_client(user.username)
+        sp, _ = get_sp_client(user.username, user.spotify_token)
         user.update_market(sp.client.current_user())
 
         new_follows, lost_follows = fetch_user_followed_artists(user, sp)
