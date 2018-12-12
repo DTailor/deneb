@@ -228,6 +228,7 @@ class User(Model):
     initialized = BooleanField(default=False)
     following = ManyToManyField(Artist, backref="followers")
     spotify_token = CharField(max_length=1000)
+    state_id = CharField()
 
     def __str__(self) -> str:
         return f"<user:{self.username}:{self.fb_id}:{self.market.name}>"
