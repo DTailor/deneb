@@ -24,7 +24,8 @@ def get_db() -> PostgresqlDatabase:
         _DB = PostgresqlDatabase(
             os.environ['DB_NAME'],
             user=os.environ['DB_USER'],
-            password=os.environ['DB_PASSWORD']
+            password=os.environ['DB_PASSWORD'],
+            host=os.environ['DB_HOST'],
         )
     return _DB
 
@@ -224,8 +225,9 @@ class User(Model):
     username = CharField()
     fb_id = CharField()
     market = ForeignKeyField(Market, null=True)
-    initialised = BooleanField(default=False)
+    initialized = BooleanField(default=False)
     following = ManyToManyField(Artist, backref="followers")
+    spotify_token = CharField(max_length=1000)
 
     def __str__(self) -> str:
         return f"<user:{self.username}:{self.fb_id}:{self.market.name}>"
