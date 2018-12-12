@@ -231,7 +231,7 @@ class User(Model):
     state_id = CharField()
 
     def __str__(self) -> str:
-        return f"<user:{self.username}:{self.fb_id}:{self.market.name}>"
+        return f"<user:{self.fb_id}:{self.username}>"
 
     def following_ids(self: 'User') -> List[Artist]:
         return self.following.select(Artist.id)
@@ -305,9 +305,6 @@ class User(Model):
 
     class Meta:
         database = get_db()
-
-    def __repr__(self):
-        return '<{}; following: {} artists>'.format(self.fb_id, len(self.following))
 
 
 ArtistFollowers = User.following.get_through_model()
