@@ -94,6 +94,7 @@ def generate_tracks_to_add(
                 # put all <= 3 track albums to tracks list
                 track_type = "track"
             tracks[track_type][track_id].append(track)
+
     return tracks["album"], tracks["track"]
 
 
@@ -108,7 +109,7 @@ def update_users_playlists():
         monday = today.replace(day=monday_date)
         week_tracks_db = user.released_from_weekday(monday)
 
-        sp, token = get_sp_client(user.username)
+        sp, _ = get_sp_client(user.username, user.spotify_token)
         playlist_name = generate_playlist_name()
 
         # fetch or create playlist
