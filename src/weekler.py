@@ -4,12 +4,18 @@ import os
 from datetime import datetime as dt
 from itertools import chain
 from math import ceil
+from pathlib import Path
 from typing import List, Optional, Tuple
+
+from dotenv import load_dotenv
 
 from db import Album, User
 from logger import get_logger
 from sp import Spotter, get_client
 from tools import DefaultOrderedDict, clean, fetch_all, grouper, is_present
+
+env_path = Path('..') / '.env'
+load_dotenv(dotenv_path=env_path)
 
 _LOGGER = get_logger(__name__)
 

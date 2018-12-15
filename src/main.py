@@ -2,12 +2,18 @@
 
 import json
 import os
+from pathlib import Path
+
+from dotenv import load_dotenv
 
 from artist_update import get_new_releases
 from db import User
 from logger import get_logger
 from sp import get_client
 from user_update import fetch_user_followed_artists
+
+env_path = Path('..') / '.env'
+load_dotenv(dotenv_path=env_path)
 
 _LOGGER = get_logger(__name__)
 

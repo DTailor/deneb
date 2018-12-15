@@ -9,6 +9,7 @@ peewee = "*"
 "psycopg2-binary" = "*"
 logzero = "*"
 requests = "*"
+python-dotenv = "*"
 
 [dev-packages]
 ipdb = "*"

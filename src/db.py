@@ -1,8 +1,10 @@
 """Database handling."""
 import datetime
 import os
+from pathlib import Path
 from typing import List, Tuple
 
+from dotenv import load_dotenv
 from peewee import (
     BooleanField, CharField, CompositeKey, DateField, DateTimeField,
     ForeignKeyField, ManyToManyField, Model, PostgresqlDatabase
@@ -10,9 +12,9 @@ from peewee import (
 
 from logger import get_logger
 
-assert os.environ['DB_NAME']
-assert os.environ['DB_USER']
-assert os.environ['DB_PASSWORD']
+env_path = Path('..') / '.env'
+load_dotenv(dotenv_path=env_path)
+
 
 _DB = None
 _LOGGER = get_logger(__name__)
