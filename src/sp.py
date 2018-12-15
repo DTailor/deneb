@@ -1,8 +1,4 @@
 """Spotify connection handling"""
-
-import json
-from typing import Tuple
-
 from spotipy.client import Spotify
 from spotipy.oauth2 import SpotifyClientCredentials, SpotifyOAuth
 

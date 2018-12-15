@@ -103,6 +103,7 @@ def generate_tracks_to_add(
 
     return tracks["album"], tracks["track"]
 
+
 def update_users_playlists():
     _LOGGER.info('')
     _LOGGER.info('------------ RUN USERS PLAYLIST UPDATE ---------------')

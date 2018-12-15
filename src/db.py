@@ -2,12 +2,12 @@
 import datetime
 import json
 import os
-from typing import List, Tuple
+from typing import List
 
 from dotenv import load_dotenv
 from peewee import (
-    BooleanField, CharField, CompositeKey, DateField, DateTimeField,
-    ForeignKeyField, ManyToManyField, Model, PostgresqlDatabase
+    CharField, CompositeKey, DateField, DateTimeField, ForeignKeyField,
+    ManyToManyField, Model, PostgresqlDatabase
 )
 
 from logger import get_logger
@@ -217,7 +217,6 @@ class User(DenebModel):
 
     def following_ids(self: 'User') -> List[Artist]:
         return self.following.select(Artist.id)
-
 
     def released_from_weekday(self, date):
         return (
