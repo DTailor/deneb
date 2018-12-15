@@ -37,8 +37,8 @@ def generate_playlist_name() -> str:
 def fetch_user_playlists(sp: Spotter) -> List[Optional[dict]]:
     """Return user playlists"""
     playlists = []  # type: List[Optional[dict]]
-    sp.client.user_playlist(sp.username)
-    data = sp.client.user_playlists(sp.username)
+    sp.client.user_playlist(sp.userdata['id'])
+    data = sp.client.user_playlists(sp.userdata['id'])
     playlists = fetch_all(sp, data)
     return playlists
 
@@ -46,7 +46,7 @@ def fetch_user_playlists(sp: Spotter) -> List[Optional[dict]]:
 def get_tracks(sp: Spotter, playlist: dict) -> Optional[List[dict]]:
     """return playlist tracks"""
     tracks = sp.client.user_playlist(
-        sp.username, playlist['id'], fields="tracks,next")['tracks']
+        sp.userdata['id'], playlist['id'], fields="tracks,next")['tracks']
     return fetch_all(sp, tracks)
 
 
@@ -115,7 +115,8 @@ def update_users_playlists():
         monday = today.replace(day=monday_date)
         week_tracks_db = user.released_from_weekday(monday)
 
-        sp, new_token = get_client(client_id, client_secret, client_redirect_uri, user.spotify_token)
+        sp, new_token = get_client(
+            client_id, client_secret, client_redirect_uri, user.spotify_token)
         user.sync_data(sp)
 
         playlist_name = generate_playlist_name()
@@ -126,14 +127,14 @@ def update_users_playlists():
 
         playlist = is_present(playlist_name, user_playlists, 'name')
         if not playlist:
-            playlist = sp.client.user_playlist_create(sp.username, playlist_name)
+            playlist = sp.client.user_playlist_create(sp.userdata['id'], playlist_name)
         playlist_tracks = get_tracks(sp, playlist)
         albums, tracks = generate_tracks_to_add(sp, week_tracks_db, playlist_tracks)
 
         for album_ids in grouper(100, chain(albums.keys(), tracks.keys())):
             album_ids = clean(album_ids)
             try:
-                sp.client.user_playlist_add_tracks(sp.username, playlist['uri'], album_ids)
+                sp.client.user_playlist_add_tracks(sp.userdata['id'], playlist['uri'], album_ids)
             except Exception as exc:
                 _LOGGER.exception(f"add to playlist '{album_ids}' failed with: {exc}")
         user.sync_data(sp)
