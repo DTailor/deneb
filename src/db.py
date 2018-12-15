@@ -10,8 +10,8 @@ from peewee import (
 )
 
 from logger import get_logger
-load_dotenv()
 
+load_dotenv()
 
 _DB = None
 _LOGGER = get_logger(__name__)
