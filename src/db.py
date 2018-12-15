@@ -76,7 +76,8 @@ class Artist(Model):
     def to_object(cls, artist):
         db_artist = None
         try:
-            db_artist = cls.get(cls.spotify_id == artist['id'])
+            db_artist = cls.get(
+                cls.spotify_id == artist['id'])
         except Exception:
             db_artist = cls(
                 name=artist['name'], spotify_id=artist['id'])
@@ -266,11 +267,11 @@ class User(Model):
             .distinct()
         )
 
-    def sync_data(self, user_data, token):
-        self.market = Market.to_obj(user_data['country'])
+    def sync_data(self, sp):
+        self.market = Market.to_obj(sp.userdata['country'])
+        self.username = sp.userdata['id']
+        self.spotify_token = sp.client.client_credentials_manager.token_info['refresh_token']
         self.initialized = True
-        self.spotify_token = token
-        self.username = user_data['id']
         self.save()
 
     def new_albums(self, date=None, seen=False):

@@ -23,6 +23,7 @@ def get_client(
     client_uri: str,
     refresh_token: str
 ) -> Tuple[Spotify, dict]:
+    """returns a spotter obj with spotipy client"""
     sp_oauth = SpotifyOAuth(client_id, client_secret, client_uri)
     new_token_info = sp_oauth.refresh_access_token(refresh_token)
 

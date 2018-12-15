@@ -11,7 +11,7 @@ _LOGGER = get_logger(__name__)
 
 def fetch_artists(sp):
     """fetch user followed artists"""
-    artists = list()
+    artists = []
     artists_data = sp.client.current_user_followed_artists(limit=50)
 
     while True:
