@@ -1,7 +1,6 @@
 """Database handling."""
 import datetime
 import os
-from pathlib import Path
 from typing import List, Tuple
 
 from dotenv import load_dotenv
@@ -11,9 +10,7 @@ from peewee import (
 )
 
 from logger import get_logger
-
-env_path = Path('..') / '.env'
-load_dotenv(dotenv_path=env_path)
+load_dotenv()
 
 
 _DB = None
