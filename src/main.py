@@ -1,22 +1,38 @@
 """Entry point to deneb spotify watcher"""
 
+import json
+import os
+
 from artist_update import get_new_releases
 from db import User
 from logger import get_logger
-from sp import get_sp_client
+from sp import get_client
 from user_update import fetch_user_followed_artists
 
 _LOGGER = get_logger(__name__)
 
 
 def update_users_follows():
+    # TODO: pass there variables as parameters
+    #       make it a cli tool
+    client_id = os.environ["SPOTIPY_CLIENT_ID"]
+    client_secret = os.environ["SPOTIPY_CLIENT_SECRET"]
+    client_redirect_uri = os.environ["SPOTIPY_REDIRECT_URI"]
     _LOGGER.info('')
     _LOGGER.info('------------ RUN UPDATE ARTISTS ---------------')
     _LOGGER.info('')
     for user in User.select():
         _LOGGER.info(f"Updating {user} ...")
-        sp, _ = get_sp_client(user.username, user.spotify_token)
-        user.update_market(sp.client.current_user())
+        token = user.spotify_token
+
+        # TODO: this shall be removed later. store only refresh token
+        #       from the chatbot
+        if not user.initialized:
+            token = json.loads(token)['refresh_token']
+
+        sp, new_token = get_client(client_id, client_secret, client_redirect_uri, token)
+        user.update_token(new_token["refresh_token"])
+        user.update_market(sp.userdata)
 
         new_follows, lost_follows = fetch_user_followed_artists(user, sp)
 
@@ -32,6 +48,9 @@ def update_users_follows():
         except Exception as exc:
             _LOGGER.exception(f"{sp} client failed. exc: {exc}")
             raise
+        finally:
+            user.update_token(
+                sp.client.client_credentials_manager.token_info["refresh_token"])
 
 
 update_users_follows()

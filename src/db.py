@@ -270,6 +270,11 @@ class User(Model):
         self.market = Market.to_obj(user_data['country'])
         self.save()
 
+    def update_token(self, new_token):
+        self.initialized = True
+        self.spotify_token = new_token
+        self.save()
+
     def new_albums(self, date=None, seen=False):
         return (
             Album
