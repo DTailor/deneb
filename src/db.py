@@ -43,14 +43,15 @@ def get_or_create_user(fb_id: str, username: str) -> Tuple['User', bool]:
 
     return user, created
 
+class DenebModel(Model):
+    class Meta:
+        database = get_db()
 
-class Artist(Model):
+
+class Artist(DenebModel):
     name = CharField()
     spotify_id = CharField(unique=True)
     timestamp = DateTimeField(default=datetime.datetime.now)
-
-    class Meta:
-        database = get_db()  # This model uses the "people.db" database.
 
     def __str__(self):
         return '{}'.format(self.name)
@@ -85,11 +86,8 @@ class Artist(Model):
         return db_artist
 
 
-class Market(Model):
+class Market(DenebModel):
     name = CharField()
-
-    class Meta:
-        database = get_db()
 
     def __repr__(self):
         return self.name
@@ -114,15 +112,12 @@ class Market(Model):
         return db_market
 
 
-class Album(Model):
+class Album(DenebModel):
     name = CharField()
     type = CharField()
     spotify_id = CharField()
     release = DateField(formats='%Y-%m-%d')
     timestamp = DateTimeField(default=datetime.datetime.now)
-
-    class Meta:
-        database = get_db()
 
     @property
     def uri(self):
@@ -201,7 +196,7 @@ class Album(Model):
         return db_album
 
 
-class AlbumArtist(Model):
+class AlbumArtist(DenebModel):
     album = ForeignKeyField(Album)
     artist = ForeignKeyField(Artist)
 
@@ -210,7 +205,7 @@ class AlbumArtist(Model):
         primary_key = CompositeKey('album', 'artist')
 
 
-class AvailableMarket(Model):
+class AvailableMarket(DenebModel):
     album = ForeignKeyField(Album)
     market = ForeignKeyField(Market)
 
@@ -222,7 +217,7 @@ class AvailableMarket(Model):
         return '{} [{}]'.format(self.album.name, self.market.name)
 
 
-class User(Model):
+class User(DenebModel):
     username = CharField()
     fb_id = CharField()
     market = ForeignKeyField(Market, null=True)
@@ -308,19 +303,13 @@ class User(Model):
         for artist in artists:
             self.following.remove(artist)
 
-    class Meta:
-        database = get_db()
-
 
 ArtistFollowers = User.following.get_through_model()
 
 
-class SeenAlbum(Model):
+class SeenAlbum(DenebModel):
     album = ForeignKeyField(Album)
     user = ForeignKeyField(User)
-
-    class Meta:
-        database = get_db()
 
 
 Artist.create_table(fail_silently=True)
