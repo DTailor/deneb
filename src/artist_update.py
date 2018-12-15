@@ -1,5 +1,5 @@
 """Module to handle artist related updates"""
-from typing import Iterable, List, Optional, Tuple
+from typing import Iterable, List, Tuple
 
 from spotipy import Spotify
 
@@ -10,11 +10,7 @@ from tools import clean, fetch_all, generate_release_date, grouper, is_present
 _LOGGER = get_logger(__name__)
 
 
-def fetch_albums(
-        sp: Spotify,
-        artist: Artist,
-        retry: bool = False
-) -> List[Optional[dict]]:
+def fetch_albums(sp: Spotify, artist: Artist, retry: bool = False) -> List[dict]:
     """fetches artist albums from spotify"""
     try:
         data = sp.client.artist_albums(artist.spotify_id, limit=50)
@@ -23,57 +19,53 @@ def fetch_albums(
         if not retry:
             print(type(exc), exc, artist)
             raise
-        albums = fetch_albums(artist, True)
+        albums = fetch_albums(sp, artist, retry=True)
     return albums
 
 
-def fetch_detailed_album(sp: Spotify, albums: Album) -> Iterable[dict]:
+def fetch_detailed_album(sp: Spotify, albums: List[dict]) -> Iterable[dict]:
     """Fetch detailed album view from spotify for a simplified album list"""
     for albums_chunk in grouper(20, albums):
         albums_chunk = clean(albums_chunk)
-        data = sp.client.albums(albums=[a['id'] for a in albums_chunk])
-        for album in data['albums']:
+        data = sp.client.albums(albums=[a["id"] for a in albums_chunk])
+        for album in data["albums"]:
             yield album
 
 
 def is_in_artists_list(artist: Artist, item: dict) -> bool:
     """True if appears in artists list, else False"""
-    return is_present(artist.spotify_id, item['artists'], 'id')
+    return bool(is_present(artist.spotify_id, item["artists"], "id"))
 
 
-def get_featuring_songs(
-        sp: Spotify, artist: Artist, album: dict
-) -> List[dict]:
+def get_featuring_songs(sp: Spotify, artist: Artist, album: dict) -> List[dict]:
     """get feature tracks from an album with the artist"""
-    tracks = fetch_all(sp, album['tracks'])
+    tracks = fetch_all(sp, album["tracks"])
     feature_tracks = []
 
     for track in tracks:
         if is_in_artists_list(artist, track):
             # track has no release date, so grab it
-            track['release_date'] = album['release_date']
-            track['release_date_precision'] = album['release_date_precision']
+            track["release_date"] = album["release_date"]
+            track["release_date_precision"] = album["release_date_precision"]
             feature_tracks.append(track)
     return feature_tracks
 
 
-def get_or_create_album(
-        album: dict,
-        dry_run: bool = False
-) -> Album:
+def get_or_create_album(album: dict, dry_run: bool = False) -> Tuple[bool, Album]:
     """return db instance and create if new, with dry-run"""
     created = False
     try:
-        db_album = Album.get(spotify_id=album['id'])
+        db_album = Album.get(spotify_id=album["id"])
     except Exception:
         release_date = generate_release_date(
-            album['release_date'],
-            album['release_date_precision']
-            )
+            album["release_date"], album["release_date_precision"]
+        )
         db_album = Album.save_to_db(
-            name=album['name'], release_date=release_date,
-            a_type=album['type'], spotify_id=album['id'],
-            no_db=dry_run
+            name=album["name"],
+            release_date=release_date,
+            a_type=album["type"],
+            spotify_id=album["id"],
+            no_db=dry_run,
         )
         created = True
     return created, db_album
@@ -90,9 +82,7 @@ def get_or_create_market(marketname: str, dry_run: bool = False) -> Market:
 
 
 def update_album_marketplace(
-        album: Album,
-        new_marketplace_ids: Iterable[str],
-        dry_run: bool = False
+    album: Album, new_marketplace_ids: Iterable[str], dry_run: bool = False
 ) -> None:
     """Update an album markeplaces with the newly fetched ones"""
     old_markets = [a for a in album.get_markets()]
@@ -115,12 +105,10 @@ def update_album_marketplace(
 
 
 def sync_with_db(
-        albums: List[dict],
-        artist: Artist,
-        dry_run: bool = False
-) -> Tuple[List[Album], List[Album]]:
+    albums: List[dict], artist: Artist, dry_run: bool = False
+) -> List[Album]:
     """Adds new albums to db, and returns db instances and new inserts"""
-    db_albums = []      # type: list
+    db_albums = []  # type: list
     new_inserts = []
 
     for album in albums:
@@ -134,17 +122,15 @@ def sync_with_db(
             db_album.add_artist(artist)
 
         # update it's marketplaces, for availability
-        update_album_marketplace(db_album, album['available_markets'])
+        update_album_marketplace(db_album, album["available_markets"])
         db_album.update_timestamp()
 
-    return db_albums, new_inserts
+    return new_inserts
 
 
 def update_artist_albums(
-        sp: Spotify,
-        artist: Artist,
-        dry_run: bool = False
-) -> List[dict]:
+    sp: Spotify, artist: Artist, dry_run: bool = False
+) -> List[Album]:
     """update artist albums by adding them to the db"""
     albums = fetch_albums(sp, artist)
     processed_albums = []
@@ -160,7 +146,7 @@ def update_artist_albums(
         else:
             processed_albums.append(detailed_album)
 
-    _, new_inserts = sync_with_db(processed_albums, artist, dry_run)
+    new_inserts = sync_with_db(processed_albums, artist, dry_run)
 
     return new_inserts
 

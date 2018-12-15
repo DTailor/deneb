@@ -18,7 +18,7 @@ def fetch_artists(sp):
         artists.extend(artists_data["artists"]["items"])
         if not artists_data["artists"]["next"]:
             break
-        artists_data = sp.client.next(artists_data["artists"])          # noqa:B305
+        artists_data = sp.client.next(artists_data["artists"])  # noqa:B305
 
     clean_artists = list({v["id"]: v for v in artists}.values())
     return clean_artists
@@ -44,9 +44,7 @@ def check_follows(sp, artists):
     lost_follows = []
     for batch in grouper(50, artists):
         artists_ids = ",".join([a.spotify_id for a in batch if a is not None])
-        result = sp.client._get(
-            "me/following/contains", type="artist", ids=artists_ids
-        )
+        result = sp.client._get("me/following/contains", type="artist", ids=artists_ids)
         for artist, is_followed in zip_longest(batch, result, fillvalue=None):
             if artist is None:
                 break

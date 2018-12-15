@@ -22,9 +22,9 @@ def update_users_follows():
     client_id = os.environ["SPOTIPY_CLIENT_ID"]
     client_secret = os.environ["SPOTIPY_CLIENT_SECRET"]
     client_redirect_uri = os.environ["SPOTIPY_REDIRECT_URI"]
-    _LOGGER.info('')
-    _LOGGER.info('------------ RUN UPDATE ARTISTS ---------------')
-    _LOGGER.info('')
+    _LOGGER.info("")
+    _LOGGER.info("------------ RUN UPDATE ARTISTS ---------------")
+    _LOGGER.info("")
     for user in User.select():
         if not user.spotify_token:
             _LOGGER.info(f"Can't update {user}, has no token yet.")
@@ -43,7 +43,9 @@ def update_users_follows():
 
         lost_follows_str = ", ".join(str(a) for a in lost_follows)
         _LOGGER.info(f"new  follows for {user} ({len(new_follows)}): {new_follows_str}")
-        _LOGGER.info(f"lost follows for {user} ({len(lost_follows)}): {lost_follows_str}")
+        _LOGGER.info(
+            f"lost follows for {user} ({len(lost_follows)}): {lost_follows_str}"
+        )
 
         try:
             albums_nr, updated_nr = get_new_releases(sp)

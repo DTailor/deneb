@@ -14,24 +14,18 @@ class Spotter:
 
 
 def get_client(
-    client_id: str,
-    client_secret: str,
-    client_uri: str,
-    token_info: dict
+    client_id: str, client_secret: str, client_uri: str, token_info: dict
 ) -> Spotter:
     """returns a spotter obj with spotipy client"""
     sp_oauth = SpotifyOAuth(client_id, client_secret, client_uri)
 
-    if "expires_at" not in token_info.keys():
-        token_info = sp_oauth._add_custom_values_to_token_info(token_info)
-
-    if sp_oauth._is_token_expired(token_info):
+    try:
+        if sp_oauth._is_token_expired(token_info):
+            token_info = sp_oauth.refresh_access_token(token_info)
+    except KeyError:
         token_info = sp_oauth.refresh_access_token(token_info)
 
-    client_credentials = SpotifyClientCredentials(
-        client_id,
-        client_secret
-    )
+    client_credentials = SpotifyClientCredentials(client_id, client_secret)
     client_credentials.token_info = token_info
     client = Spotify(client_credentials_manager=client_credentials)
     sp = Spotter(client, client.me())

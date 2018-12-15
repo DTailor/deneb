@@ -6,8 +6,14 @@ from typing import List
 
 from dotenv import load_dotenv
 from peewee import (
-    CharField, CompositeKey, DateField, DateTimeField, ForeignKeyField,
-    ManyToManyField, Model, PostgresqlDatabase
+    CharField,
+    CompositeKey,
+    DateField,
+    DateTimeField,
+    ForeignKeyField,
+    ManyToManyField,
+    Model,
+    PostgresqlDatabase,
 )
 
 from logger import get_logger
@@ -22,10 +28,10 @@ def get_db() -> PostgresqlDatabase:
     global _DB
     if _DB is None:
         _DB = PostgresqlDatabase(
-            os.environ['DB_NAME'],
-            user=os.environ['DB_USER'],
-            password=os.environ['DB_PASSWORD'],
-            host=os.environ['DB_HOST'],
+            os.environ["DB_NAME"],
+            user=os.environ["DB_USER"],
+            password=os.environ["DB_PASSWORD"],
+            host=os.environ["DB_HOST"],
         )
     return _DB
 
@@ -41,7 +47,7 @@ class Artist(DenebModel):
     timestamp = DateTimeField(default=datetime.datetime.now)
 
     def __str__(self):
-        return '{}'.format(self.name)
+        return "{}".format(self.name)
 
     def update_timestamp(self):
         self.timestamp = datetime.datetime.now()
@@ -64,11 +70,9 @@ class Artist(DenebModel):
     def to_object(cls, artist):
         db_artist = None
         try:
-            db_artist = cls.get(
-                cls.spotify_id == artist['id'])
+            db_artist = cls.get(cls.spotify_id == artist["id"])
         except Exception:
-            db_artist = cls(
-                name=artist['name'], spotify_id=artist['id'])
+            db_artist = cls(name=artist["name"], spotify_id=artist["id"])
             db_artist.save()
         return db_artist
 
@@ -103,7 +107,7 @@ class Album(DenebModel):
     name = CharField()
     type = CharField()
     spotify_id = CharField()
-    release = DateField(formats='%Y-%m-%d')
+    release = DateField(formats="%Y-%m-%d")
     timestamp = DateTimeField(default=datetime.datetime.now)
 
     @property
@@ -112,8 +116,9 @@ class Album(DenebModel):
 
     def __str__(self):
         artists = [a.name for a in self.artists()]
-        return '<{}> - {} ({})'.format(
-            self.uri, ', '.join(artists), self.name, self.release)
+        return "<{}> - {} ({})".format(
+            self.uri, ", ".join(artists), self.name, self.release
+        )
 
     def update_timestamp(self):
         self.timestamp = datetime.datetime.now()
@@ -123,23 +128,17 @@ class Album(DenebModel):
         return AlbumArtist.create(album=self, artist=artist)
 
     def has_artist(self, artist):
-        return (
-            bool(
-                len(
-                    AlbumArtist
-                    .select()
-                    .where(
-                        AlbumArtist.album == self,
-                        AlbumArtist.artist_id == artist.id
-                    )
+        return bool(
+            len(
+                AlbumArtist.select().where(
+                    AlbumArtist.album == self, AlbumArtist.artist_id == artist.id
                 )
             )
         )
 
     def artists(self):
         return (
-            Artist
-            .select()
+            Artist.select()
             .join(AlbumArtist, on=(AlbumArtist.artist_id == Artist.id))
             .where(AlbumArtist.album == self)
         )
@@ -148,37 +147,27 @@ class Album(DenebModel):
         return AvailableMarket.create(album=self, market=market)
 
     def remove_market(self, market):
-        q = (AvailableMarket
-             .delete()
-             .where(
-                 AvailableMarket.album == self,
-                 AvailableMarket.market == market)
-             )
+        q = AvailableMarket.delete().where(
+            AvailableMarket.album == self, AvailableMarket.market == market
+        )
         q.execute()
 
     def get_markets(self):
         return (
-            Market
-            .select()
-            .join(
-                AvailableMarket, on=(AvailableMarket.market_id == Market.id))
+            Market.select()
+            .join(AvailableMarket, on=(AvailableMarket.market_id == Market.id))
             .where(AvailableMarket.album == self)
         )
 
     @classmethod
-    def save_to_db(
-            cls, name, release_date, a_type,
-            spotify_id, no_db=False
-    ):
+    def save_to_db(cls, name, release_date, a_type, spotify_id, no_db=False):
         if no_db:
             db_album = cls(
-                name=name, release=release_date,
-                type=a_type, spotify_id=spotify_id
+                name=name, release=release_date, type=a_type, spotify_id=spotify_id
             )
         else:
             db_album = cls.create(
-                name=name, release=release_date,
-                type=a_type, spotify_id=spotify_id
+                name=name, release=release_date, type=a_type, spotify_id=spotify_id
             )
         return db_album
 
@@ -189,7 +178,7 @@ class AlbumArtist(DenebModel):
 
     class Meta:
         database = get_db()
-        primary_key = CompositeKey('album', 'artist')
+        primary_key = CompositeKey("album", "artist")
 
 
 class AvailableMarket(DenebModel):
@@ -198,10 +187,10 @@ class AvailableMarket(DenebModel):
 
     class Meta:
         database = get_db()
-        primary_key = CompositeKey('album', 'market')
+        primary_key = CompositeKey("album", "market")
 
     def __repr__(self):
-        return '{} [{}]'.format(self.album.name, self.market.name)
+        return "{} [{}]".format(self.album.name, self.market.name)
 
 
 class User(DenebModel):
@@ -215,34 +204,28 @@ class User(DenebModel):
     def __str__(self) -> str:
         return f"<user:{self.fb_id}:{self.username}>"
 
-    def following_ids(self: 'User') -> List[Artist]:
+    def following_ids(self: "User") -> List[Artist]:
         return self.following.select(Artist.id)
 
     def released_from_weekday(self, date):
         return (
-            Album
-            .select()
-            .join(
-                AvailableMarket, on=(AvailableMarket.album_id == Album.id)
-            )
-            .join(
-                AlbumArtist, on=(AlbumArtist.album_id == Album.id)
-            )
+            Album.select()
+            .join(AvailableMarket, on=(AvailableMarket.album_id == Album.id))
+            .join(AlbumArtist, on=(AlbumArtist.album_id == Album.id))
             .where(
                 AvailableMarket.market == self.market,
                 AlbumArtist.artist_id << self.following_ids(),
-                (Album.release.year == date.year) &
-                (Album.release.month == date.month) &
-                (Album.release.day >= date.day)
+                (Album.release.year == date.year)
+                & (Album.release.month == date.month)
+                & (Album.release.day >= date.day),
             )
             .distinct()
         )
 
     def sync_data(self, sp):
-        self.market = Market.to_obj(sp.userdata['country'])
-        self.username = sp.userdata['id']
-        self.spotify_token = json.dumps(
-            sp.client.client_credentials_manager.token_info)
+        self.market = Market.to_obj(sp.userdata["country"])
+        self.username = sp.userdata["id"]
+        self.spotify_token = json.dumps(sp.client.client_credentials_manager.token_info)
         self.save()
 
     def add_follows(self, artists):
