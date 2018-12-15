@@ -5,7 +5,7 @@ import os
 from datetime import datetime as dt
 from itertools import chain
 from math import ceil
-from typing import List, Optional, Tuple
+from typing import Dict, List
 
 from dotenv import load_dotenv
 
@@ -28,7 +28,7 @@ def week_of_month(dt: dt) -> int:
     dom = dt.day
     adjusted_dom = dom + first_day.weekday()
 
-    return int(ceil(adjusted_dom/7.0))
+    return int(ceil(adjusted_dom / 7.0))
 
 
 def generate_playlist_name() -> str:
@@ -39,51 +39,42 @@ def generate_playlist_name() -> str:
     return f"{month_name} W{week_nr} {now.year}"
 
 
-def fetch_user_playlists(sp: Spotter) -> List[Optional[dict]]:
+def fetch_user_playlists(sp: Spotter) -> List[dict]:
     """Return user playlists"""
-    playlists = []  # type: List[Optional[dict]]
-    sp.client.user_playlist(sp.userdata['id'])
-    data = sp.client.user_playlists(sp.userdata['id'])
+    playlists = []  # type: List[dict]
+    sp.client.user_playlist(sp.userdata["id"])
+    data = sp.client.user_playlists(sp.userdata["id"])
     playlists = fetch_all(sp, data)
     return playlists
 
 
-def get_tracks(sp: Spotter, playlist: dict) -> Optional[List[dict]]:
+def get_tracks(sp: Spotter, playlist: dict) -> List[dict]:
     """return playlist tracks"""
     tracks = sp.client.user_playlist(
-        sp.userdata['id'], playlist['id'], fields="tracks,next")['tracks']
+        sp.userdata["id"], playlist["id"], fields="tracks,next"
+    )["tracks"]
     return fetch_all(sp, tracks)
 
 
 def get_album_tracks(sp: Spotter, album: Album) -> List[dict]:
-    tracks = []     # type: List[dict]
+    tracks = []  # type: List[dict]
     album_data = sp.client.album(album.uri)
     tracks = fetch_all(sp, album_data["tracks"])
     return tracks
 
 
 def generate_tracks_to_add(
-    sp: Spotter,
-    db_tracks: List[Album],
-    pl_tracks: List[dict]
-) -> Tuple[List, List]:
+    sp: Spotter, db_tracks: List[Album], pl_tracks: List[dict]
+) -> Dict[str, DefaultOrderedDict]:
     """return list of tracks to be added"""
     already_present_tracks = {a["track"]["name"] for a in pl_tracks}
 
-    tracks = {
-        "album": DefaultOrderedDict(list),
-        "track": DefaultOrderedDict(list)
-    }
+    tracks = {"album": DefaultOrderedDict(list), "track": DefaultOrderedDict(list)}
     for item in db_tracks:
-        check_tracks = [item]
         if item.type == "album":
             check_tracks = get_album_tracks(sp, item)
         else:
-            try:
-                check_tracks = [sp.client.track(item.uri)]
-            except Exception as exc:
-                _LOGGER.exception(f"failed fetch track item {item} with: {exc}")
-                continue
+            check_tracks = [sp.client.track(item.uri)]
         for track in check_tracks:
             track_type = item.type
             if isinstance(track, Album):
@@ -101,12 +92,13 @@ def generate_tracks_to_add(
                 track_type = "track"
             tracks[track_type][track_id].append(track)
 
-    return tracks["album"], tracks["track"]
+    return tracks
+
 
 def update_users_playlists():
-    _LOGGER.info('')
-    _LOGGER.info('------------ RUN USERS PLAYLIST UPDATE ---------------')
-    _LOGGER.info('')
+    _LOGGER.info("")
+    _LOGGER.info("------------ RUN USERS PLAYLIST UPDATE ---------------")
+    _LOGGER.info("")
 
     client_id = os.environ["SPOTIPY_CLIENT_ID"]
     client_secret = os.environ["SPOTIPY_CLIENT_SECRET"]
@@ -124,8 +116,7 @@ def update_users_playlists():
         week_tracks_db = user.released_from_weekday(monday)
 
         token_info = json.loads(user.spotify_token)
-        sp, new_token = get_client(
-            client_id, client_secret, client_redirect_uri, token_info)
+        sp = get_client(client_id, client_secret, client_redirect_uri, token_info)
         user.sync_data(sp)
 
         playlist_name = generate_playlist_name()
@@ -134,16 +125,20 @@ def update_users_playlists():
         user_playlists = fetch_user_playlists(sp)
         _LOGGER.info(f"updating playlist: <{playlist_name}> for {user}")
 
-        playlist = is_present(playlist_name, user_playlists, 'name')
+        playlist = is_present(playlist_name, user_playlists, "name")
         if not playlist:
-            playlist = sp.client.user_playlist_create(sp.userdata['id'], playlist_name)
+            playlist = sp.client.user_playlist_create(sp.userdata["id"], playlist_name)
         playlist_tracks = get_tracks(sp, playlist)
-        albums, tracks = generate_tracks_to_add(sp, week_tracks_db, playlist_tracks)
+        tracks = generate_tracks_to_add(sp, week_tracks_db, playlist_tracks)
 
-        for album_ids in grouper(100, chain(albums.keys(), tracks.keys())):
+        for album_ids in grouper(
+            100, chain(tracks["album"].keys(), tracks["track"].keys())
+        ):
             album_ids = clean(album_ids)
             try:
-                sp.client.user_playlist_add_tracks(sp.userdata['id'], playlist['uri'], album_ids)
+                sp.client.user_playlist_add_tracks(
+                    sp.userdata["id"], playlist["uri"], album_ids
+                )
             except Exception as exc:
                 _LOGGER.exception(f"add to playlist '{album_ids}' failed with: {exc}")
         user.sync_data(sp)
