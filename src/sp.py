@@ -22,7 +22,7 @@ def get_client(
     client_secret: str,
     client_uri: str,
     token_info: dict
-) -> Tuple[Spotify, dict]:
+) -> Spotter:
     """returns a spotter obj with spotipy client"""
     sp_oauth = SpotifyOAuth(client_id, client_secret, client_uri)
 
@@ -39,4 +39,4 @@ def get_client(
     client_credentials.token_info = token_info
     client = Spotify(client_credentials_manager=client_credentials)
     sp = Spotter(client, client.me())
-    return sp, token_info
+    return sp

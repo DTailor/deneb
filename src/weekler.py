@@ -124,7 +124,7 @@ def update_users_playlists():
         week_tracks_db = user.released_from_weekday(monday)
 
         token_info = json.loads(user.spotify_token)
-        sp, new_token = get_client(
+        sp = get_client(
             client_id, client_secret, client_redirect_uri, token_info)
         user.sync_data(sp)
 

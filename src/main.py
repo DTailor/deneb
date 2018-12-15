@@ -34,7 +34,7 @@ def update_users_follows():
 
         token_info = json.loads(user.spotify_token)
 
-        sp, new_token = get_client(client_id, client_secret, client_redirect_uri, token_info)
+        sp = get_client(client_id, client_secret, client_redirect_uri, token_info)
         user.sync_data(sp)
 
         new_follows, lost_follows = fetch_user_followed_artists(user, sp)
