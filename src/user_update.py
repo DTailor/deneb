@@ -11,13 +11,13 @@ _LOGGER = get_logger(__name__)
 
 def fetch_artists(sp):
     """fetch user followed artists"""
-    artists = list()
+    artists = []
     artists_data = sp.client.current_user_followed_artists(limit=50)
 
     while True:
+        artists.extend(artists_data["artists"]["items"])
         if not artists_data["artists"]["next"]:
             break
-        artists.extend(artists_data["artists"]["items"])
         artists_data = sp.client.next(artists_data["artists"])          # noqa:B305
 
     clean_artists = list({v["id"]: v for v in artists}.values())

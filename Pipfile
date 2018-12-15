@@ -8,6 +8,8 @@ spotipy = "*"
 peewee = "*"
 "psycopg2-binary" = "*"
 logzero = "*"
+requests = "*"
+python-dotenv = "*"
 
 [dev-packages]
 ipdb = "*"
@@ -20,6 +22,11 @@ jupyter = "*"
 jedi = "*"
 mypy = "*"
 rope = "*"
+flake8-comprehensions = "*"
+flake8-alfred = "*"
+flake8-todo = "*"
+flake8-eradicate = "*"
+flake8-import-order = "*"
 
 [requires]
 python_version = "3.7"

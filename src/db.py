@@ -1,8 +1,10 @@
 """Database handling."""
 import datetime
+import json
 import os
 from typing import List, Tuple
 
+from dotenv import load_dotenv
 from peewee import (
     BooleanField, CharField, CompositeKey, DateField, DateTimeField,
     ForeignKeyField, ManyToManyField, Model, PostgresqlDatabase
@@ -10,9 +12,7 @@ from peewee import (
 
 from logger import get_logger
 
-assert os.environ['DB_NAME']
-assert os.environ['DB_USER']
-assert os.environ['DB_PASSWORD']
+load_dotenv()
 
 _DB = None
 _LOGGER = get_logger(__name__)
@@ -24,7 +24,8 @@ def get_db() -> PostgresqlDatabase:
         _DB = PostgresqlDatabase(
             os.environ['DB_NAME'],
             user=os.environ['DB_USER'],
-            password=os.environ['DB_PASSWORD']
+            password=os.environ['DB_PASSWORD'],
+            host=os.environ['DB_HOST'],
         )
     return _DB
 
@@ -75,7 +76,8 @@ class Artist(Model):
     def to_object(cls, artist):
         db_artist = None
         try:
-            db_artist = cls.get(cls.spotify_id == artist['id'])
+            db_artist = cls.get(
+                cls.spotify_id == artist['id'])
         except Exception:
             db_artist = cls(
                 name=artist['name'], spotify_id=artist['id'])
@@ -224,11 +226,13 @@ class User(Model):
     username = CharField()
     fb_id = CharField()
     market = ForeignKeyField(Market, null=True)
-    initialised = BooleanField(default=False)
+    initialized = BooleanField(default=False)
     following = ManyToManyField(Artist, backref="followers")
+    spotify_token = CharField(max_length=1000)
+    state_id = CharField()
 
     def __str__(self) -> str:
-        return f"<user:{self.username}:{self.fb_id}:{self.market.name}>"
+        return f"<user:{self.fb_id}:{self.username}>"
 
     def following_ids(self: 'User') -> List[Artist]:
         return self.following.select(Artist.id)
@@ -263,8 +267,12 @@ class User(Model):
             .distinct()
         )
 
-    def update_market(self, user_data):
-        self.market = Market.to_obj(user_data['country'])
+    def sync_data(self, sp):
+        self.market = Market.to_obj(sp.userdata['country'])
+        self.username = sp.userdata['id']
+        self.spotify_token = json.dumps(
+            sp.client.client_credentials_manager.token_info)
+        self.initialized = True
         self.save()
 
     def new_albums(self, date=None, seen=False):
@@ -302,9 +310,6 @@ class User(Model):
 
     class Meta:
         database = get_db()
-
-    def __repr__(self):
-        return '<{}; following: {} artists>'.format(self.fb_id, len(self.following))
 
 
 ArtistFollowers = User.following.get_through_model()
