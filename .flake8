@@ -1,6 +1,11 @@
 [flake8]
 max-line-length = 100
 select = C,E,F,W,B,B901
+enable-extensions = B1
+warn-symbols =
+    obsolete_module = Warning! This module is obsolete!
+    module.obsolete_function = Warning! This function is obsolete!
+    module.submodule.constant = Warning! this variable will be removed!
 
 [mypy]
 # Specify the target platform details in config, so your developers are
