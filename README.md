@@ -2,11 +2,11 @@
 
 ## db
 
-  * `createdb deneb`
-  * `psql`
-  * `create database deneb;`
-  * `CREATE USER voyager with PASSWORD '<password>';`
-  * `grant ALL ON DATABASE deneb TO voyager ;`
+* `createdb deneb`
+* `psql`
+* `create database deneb;`
+* `CREATE USER voyager with PASSWORD '<password>';`
+* `grant ALL ON DATABASE deneb TO voyager ;`
 
 ## Set up
 
