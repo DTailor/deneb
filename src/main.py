@@ -48,8 +48,7 @@ def update_users_follows():
             _LOGGER.exception(f"{sp} client failed. exc: {exc}")
             raise
         finally:
-            user.update_token(
-                sp.client.client_credentials_manager.token_info["refresh_token"])
+            user.sync_data(sp)
 
 
 update_users_follows()
