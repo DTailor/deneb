@@ -8,6 +8,7 @@ spotipy = "*"
 peewee = "*"
 "psycopg2-binary" = "*"
 logzero = "*"
+requests = "*"
 
 [dev-packages]
 ipdb = "*"
