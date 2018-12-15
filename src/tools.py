@@ -32,7 +32,7 @@ def generate_release_date(date: str, precision: str) -> datetime.datetime:
     """Fallback to day precision depending on the offered one"""
     suffix = {"year": "-01-01", "month": "-01", "day": ""}
     return datetime.datetime.strptime(
-        "{}{}".format(date, suffix[precision]), "%Y-%m-%d"
+        f"{date}{suffix[precision]}", "%Y-%m-%d"
     )
 
 

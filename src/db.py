@@ -6,14 +6,8 @@ from typing import List
 
 from dotenv import load_dotenv
 from peewee import (
-    CharField,
-    CompositeKey,
-    DateField,
-    DateTimeField,
-    ForeignKeyField,
-    ManyToManyField,
-    Model,
-    PostgresqlDatabase,
+    CharField, CompositeKey, DateField, DateTimeField, ForeignKeyField,
+    ManyToManyField, Model, PostgresqlDatabase
 )
 
 from logger import get_logger
@@ -47,7 +41,7 @@ class Artist(DenebModel):
     timestamp = DateTimeField(default=datetime.datetime.now)
 
     def __str__(self):
-        return "{}".format(self.name)
+        return f"{self.name}"
 
     def update_timestamp(self):
         self.timestamp = datetime.datetime.now()
@@ -115,10 +109,8 @@ class Album(DenebModel):
         return f"spotify:{self.type}:{self.spotify_id}"
 
     def __str__(self):
-        artists = [a.name for a in self.artists()]
-        return "<{}> - {} ({})".format(
-            self.uri, ", ".join(artists), self.name, self.release
-        )
+        artists = ", ".join([a.name for a in self.artists()])
+        return f"<{self.uri}> - {artists} ({self.name} [{self.release}])"
 
     def update_timestamp(self):
         self.timestamp = datetime.datetime.now()
@@ -190,7 +182,7 @@ class AvailableMarket(DenebModel):
         primary_key = CompositeKey("album", "market")
 
     def __repr__(self):
-        return "{} [{}]".format(self.album.name, self.market.name)
+        return f"{self.album.name} [{self.market}]"
 
 
 class User(DenebModel):
