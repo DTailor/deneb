@@ -30,19 +30,6 @@ def get_db() -> PostgresqlDatabase:
     return _DB
 
 
-def get_or_create_user(fb_id: str, username: str) -> Tuple['User', bool]:
-    created = False
-    try:
-        user = User.get(User.fb_id == fb_id)
-    except User.DoesNotExist:
-        user = User.create(fb_id=fb_id, username=username)
-        created = True
-    except Exception as exc:
-        _LOGGER.exception(f"user {fb_id} failed to create {exc}")
-        raise
-
-    return user, created
-
 class DenebModel(Model):
     class Meta:
         database = get_db()
@@ -221,7 +208,6 @@ class User(DenebModel):
     username = CharField()
     fb_id = CharField()
     market = ForeignKeyField(Market, null=True)
-    initialized = BooleanField(default=False)
     following = ManyToManyField(Artist, backref="followers")
     spotify_token = CharField(max_length=1000)
     state_id = CharField()
@@ -267,7 +253,6 @@ class User(DenebModel):
         self.username = sp.userdata['id']
         self.spotify_token = json.dumps(
             sp.client.client_credentials_manager.token_info)
-        self.initialized = True
         self.save()
 
     def new_albums(self, date=None, seen=False):
