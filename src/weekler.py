@@ -115,7 +115,7 @@ def update_users_playlists():
         monday = today.replace(day=monday_date)
         week_tracks_db = user.released_from_weekday(monday)
 
-        sp, new_token = get_client(client_id, client_secret, client_redirect_uri, user.token)
+        sp, new_token = get_client(client_id, client_secret, client_redirect_uri, user.spotify_token)
         user.sync_data(sp)
 
         playlist_name = generate_playlist_name()
