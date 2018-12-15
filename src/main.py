@@ -26,15 +26,15 @@ def update_users_follows():
     _LOGGER.info('------------ RUN UPDATE ARTISTS ---------------')
     _LOGGER.info('')
     for user in User.select():
+        if not user.spotify_token:
+            _LOGGER.info(f"Can't update {user}, has no token yet.")
+
+            continue
         _LOGGER.info(f"Updating {user} ...")
-        token = user.spotify_token
 
-        # TODO: this shall be removed later. store only refresh token
-        #       from the chatbot
-        if not user.initialized:
-            token = json.loads(token)['refresh_token']
+        token_info = json.loads(user.spotify_token)
 
-        sp, new_token = get_client(client_id, client_secret, client_redirect_uri, token)
+        sp, new_token = get_client(client_id, client_secret, client_redirect_uri, token_info)
         user.sync_data(sp)
 
         new_follows, lost_follows = fetch_user_followed_artists(user, sp)

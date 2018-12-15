@@ -1,5 +1,6 @@
 """Database handling."""
 import datetime
+import json
 import os
 from typing import List, Tuple
 
@@ -269,7 +270,8 @@ class User(Model):
     def sync_data(self, sp):
         self.market = Market.to_obj(sp.userdata['country'])
         self.username = sp.userdata['id']
-        self.spotify_token = sp.client.client_credentials_manager.token_info['refresh_token']
+        self.spotify_token = json.dumps(
+            sp.client.client_credentials_manager.token_info)
         self.initialized = True
         self.save()
 

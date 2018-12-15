@@ -1,5 +1,6 @@
 """Create spotify playlist with weekly new releases"""
 import calendar
+import json
 import os
 from datetime import datetime as dt
 from itertools import chain
@@ -102,7 +103,6 @@ def generate_tracks_to_add(
 
     return tracks["album"], tracks["track"]
 
-
 def update_users_playlists():
     _LOGGER.info('')
     _LOGGER.info('------------ RUN USERS PLAYLIST UPDATE ---------------')
@@ -113,14 +113,19 @@ def update_users_playlists():
     client_redirect_uri = os.environ["SPOTIPY_REDIRECT_URI"]
 
     for user in User.select():
+
+        if not user.spotify_token:
+            _LOGGER.info(f"can't update {user}, token not present.")
+            continue
         # fetch new releases for current user
         today = dt.now()
         monday_date = today.day - today.weekday()
         monday = today.replace(day=monday_date)
         week_tracks_db = user.released_from_weekday(monday)
 
+        token_info = json.loads(user.spotify_token)
         sp, new_token = get_client(
-            client_id, client_secret, client_redirect_uri, user.spotify_token)
+            client_id, client_secret, client_redirect_uri, token_info)
         user.sync_data(sp)
 
         playlist_name = generate_playlist_name()
