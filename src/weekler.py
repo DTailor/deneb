@@ -1,5 +1,6 @@
 """Create spotify playlist with weekly new releases"""
 import calendar
+import os
 from datetime import datetime as dt
 from itertools import chain
 from math import ceil
@@ -7,7 +8,7 @@ from typing import List, Optional, Tuple
 
 from db import Album, User
 from logger import get_logger
-from sp import Spotter, get_sp_client
+from sp import Spotter, get_client
 from tools import DefaultOrderedDict, clean, fetch_all, grouper, is_present
 
 _LOGGER = get_logger(__name__)
@@ -102,6 +103,11 @@ def update_users_playlists():
     _LOGGER.info('')
     _LOGGER.info('------------ RUN USERS PLAYLIST UPDATE ---------------')
     _LOGGER.info('')
+
+    client_id = os.environ["SPOTIPY_CLIENT_ID"]
+    client_secret = os.environ["SPOTIPY_CLIENT_SECRET"]
+    client_redirect_uri = os.environ["SPOTIPY_REDIRECT_URI"]
+
     for user in User.select():
         # fetch new releases for current user
         today = dt.now()
@@ -109,7 +115,9 @@ def update_users_playlists():
         monday = today.replace(day=monday_date)
         week_tracks_db = user.released_from_weekday(monday)
 
-        sp, _ = get_sp_client(user.username, user.spotify_token)
+        sp, new_token = get_client(client_id, client_secret, client_redirect_uri, user.token)
+        user.sync_data(sp)
+
         playlist_name = generate_playlist_name()
 
         # fetch or create playlist
@@ -128,6 +136,7 @@ def update_users_playlists():
                 sp.client.user_playlist_add_tracks(sp.username, playlist['uri'], album_ids)
             except Exception as exc:
                 _LOGGER.exception(f"add to playlist '{album_ids}' failed with: {exc}")
+        user.sync_data(sp)
 
 
 update_users_playlists()
