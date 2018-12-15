@@ -58,7 +58,7 @@ def check_follows(sp, artists):
 def fetch_user_followed_artists(user, sp):
     """fetch artists followed by user"""
     followed_artists = fetch_artists(sp)
-    following_ids = [a.spotify_id for a in user.following.select()]
+    following_ids = [a.spotify_id for a in user.following]
 
     # followed_artaists - following_ids = new follows
     new_follows = extract_new_follows_objects(followed_artists, following_ids)
