@@ -218,15 +218,6 @@ class User(DenebModel):
     def following_ids(self: 'User') -> List[Artist]:
         return self.following.select(Artist.id)
 
-    def get_seen_albums(self):
-        return (
-            Album
-            .select()
-            .join(
-                SeenAlbum,
-                on=(SeenAlbum.album_id == Album.id))
-            .where(SeenAlbum.user == self)
-        )
 
     def released_from_weekday(self, date):
         return (
@@ -254,31 +245,6 @@ class User(DenebModel):
         self.spotify_token = json.dumps(
             sp.client.client_credentials_manager.token_info)
         self.save()
-
-    def new_albums(self, date=None, seen=False):
-        return (
-            Album
-            .select()
-            .join(
-                AlbumArtist, on=(AlbumArtist.album_id == Album.id)
-            )
-            .where()
-        )
-
-    def get_all_albums(self):
-        return (
-            Album
-            .select(Album.id)
-            .join(
-                AlbumArtist, on=(AlbumArtist.album_id == Album.id)
-            )
-            .where(
-                AlbumArtist.artist_id << self.following_ids()
-            )
-        )
-
-    def add_seen_album(self, album):
-        SeenAlbum.create(user=self, album=album)
 
     def add_follows(self, artists):
         for artist in artists:
