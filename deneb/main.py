@@ -1,37 +1,27 @@
 """Entry point to deneb spotify watcher"""
 
 import json
-import os
 
 from dotenv import load_dotenv
 
-from artist_update import get_new_releases
-from db import User
-from logger import get_logger
-from sp import get_client
-from user_update import fetch_user_followed_artists
+from deneb.artist_update import get_new_releases
+from deneb.db import User
+from deneb.logger import get_logger
+from deneb.sp import get_client
+from deneb.user_update import fetch_user_followed_artists
 
 load_dotenv()
 
 _LOGGER = get_logger(__name__)
 
 
-def update_users_follows():
-    # TODO: pass there variables as parameters
-    #       make it a cli tool
-    client_id = os.environ["SPOTIPY_CLIENT_ID"]
-    client_secret = os.environ["SPOTIPY_CLIENT_SECRET"]
-    client_redirect_uri = os.environ["SPOTIPY_REDIRECT_URI"]
-    _LOGGER.info("")
-    _LOGGER.info("------------ RUN UPDATE ARTISTS ---------------")
-    _LOGGER.info("")
+def update_users_follows(client_id, client_secret, client_redirect_uri):
+
     for user in User.select():
-        if user.username  != "dann.croitoru":
-            continue
         if not user.spotify_token:
             _LOGGER.info(f"Can't update {user}, has no token yet.")
-
             continue
+
         _LOGGER.info(f"Updating {user} ...")
 
         token_info = json.loads(user.spotify_token)
@@ -57,6 +47,3 @@ def update_users_follows():
             raise
         finally:
             user.sync_data(sp)
-
-
-update_users_follows()

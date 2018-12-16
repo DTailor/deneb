@@ -9,10 +9,10 @@ from typing import Dict, List
 
 from dotenv import load_dotenv
 
-from db import Album, User
-from logger import get_logger
-from sp import Spotter, get_client
-from tools import DefaultOrderedDict, clean, fetch_all, grouper, is_present
+from deneb.db import Album, User
+from deneb.logger import get_logger
+from deneb.sp import Spotter, get_client
+from deneb.tools import DefaultOrderedDict, clean, fetch_all, grouper, is_present
 
 load_dotenv()
 

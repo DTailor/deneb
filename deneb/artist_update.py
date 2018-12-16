@@ -3,9 +3,9 @@ from typing import Iterable, List, Tuple
 
 from spotipy import Spotify
 
-from db import Album, Artist, Market
-from logger import get_logger
-from tools import clean, fetch_all, generate_release_date, grouper, is_present
+from deneb.db import Album, Artist, Market
+from deneb.logger import get_logger
+from deneb.tools import clean, fetch_all, generate_release_date, grouper, is_present
 
 _LOGGER = get_logger(__name__)
 
