@@ -26,6 +26,8 @@ def update_users_follows():
     _LOGGER.info("------------ RUN UPDATE ARTISTS ---------------")
     _LOGGER.info("")
     for user in User.select():
+        if user.username  != "dann.croitoru":
+            continue
         if not user.spotify_token:
             _LOGGER.info(f"Can't update {user}, has no token yet.")
 

@@ -30,6 +30,7 @@ def get_client(
     try:
         current_user = client.current_user()
     except Exception as exc:
+        import ipdb; ipdb.set_trace()
         token_info = sp_oauth.refresh_access_token(token_info['refresh_token'])
         client_credentials.token_info = token_info
         client = Spotify(client_credentials_manager=client_credentials)
