@@ -23,27 +23,35 @@ def cli():
 
 
 @click.command()
+@click.pass_context
+def full_run(ctx):
+    update_followed.invoke(ctx)
+    generate_playlists.invoke(ctx)
+
+
+@click.command()
 def update_followed():
-    _LOGGER.debug("------------ RUN UPDATE USER ARTISTS")
+    click.echo("------------ RUN UPDATE USER ARTISTS")
     try:
         update_users_artists(CLIENT_ID, CLIENT_SECRET, CLIENT_URI)
     except Exception as exc:
-        print(f"failed with {exc}")
+        click.echo(f"failed with {exc}")
         _LOGGER.error(f"failed with {exc}")
 
 
 @click.command()
 def generate_playlists():
-    _LOGGER.info("------------ RUN UPDATE USER PLAYLISTS")
+    click.echo("------------ RUN UPDATE USER PLAYLISTS")
     try:
         update_users_playlists(CLIENT_ID, CLIENT_SECRET, CLIENT_URI)
     except Exception as exc:
-        print(f"failed with {exc}")
+        click.echo(f"failed with {exc}")
         _LOGGER.error(f"failed with {exc}")
 
 
 cli.add_command(update_followed)
 cli.add_command(generate_playlists)
+cli.add_command(full_run)
 
 if __name__ == '__main__':
     cli()

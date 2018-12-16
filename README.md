@@ -17,3 +17,12 @@
 - `pipenv shell`
 - `python src/main.py` to fetch new followers and artist new albums
 - `python src/weekler.py` to create spotify playlist with this weeks new stuff
+
+## Improvs
+
+- tests
+- sentry
+- docker
+- celery
+- features
+  - last 30 days playlist
