@@ -2,9 +2,9 @@
 
 from itertools import zip_longest
 
-from db import Artist
-from logger import get_logger
-from tools import grouper
+from deneb.db import Artist
+from deneb.logger import get_logger
+from deneb.tools import grouper
 
 _LOGGER = get_logger(__name__)
 

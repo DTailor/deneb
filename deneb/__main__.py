@@ -3,9 +3,9 @@ import os
 import click
 from dotenv import load_dotenv
 
-from logger import get_logger
-from spotify.users import update_users_artists
-from spotify.weekly_releases import update_users_playlists
+from deneb.logger import get_logger
+from deneb.spotify.users import update_users_artists
+from deneb.spotify.weekly_releases import update_users_playlists
 
 load_dotenv()
 
