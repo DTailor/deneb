@@ -14,7 +14,6 @@ def get_logger(name: str) -> Any:
         name=name,
         logfile="logfile.log",
         level=logging.DEBUG,
-        disableStderrLogger=True,
         formatter=_formatter,
         maxBytes=10 * 1024 * 1024,
         backupCount=5,
