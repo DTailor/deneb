@@ -10,6 +10,7 @@ peewee = "*"
 logzero = "*"
 requests = "*"
 python-dotenv = "*"
+click = "*"
 
 [dev-packages]
 ipdb = "*"
@@ -28,8 +29,6 @@ flake8-todo = "*"
 flake8-eradicate = "*"
 flake8-import-order = "*"
 vulture = "*"
-pylint = "*"
-black = "*"
 
 [requires]
 python_version = "3.7"
