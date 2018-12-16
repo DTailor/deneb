@@ -19,8 +19,6 @@ def update_users_artists(
     dry_run: bool = False
 ):
     for user in User.select():
-        if user.username != "93mprliuupay3tdwys7zcs6zs":
-            continue
         if not user.spotify_token:
             _LOGGER.info(f"Can't update {user}, has no token yet.")
             continue
