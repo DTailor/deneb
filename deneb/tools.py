@@ -31,9 +31,7 @@ def is_present(value: str, items: List[dict], search_by: str) -> dict:
 def generate_release_date(date: str, precision: str) -> datetime.datetime:
     """Fallback to day precision depending on the offered one"""
     suffix = {"year": "-01-01", "month": "-01", "day": ""}
-    return datetime.datetime.strptime(
-        f"{date}{suffix[precision]}", "%Y-%m-%d"
-    )
+    return datetime.datetime.strptime(f"{date}{suffix[precision]}", "%Y-%m-%d")
 
 
 def fetch_all(sp: Spotify, data: dict) -> List[dict]:

@@ -53,5 +53,5 @@ cli.add_command(update_followed)
 cli.add_command(generate_playlists)
 cli.add_command(full_run)
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     cli()
