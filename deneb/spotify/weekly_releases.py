@@ -1,20 +1,16 @@
 """Create spotify playlist with weekly new releases"""
 import calendar
 import json
-import os
 from datetime import datetime as dt
 from itertools import chain
 from math import ceil
 from typing import Dict, List
 
-from dotenv import load_dotenv
 
 from deneb.db import Album, User
 from deneb.logger import get_logger
 from deneb.sp import Spotter, get_client
 from deneb.tools import DefaultOrderedDict, clean, fetch_all, grouper, is_present
-
-load_dotenv()
 
 _LOGGER = get_logger(__name__)
 
@@ -95,17 +91,8 @@ def generate_tracks_to_add(
     return tracks
 
 
-def update_users_playlists():
-    _LOGGER.info("")
-    _LOGGER.info("------------ RUN USERS PLAYLIST UPDATE ---------------")
-    _LOGGER.info("")
-
-    client_id = os.environ["SPOTIPY_CLIENT_ID"]
-    client_secret = os.environ["SPOTIPY_CLIENT_SECRET"]
-    client_redirect_uri = os.environ["SPOTIPY_REDIRECT_URI"]
-
+def update_users_playlists(client_id, client_secret, client_redirect_uri):
     for user in User.select():
-
         if not user.spotify_token:
             _LOGGER.info(f"can't update {user}, token not present.")
             continue
@@ -142,6 +129,3 @@ def update_users_playlists():
             except Exception as exc:
                 _LOGGER.exception(f"add to playlist '{album_ids}' failed with: {exc}")
         user.sync_data(sp)
-
-
-update_users_playlists()
