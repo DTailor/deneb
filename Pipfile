@@ -29,6 +29,7 @@ flake8-todo = "*"
 flake8-eradicate = "*"
 flake8-import-order = "*"
 vulture = "*"
+fabric = "*"
 
 [requires]
 python_version = "3.7"
