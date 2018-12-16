@@ -12,8 +12,12 @@ from deneb.user_update import fetch_user_followed_artists
 _LOGGER = get_logger(__name__)
 
 
-def update_users_artists(client_id: str, client_secret: str, client_redirect_uri: str):
-
+def update_users_artists(
+    client_id: str,
+    client_secret: str,
+    client_redirect_uri: str,
+    dry_run: bool = False
+):
     for user in User.select():
         if user.username != "93mprliuupay3tdwys7zcs6zs":
             continue
@@ -40,7 +44,7 @@ def update_users_artists(client_id: str, client_secret: str, client_redirect_uri
 
         _LOGGER.info("now updating user artists")
         try:
-            albums_nr, updated_nr = get_new_releases(sp)
+            albums_nr, updated_nr = get_new_releases(sp, user.following)
             _LOGGER.info(f"fetched {albums_nr} albums for {updated_nr} artists")
         except Exception as exc:
             _LOGGER.exception(f"{sp} client failed. exc: {exc}")

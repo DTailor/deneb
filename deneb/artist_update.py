@@ -5,7 +5,9 @@ from spotipy import Spotify
 
 from deneb.db import Album, Artist, Market
 from deneb.logger import get_logger
-from deneb.tools import clean, fetch_all, generate_release_date, grouper, is_present
+from deneb.tools import (
+    clean, fetch_all, generate_release_date, grouper, is_present
+)
 
 _LOGGER = get_logger(__name__)
 
@@ -151,11 +153,13 @@ def update_artist_albums(
     return new_inserts
 
 
-def get_new_releases(sp: Spotify, dry_run: bool = False) -> Tuple[int, int]:
+def get_new_releases(
+    sp: Spotify, artists: Iterable[Artist], dry_run: bool = False
+) -> Tuple[int, int]:
     """update artists with released albums"""
     updated_nr = 0
     albums_nr = 0
-    for artist in Artist.select():
+    for artist in artists:
         if artist.can_update():
             new_additions = update_artist_albums(sp, artist, dry_run)
             if new_additions:
