@@ -34,7 +34,7 @@ def get_client(
         client_credentials.token_info = token_info
         client = Spotify(client_credentials_manager=client_credentials)
         current_user = client.current_user()
-        _LOGGER.exception(f"aquired new token for {current_user['id']}; {exc}")
+        _LOGGER.exception(f"aquired new token for {current_user['id']}")
 
     sp = Spotter(client, current_user)
     return sp
