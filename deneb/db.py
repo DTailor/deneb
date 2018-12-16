@@ -10,7 +10,7 @@ from peewee import (
     ManyToManyField, Model, PostgresqlDatabase
 )
 
-from deneb.logger import get_logger
+from logger import get_logger
 
 load_dotenv()
 

@@ -4,7 +4,7 @@ import time
 from spotipy.client import Spotify
 from spotipy.oauth2 import SpotifyClientCredentials, SpotifyOAuth
 
-from deneb.logger import get_logger
+from logger import get_logger
 
 _LOGGER = get_logger(__name__)
 

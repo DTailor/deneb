@@ -2,11 +2,11 @@
 
 import json
 
-from deneb.artist_update import get_new_releases
-from deneb.db import User
-from deneb.logger import get_logger
-from deneb.sp import get_client
-from deneb.user_update import fetch_user_followed_artists
+from artist_update import get_new_releases
+from db import User
+from logger import get_logger
+from sp import get_client
+from user_update import fetch_user_followed_artists
 
 
 _LOGGER = get_logger(__name__)
