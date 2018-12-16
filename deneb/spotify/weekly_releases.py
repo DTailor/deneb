@@ -114,7 +114,7 @@ def update_users_playlists(client_id, client_secret, client_redirect_uri):
 
         playlist = is_present(playlist_name, user_playlists, "name")
         if not playlist:
-            playlist = sp.client.user_playlist_create(sp.userdata["id"], playlist_name)
+            playlist = sp.client.user_playlist_create(sp.userdata["id"], playlist_name, public=False)
         playlist_tracks = get_tracks(sp, playlist)
         tracks = generate_tracks_to_add(sp, week_tracks_db, playlist_tracks)
 
