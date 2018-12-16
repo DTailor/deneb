@@ -159,9 +159,9 @@ def get_new_releases(sp: Spotify, dry_run: bool = False) -> Tuple[int, int]:
         if artist.can_update():
             new_additions = update_artist_albums(sp, artist, dry_run)
             if new_additions:
+                _LOGGER.info(f"fetched {len(new_additions)} albums for {artist}")
                 albums_nr += len(new_additions)
             artist.update_timestamp()
             updated_nr += 1
-            _LOGGER.info(f"updated {artist}")
 
     return albums_nr, updated_nr
