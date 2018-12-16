@@ -12,6 +12,7 @@ def deploy(c):
     with captain.cd("/apps/deneb/"):
         captain.run("git reset --hard HEAD")
         captain.run("git fetch -ap")
+        captain.run("git checkout develop")
         captain.run("git pull")
         captain.run("pipenv sync")
         captain.run("pipenv clean")
