@@ -18,15 +18,18 @@ def get_client(
 ) -> Spotter:
     """returns a spotter obj with spotipy client"""
     sp_oauth = SpotifyOAuth(client_id, client_secret, client_uri)
-
-    try:
-        if sp_oauth._is_token_expired(token_info):
-            token_info = sp_oauth.refresh_access_token(token_info)
-    except KeyError:
-        token_info = sp_oauth.refresh_access_token(token_info)
-
     client_credentials = SpotifyClientCredentials(client_id, client_secret)
     client_credentials.token_info = token_info
     client = Spotify(client_credentials_manager=client_credentials)
-    sp = Spotter(client, client.me())
+
+    try:
+        current_user = client.current_user()
+    except Exception as exc:
+        token_info = sp_oauth.refresh_access_token(token_info)
+        client_credentials.token_info = token_info
+        client = Spotify(client_credentials_manager=client_credentials)
+        current_user = client.current_user()
+        _LOGGER(f"aquired new token for {current_user['id']}; {exc}")
+
+    sp = Spotter(client, current_user)
     return sp
