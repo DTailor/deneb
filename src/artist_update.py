@@ -86,7 +86,7 @@ def update_album_marketplace(
 ) -> None:
     """Update an album markeplaces with the newly fetched ones"""
     old_markets = [a for a in album.get_markets()]
-    old_markets_ids = {[a.name for a in old_markets]}
+    old_markets_ids = {a.name for a in old_markets}
     new_marketplace_ids = set(new_marketplace_ids)
 
     to_add = new_marketplace_ids - old_markets_ids
