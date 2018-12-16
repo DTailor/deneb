@@ -1,4 +1,6 @@
 """Spotify connection handling"""
+import time
+
 from spotipy.client import Spotify
 from spotipy.oauth2 import SpotifyClientCredentials, SpotifyOAuth
 
@@ -19,10 +21,13 @@ def get_client(
     """returns a spotter obj with spotipy client"""
     sp_oauth = SpotifyOAuth(client_id, client_secret, client_uri)
     client_credentials = SpotifyClientCredentials(client_id, client_secret)
+    if "expires_at" not in token_info:
+        token_info["expires_at"] = int(time.time()) + 1000
     client_credentials.token_info = token_info
     client = Spotify(client_credentials_manager=client_credentials)
 
     try:
+        client.current_user_followed_artists(limit=1)
         current_user = client.current_user()
     except Exception as exc:
         token_info = sp_oauth.refresh_access_token(token_info)
