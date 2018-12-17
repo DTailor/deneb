@@ -22,27 +22,30 @@ def cli():
     pass
 
 
+@click.option('--force', is_flag=True)
 @click.option('--user')
 @click.command()
 @click.pass_context
-def full_run(ctx, user):
+def full_run(ctx, user, force):
     update_followed.invoke(ctx)
     update_playlists.invoke(ctx)
 
 
+@click.option('--force', is_flag=True)
 @click.option('--user')
 @click.command()
-def update_followed(user):
+def update_followed(user, force):
     click.echo("------------ RUN UPDATE USER ARTISTS")
     try:
-        update_users_artists(CLIENT_ID, CLIENT_SECRET, CLIENT_URI, user)
+        update_users_artists(CLIENT_ID, CLIENT_SECRET, CLIENT_URI, user, force)
     except Exception as exc:
         _LOGGER.exception(f"failed with {exc}")
 
 
+@click.option('--force', is_flag=True)
 @click.option('--user')
 @click.command()
-def update_playlists(user):
+def update_playlists(user, force):
     click.echo("------------ RUN UPDATE USER PLAYLISTS")
     try:
         update_users_playlists(CLIENT_ID, CLIENT_SECRET, CLIENT_URI, user)

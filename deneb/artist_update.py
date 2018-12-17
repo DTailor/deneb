@@ -154,14 +154,14 @@ def update_artist_albums(
 
 
 def get_new_releases(
-    sp: Spotify, artists: Iterable[Artist], dry_run: bool = False
+    sp: Spotify, artists: Iterable[Artist], force_update: bool = False
 ) -> Tuple[int, int]:
     """update artists with released albums"""
     updated_nr = 0
     albums_nr = 0
     for artist in artists:
-        if artist.can_update():
-            new_additions = update_artist_albums(sp, artist, dry_run)
+        if artist.can_update() or force_update:
+            new_additions = update_artist_albums(sp, artist)
             if new_additions:
                 _LOGGER.info(f"fetched {len(new_additions)} albums for {artist}")
                 albums_nr += len(new_additions)

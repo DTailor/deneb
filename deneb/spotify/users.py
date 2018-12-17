@@ -17,7 +17,7 @@ def update_users_artists(
     client_secret: str,
     client_redirect_uri: str,
     user_id: Optional[str] = None,
-    dry_run: bool = False
+    force_update: bool = False,
 ):
     if user_id:
         users = User.select().where(User.username == user_id)
@@ -48,7 +48,7 @@ def update_users_artists(
 
         _LOGGER.info("now updating user artists")
         try:
-            albums_nr, updated_nr = get_new_releases(sp, user.following)
+            albums_nr, updated_nr = get_new_releases(sp, user.following, force_update)
             _LOGGER.info(f"fetched {albums_nr} albums for {updated_nr} artists")
         except Exception as exc:
             _LOGGER.exception(f"{sp} client failed. exc: {exc}")
