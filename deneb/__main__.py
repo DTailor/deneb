@@ -39,11 +39,12 @@ def update_followed():
         _LOGGER.error(f"failed with {exc}")
 
 
+@click.option('--user')
 @click.command()
-def generate_playlists():
+def generate_playlists(user):
     click.echo("------------ RUN UPDATE USER PLAYLISTS")
     try:
-        update_users_playlists(CLIENT_ID, CLIENT_SECRET, CLIENT_URI)
+        update_users_playlists(CLIENT_ID, CLIENT_SECRET, CLIENT_URI, user)
     except Exception as exc:
         click.echo(f"failed with {exc}")
         _LOGGER.error(f"failed with {exc}")

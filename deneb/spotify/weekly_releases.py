@@ -4,13 +4,14 @@ import json
 from datetime import datetime as dt
 from itertools import chain
 from math import ceil
-from typing import Dict, List
-
+from typing import Dict, List, Optional
 
 from deneb.db import Album, User
 from deneb.logger import get_logger
 from deneb.sp import Spotter, get_client
-from deneb.tools import DefaultOrderedDict, clean, fetch_all, grouper, is_present
+from deneb.tools import (
+    DefaultOrderedDict, clean, fetch_all, grouper, is_present
+)
 
 _LOGGER = get_logger(__name__)
 
@@ -91,43 +92,58 @@ def generate_tracks_to_add(
     return tracks
 
 
-def update_users_playlists(client_id, client_secret, client_redirect_uri):
-    for user in User.select():
+def update_user_playlist(user: User, sp: Spotter):
+    today = dt.now()
+    monday_date = today.day - today.weekday()
+    monday = today.replace(day=monday_date)
+    week_tracks_db = user.released_from_weekday(monday)
+
+    playlist_name = generate_playlist_name()
+
+    # fetch or create playlist
+    user_playlists = fetch_user_playlists(sp)
+    _LOGGER.info(f"updating playlist: <{playlist_name}> for {user}")
+
+    playlist = is_present(playlist_name, user_playlists, "name")
+    if not playlist:
+        playlist = sp.client.user_playlist_create(
+            sp.userdata["id"], playlist_name
+        )
+    playlist_tracks = get_tracks(sp, playlist)
+    tracks = generate_tracks_to_add(sp, week_tracks_db, playlist_tracks)
+
+    all_ids = []
+    for album_ids in grouper(
+        100, chain(tracks["album"].keys(), tracks["track"].keys())
+    ):
+        album_ids = clean(album_ids)
+        try:
+            sp.client.user_playlist_add_tracks(
+                sp.userdata["id"], playlist["uri"], album_ids
+            )
+            all_ids.append(album_ids)
+        except Exception as exc:
+            _LOGGER.exception(f"add to playlist '{album_ids}' failed with: {exc}")
+
+
+def update_users_playlists(
+    client_id: str,
+    client_secret: str,
+    client_redirect_uri: str,
+    user_id: Optional[str] = None
+):
+    if user_id:
+        users = User.select().where(User.username == user_id)
+    else:
+        users = User.select()
+
+    for user in users:
         if not user.spotify_token:
             _LOGGER.info(f"can't update {user}, token not present.")
             continue
-        # fetch new releases for current user
-        today = dt.now()
-        monday_date = today.day - today.weekday()
-        monday = today.replace(day=monday_date)
-        week_tracks_db = user.released_from_weekday(monday)
 
         token_info = json.loads(user.spotify_token)
         sp = get_client(client_id, client_secret, client_redirect_uri, token_info)
         user.sync_data(sp)
-
-        playlist_name = generate_playlist_name()
-
-        # fetch or create playlist
-        user_playlists = fetch_user_playlists(sp)
-        _LOGGER.info(f"updating playlist: <{playlist_name}> for {user}")
-
-        playlist = is_present(playlist_name, user_playlists, "name")
-        if not playlist:
-            playlist = sp.client.user_playlist_create(
-                sp.userdata["id"], playlist_name
-            )
-        playlist_tracks = get_tracks(sp, playlist)
-        tracks = generate_tracks_to_add(sp, week_tracks_db, playlist_tracks)
-
-        for album_ids in grouper(
-            100, chain(tracks["album"].keys(), tracks["track"].keys())
-        ):
-            album_ids = clean(album_ids)
-            try:
-                sp.client.user_playlist_add_tracks(
-                    sp.userdata["id"], playlist["uri"], album_ids
-                )
-            except Exception as exc:
-                _LOGGER.exception(f"add to playlist '{album_ids}' failed with: {exc}")
+        update_user_playlist(user, sp)
         user.sync_data(sp)
