@@ -1,13 +1,13 @@
 """Entry point to deneb spotify watcher"""
 
 import json
+from typing import Optional
 
 from deneb.artist_update import get_new_releases
 from deneb.db import User
 from deneb.logger import get_logger
 from deneb.sp import get_client
 from deneb.user_update import fetch_user_followed_artists
-
 
 _LOGGER = get_logger(__name__)
 
@@ -16,9 +16,15 @@ def update_users_artists(
     client_id: str,
     client_secret: str,
     client_redirect_uri: str,
+    user_id: Optional[str] = None,
     dry_run: bool = False
 ):
-    for user in User.select():
+    if user_id:
+        users = User.select().where(User.username == user_id)
+    else:
+        users = User.select()
+
+    for user in users:
         if not user.spotify_token:
             _LOGGER.info(f"Can't update {user}, has no token yet.")
             continue

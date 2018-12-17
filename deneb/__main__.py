@@ -29,11 +29,12 @@ def full_run(ctx):
     generate_playlists.invoke(ctx)
 
 
+@click.option('--user')
 @click.command()
-def update_followed():
+def update_followed(user):
     click.echo("------------ RUN UPDATE USER ARTISTS")
     try:
-        update_users_artists(CLIENT_ID, CLIENT_SECRET, CLIENT_URI)
+        update_users_artists(CLIENT_ID, CLIENT_SECRET, CLIENT_URI, user)
     except Exception as exc:
         click.echo(f"failed with {exc}")
         _LOGGER.error(f"failed with {exc}")
