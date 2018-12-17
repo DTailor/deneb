@@ -27,7 +27,7 @@ def cli():
 @click.pass_context
 def full_run(ctx, user):
     update_followed.invoke(ctx)
-    generate_playlists.invoke(ctx)
+    update_playlists.invoke(ctx)
 
 
 @click.option('--user')
@@ -42,7 +42,7 @@ def update_followed(user):
 
 @click.option('--user')
 @click.command()
-def generate_playlists(user):
+def update_playlists(user):
     click.echo("------------ RUN UPDATE USER PLAYLISTS")
     try:
         update_users_playlists(CLIENT_ID, CLIENT_SECRET, CLIENT_URI, user)
@@ -51,7 +51,7 @@ def generate_playlists(user):
 
 
 cli.add_command(update_followed)
-cli.add_command(generate_playlists)
+cli.add_command(update_playlists)
 cli.add_command(full_run)
 
 if __name__ == "__main__":
