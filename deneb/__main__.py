@@ -22,9 +22,10 @@ def cli():
     pass
 
 
+@click.option('--user')
 @click.command()
 @click.pass_context
-def full_run(ctx):
+def full_run(ctx, user):
     update_followed.invoke(ctx)
     generate_playlists.invoke(ctx)
 
@@ -36,8 +37,7 @@ def update_followed(user):
     try:
         update_users_artists(CLIENT_ID, CLIENT_SECRET, CLIENT_URI, user)
     except Exception as exc:
-        click.echo(f"failed with {exc}")
-        _LOGGER.error(f"failed with {exc}")
+        _LOGGER.exception(f"failed with {exc}")
 
 
 @click.option('--user')
@@ -47,8 +47,7 @@ def generate_playlists(user):
     try:
         update_users_playlists(CLIENT_ID, CLIENT_SECRET, CLIENT_URI, user)
     except Exception as exc:
-        click.echo(f"failed with {exc}")
-        _LOGGER.error(f"failed with {exc}")
+        _LOGGER.exception(f"failed with {exc}")
 
 
 cli.add_command(update_followed)
