@@ -41,7 +41,8 @@ def update_users_artists(
         new_follows_str = ", ".join(str(a) for a in new_follows)
 
         lost_follows_str = ", ".join(str(a) for a in lost_follows)
-        _LOGGER.info(f"new  follows for {user} ({len(new_follows)}): {new_follows_str}")
+
+        _LOGGER.info(f"new follows for {user} ({len(new_follows)}): {new_follows_str}")
         _LOGGER.info(
             f"lost follows for {user} ({len(lost_follows)}): {lost_follows_str}"
         )

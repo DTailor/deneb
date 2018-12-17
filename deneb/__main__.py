@@ -22,20 +22,18 @@ def cli():
     pass
 
 
-@click.option('--force', is_flag=True)
-@click.option('--user')
+@click.option("--force", is_flag=True)
+@click.option("--user")
 @click.command()
 @click.pass_context
 def full_run(ctx, user, force):
     update_followed.invoke(ctx)
-    ctx.params = {
-        'user': user,
-    }
+    ctx.params = {"user": user}
     update_playlists.invoke(ctx)
 
 
-@click.option('--force', is_flag=True)
-@click.option('--user')
+@click.option("--force", is_flag=True)
+@click.option("--user")
 @click.command()
 def update_followed(user, force):
     click.echo("------------ RUN UPDATE USER ARTISTS")
@@ -45,7 +43,7 @@ def update_followed(user, force):
         _LOGGER.exception(f"uhhh ohhhhhhhhhhhhh task failed")
 
 
-@click.option('--user')
+@click.option("--user")
 @click.command()
 def update_playlists(user):
     click.echo("------------ RUN UPDATE USER PLAYLISTS")
