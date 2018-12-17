@@ -28,6 +28,9 @@ def cli():
 @click.pass_context
 def full_run(ctx, user, force):
     update_followed.invoke(ctx)
+    ctx.params = {
+        'user': user,
+    }
     update_playlists.invoke(ctx)
 
 
@@ -38,19 +41,18 @@ def update_followed(user, force):
     click.echo("------------ RUN UPDATE USER ARTISTS")
     try:
         update_users_artists(CLIENT_ID, CLIENT_SECRET, CLIENT_URI, user, force)
-    except Exception as exc:
-        _LOGGER.exception(f"failed with {exc}")
+    except Exception:
+        _LOGGER.exception(f"uhhh ohhhhhhhhhhhhh task failed")
 
 
-@click.option('--force', is_flag=True)
 @click.option('--user')
 @click.command()
-def update_playlists(user, force):
+def update_playlists(user):
     click.echo("------------ RUN UPDATE USER PLAYLISTS")
     try:
         update_users_playlists(CLIENT_ID, CLIENT_SECRET, CLIENT_URI, user)
-    except Exception as exc:
-        _LOGGER.exception(f"failed with {exc}")
+    except Exception:
+        _LOGGER.exception(f"uhhh ohhhhhhhhhhhhh task failed")
 
 
 cli.add_command(update_followed)

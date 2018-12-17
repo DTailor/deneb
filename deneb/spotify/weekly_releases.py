@@ -133,10 +133,10 @@ def update_users_playlists(
     client_redirect_uri: str,
     user_id: Optional[str] = None
 ):
+    users = User.select()
+
     if user_id:
-        users = User.select().where(User.username == user_id)
-    else:
-        users = User.select()
+        users = [User.get(User.username == user_id)]
 
     for user in users:
         if not user.spotify_token:
