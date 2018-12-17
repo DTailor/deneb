@@ -19,7 +19,7 @@ def deploy(c):
 
 
 @task
-def run_all(c):
+def full_run(c):
     captain = Connection(f"{SSH_USER}@{SSH_HOST}")
     with captain.cd("/apps/deneb/"):
         captain.run("pipenv run python -m deneb full-run")
