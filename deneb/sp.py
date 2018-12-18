@@ -18,7 +18,7 @@ def spotify_client(credentials: SpotifyKeys, user: User) -> Generator:
     """
     context manager to aquire spotify client
     """
-    token_info = json.loads(user.token_info)
+    token_info = json.loads(user.spotify_token)
     sp = get_client(credentials, token_info)
     try:
         yield sp
