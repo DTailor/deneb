@@ -10,6 +10,7 @@ from deneb.db import Album, User
 from deneb.logger import get_logger
 from deneb.sp import Spotter, get_client
 from deneb.tools import DefaultOrderedDict, clean, fetch_all, grouper, is_present
+from deneb.structs import SpotifyKeys
 
 _LOGGER = get_logger(__name__)
 
@@ -125,9 +126,7 @@ def update_user_playlist(user: User, sp: Spotter):
 
 
 def update_users_playlists(
-    client_id: str,
-    client_secret: str,
-    client_redirect_uri: str,
+    credentials: SpotifyKeys,
     user_id: Optional[str] = None,
 ):
     users = User.select()
@@ -141,7 +140,7 @@ def update_users_playlists(
             continue
 
         token_info = json.loads(user.spotify_token)
-        sp = get_client(client_id, client_secret, client_redirect_uri, token_info)
+        sp = get_client(credentials, token_info)
         user.sync_data(sp)
         update_user_playlist(user, sp)
         user.sync_data(sp)

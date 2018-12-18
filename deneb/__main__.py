@@ -6,15 +6,18 @@ from dotenv import load_dotenv
 from deneb.logger import get_logger
 from deneb.spotify.users import update_users_artists
 from deneb.spotify.weekly_releases import update_users_playlists
+from deneb.structs import SpotifyKeys
 
 load_dotenv()
 
 _LOGGER = get_logger(__name__)
 
 
-CLIENT_ID = os.environ["SPOTIPY_CLIENT_ID"]
-CLIENT_SECRET = os.environ["SPOTIPY_CLIENT_SECRET"]
-CLIENT_URI = os.environ["SPOTIPY_REDIRECT_URI"]
+SPOTIFY_KEYS = SpotifyKeys(
+    os.environ["SPOTIPY_CLIENT_ID"],
+    os.environ["SPOTIPY_CLIENT_SECRET"],
+    os.environ["SPOTIPY_REDIRECT_URI"],
+)
 
 
 @click.group()
@@ -38,7 +41,7 @@ def full_run(ctx, user, force):
 def update_followed(user, force):
     click.echo("------------ RUN UPDATE USER ARTISTS")
     try:
-        update_users_artists(CLIENT_ID, CLIENT_SECRET, CLIENT_URI, user, force)
+        update_users_artists(SPOTIFY_KEYS, user, force)
     except Exception:
         _LOGGER.exception(f"uhhh ohhhhhhhhhhhhh task failed")
 
@@ -48,7 +51,7 @@ def update_followed(user, force):
 def update_playlists(user):
     click.echo("------------ RUN UPDATE USER PLAYLISTS")
     try:
-        update_users_playlists(CLIENT_ID, CLIENT_SECRET, CLIENT_URI, user)
+        update_users_playlists(SPOTIFY_KEYS, user)
     except Exception:
         _LOGGER.exception(f"uhhh ohhhhhhhhhhhhh task failed")
 

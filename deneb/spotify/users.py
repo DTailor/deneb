@@ -7,15 +7,15 @@ from deneb.artist_update import get_new_releases
 from deneb.db import User
 from deneb.logger import get_logger
 from deneb.sp import get_client
+from deneb.structs import SpotifyKeys
 from deneb.user_update import fetch_user_followed_artists
+
 
 _LOGGER = get_logger(__name__)
 
 
 def update_users_artists(
-    client_id: str,
-    client_secret: str,
-    client_redirect_uri: str,
+    credentials: SpotifyKeys,
     user_id: Optional[str] = None,
     force_update: bool = False,
 ):
@@ -33,7 +33,7 @@ def update_users_artists(
 
         token_info = json.loads(user.spotify_token)
 
-        sp = get_client(client_id, client_secret, client_redirect_uri, token_info)
+        sp = get_client(credentials, token_info)
         user.sync_data(sp)
 
         new_follows, lost_follows = fetch_user_followed_artists(user, sp)

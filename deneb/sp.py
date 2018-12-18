@@ -5,6 +5,7 @@ from spotipy.client import Spotify
 from spotipy.oauth2 import SpotifyClientCredentials, SpotifyOAuth
 
 from deneb.logger import get_logger
+from deneb.structs import SpotifyKeys
 
 _LOGGER = get_logger(__name__)
 
@@ -16,11 +17,13 @@ class Spotter:
 
 
 def get_client(
-    client_id: str, client_secret: str, client_uri: str, token_info: dict
+    credentials: SpotifyKeys, token_info: dict
 ) -> Spotter:
     """returns a spotter obj with spotipy client"""
-    sp_oauth = SpotifyOAuth(client_id, client_secret, client_uri)
-    client_credentials = SpotifyClientCredentials(client_id, client_secret)
+    sp_oauth = SpotifyOAuth(
+        credentials.client_id, credentials.client_secret, credentials.client_uri)
+    client_credentials = SpotifyClientCredentials(
+        credentials.client_id, credentials.client_secret)
 
     if "expires_at" not in token_info:
         token_info["expires_at"] = int(time.time()) + 1000
