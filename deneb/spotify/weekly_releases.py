@@ -1,6 +1,5 @@
 """Create spotify playlist with weekly new releases"""
 import calendar
-import json
 from datetime import datetime as dt
 from itertools import chain
 from math import ceil
@@ -8,10 +7,9 @@ from typing import Dict, List, Optional
 
 from deneb.db import Album, User
 from deneb.logger import get_logger
-from deneb.sp import Spotter, get_client
-from deneb.tools import (
-    DefaultOrderedDict, clean, fetch_all, grouper, is_present
-)
+from deneb.sp import Spotter, spotify_client
+from deneb.tools import DefaultOrderedDict, clean, fetch_all, grouper, is_present
+from deneb.structs import SpotifyKeys
 
 _LOGGER = get_logger(__name__)
 
@@ -107,8 +105,7 @@ def update_user_playlist(user: User, sp: Spotter):
     playlist = is_present(playlist_name, user_playlists, "name")
     if not playlist:
         playlist = sp.client.user_playlist_create(
-            sp.userdata["id"], playlist_name,
-            public=False
+            sp.userdata["id"], playlist_name, public=False
         )
     playlist_tracks = get_tracks(sp, playlist)
     tracks = generate_tracks_to_add(sp, week_tracks_db, playlist_tracks)
@@ -128,23 +125,18 @@ def update_user_playlist(user: User, sp: Spotter):
 
 
 def update_users_playlists(
-    client_id: str,
-    client_secret: str,
-    client_redirect_uri: str,
-    user_id: Optional[str] = None
+    credentials: SpotifyKeys,
+    user_id: Optional[str] = None,
 ):
+    users = User.select()
+
     if user_id:
-        users = User.select().where(User.username == user_id)
-    else:
-        users = User.select()
+        users = [User.get(User.username == user_id)]
 
     for user in users:
         if not user.spotify_token:
             _LOGGER.info(f"can't update {user}, token not present.")
             continue
 
-        token_info = json.loads(user.spotify_token)
-        sp = get_client(client_id, client_secret, client_redirect_uri, token_info)
-        user.sync_data(sp)
-        update_user_playlist(user, sp)
-        user.sync_data(sp)
+        with spotify_client(credentials, user) as sp:
+            update_user_playlist(user, sp)
