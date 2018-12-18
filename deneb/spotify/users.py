@@ -1,15 +1,13 @@
 """Entry point to deneb spotify watcher"""
 
-import json
 from typing import Optional
 
 from deneb.artist_update import get_new_releases
 from deneb.db import User
 from deneb.logger import get_logger
-from deneb.sp import get_client
+from deneb.sp import spotify_client
 from deneb.structs import SpotifyKeys
 from deneb.user_update import fetch_user_followed_artists
-
 
 _LOGGER = get_logger(__name__)
 
@@ -26,33 +24,23 @@ def update_users_artists(
 
     for user in users:
         if not user.spotify_token:
-            _LOGGER.info(f"Can't update {user}, has no token yet.")
+            _LOGGER.info(f"can't update {user}, has no token yet.")
             continue
 
-        _LOGGER.info(f"Updating {user} ...")
+        _LOGGER.info(f"updating {user} ...")
 
-        token_info = json.loads(user.spotify_token)
+        with spotify_client(credentials, user) as sp:             # type: ignore
+            new_follows, lost_follows = fetch_user_followed_artists(user, sp)
 
-        sp = get_client(credentials, token_info)
-        user.sync_data(sp)
+            new_follows_str = ", ".join(str(a) for a in new_follows)
+            lost_follows_str = ", ".join(str(a) for a in lost_follows)
 
-        new_follows, lost_follows = fetch_user_followed_artists(user, sp)
+            _LOGGER.info(
+                f"new follows for {user} ({len(new_follows)}): {new_follows_str}")
+            _LOGGER.info(
+                f"lost follows for {user} ({len(lost_follows)}): {lost_follows_str}"
+            )
 
-        new_follows_str = ", ".join(str(a) for a in new_follows)
-
-        lost_follows_str = ", ".join(str(a) for a in lost_follows)
-
-        _LOGGER.info(f"new follows for {user} ({len(new_follows)}): {new_follows_str}")
-        _LOGGER.info(
-            f"lost follows for {user} ({len(lost_follows)}): {lost_follows_str}"
-        )
-
-        _LOGGER.info("now updating user artists")
-        try:
+            _LOGGER.info("now updating user artists")
             albums_nr, updated_nr = get_new_releases(sp, user.following, force_update)
             _LOGGER.info(f"fetched {albums_nr} albums for {updated_nr} artists")
-        except Exception as exc:
-            _LOGGER.exception(f"{sp} client failed. exc: {exc}")
-            raise
-        finally:
-            user.sync_data(sp)

@@ -1,13 +1,29 @@
 """Spotify connection handling"""
+import json
 import time
+from contextlib import contextmanager
+from typing import Generator
 
 from spotipy.client import Spotify
 from spotipy.oauth2 import SpotifyClientCredentials, SpotifyOAuth
-
+from deneb.db import User
 from deneb.logger import get_logger
 from deneb.structs import SpotifyKeys
 
 _LOGGER = get_logger(__name__)
+
+
+@contextmanager
+def spotify_client(credentials: SpotifyKeys, user: User) -> Generator:
+    """
+    context manager to aquire spotify client
+    """
+    token_info = json.loads(user.token_info)
+    sp = get_client(credentials, token_info)
+    try:
+        yield sp
+    finally:
+        user.sync_data(sp)
 
 
 class Spotter:

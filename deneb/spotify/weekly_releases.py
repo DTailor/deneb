@@ -1,6 +1,5 @@
 """Create spotify playlist with weekly new releases"""
 import calendar
-import json
 from datetime import datetime as dt
 from itertools import chain
 from math import ceil
@@ -8,7 +7,7 @@ from typing import Dict, List, Optional
 
 from deneb.db import Album, User
 from deneb.logger import get_logger
-from deneb.sp import Spotter, get_client
+from deneb.sp import Spotter, spotify_client
 from deneb.tools import DefaultOrderedDict, clean, fetch_all, grouper, is_present
 from deneb.structs import SpotifyKeys
 
@@ -139,8 +138,5 @@ def update_users_playlists(
             _LOGGER.info(f"can't update {user}, token not present.")
             continue
 
-        token_info = json.loads(user.spotify_token)
-        sp = get_client(credentials, token_info)
-        user.sync_data(sp)
-        update_user_playlist(user, sp)
-        user.sync_data(sp)
+        with spotify_client(credentials, user) as sp:
+            update_user_playlist(user, sp)
