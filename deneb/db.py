@@ -217,6 +217,8 @@ class User(DenebModel):
     def sync_data(self, sp):
         self.market = Market.to_obj(sp.userdata["country"])
         self.username = sp.userdata["id"]
+        if "refresh_token" not in sp.client.client_credentials_manager.token_info:
+            raise ValueError("Missing refresh token")
         self.spotify_token = json.dumps(sp.client.client_credentials_manager.token_info)
         self.save()
 
