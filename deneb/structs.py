@@ -22,8 +22,8 @@ class SpotifyStats:
             "Didn't find anything new today",
             "Sad day, no new music",
             "No adds, you should follow more artists",
-            ""
         ]
         if self.added_items:
-            return f"I added {len(self.added_items)} tracks to {self.playlist['name']}"
+            track_noun = "track" if len(self.added_items) == 1 else "tracks"
+            return f"I added {len(self.added_items)} {track_noun} to {self.playlist['name']}"
         return random.choice(didnt_add_responses)
