@@ -19,4 +19,4 @@ def send_message(
     try:
         requests.post(url, json=contents)
     except Exception as exc:
-        _LOGGER(f"failed to send message {exc}")
+        _LOGGER.exception(f"failed to send message {exc}")
