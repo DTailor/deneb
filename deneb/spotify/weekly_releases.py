@@ -8,8 +8,10 @@ from typing import Dict, List, Optional
 from deneb.db import Album, User
 from deneb.logger import get_logger
 from deneb.sp import Spotter, spotify_client
-from deneb.tools import DefaultOrderedDict, clean, fetch_all, grouper, is_present
-from deneb.structs import SpotifyKeys
+from deneb.structs import SpotifyKeys, SpotifyStats
+from deneb.tools import (
+    DefaultOrderedDict, clean, fetch_all, grouper, is_present
+)
 
 _LOGGER = get_logger(__name__)
 
@@ -90,7 +92,7 @@ def generate_tracks_to_add(
     return tracks
 
 
-def update_user_playlist(user: User, sp: Spotter):
+def update_user_playlist(user: User, sp: Spotter) -> SpotifyStats:
     today = dt.now()
     monday_date = today.day - today.weekday()
     monday = today.replace(day=monday_date)
@@ -110,7 +112,7 @@ def update_user_playlist(user: User, sp: Spotter):
     playlist_tracks = get_tracks(sp, playlist)
     tracks = generate_tracks_to_add(sp, week_tracks_db, playlist_tracks)
 
-    all_ids = []
+    all_ids = []                                                            # type: List[str]
     for album_ids in grouper(
         100, chain(tracks["album"].keys(), tracks["track"].keys())
     ):
@@ -119,9 +121,12 @@ def update_user_playlist(user: User, sp: Spotter):
             sp.client.user_playlist_add_tracks(
                 sp.userdata["id"], playlist["uri"], album_ids
             )
-            all_ids.append(album_ids)
+            all_ids.extend(album_ids)
         except Exception as exc:
             _LOGGER.exception(f"add to playlist '{album_ids}' failed with: {exc}")
+
+    stats = SpotifyStats(user.fb_id, playlist, all_ids)
+    return stats
 
 
 def update_users_playlists(
@@ -139,4 +144,4 @@ def update_users_playlists(
             continue
 
         with spotify_client(credentials, user) as sp:
-            update_user_playlist(user, sp)
+            stats = update_user_playlist(user, sp)
