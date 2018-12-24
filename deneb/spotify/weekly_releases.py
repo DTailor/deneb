@@ -9,7 +9,7 @@ from deneb.chatbot.message import send_message
 from deneb.db import Album, User
 from deneb.logger import get_logger
 from deneb.sp import Spotter, spotify_client
-from deneb.structs import Chatboi, SpotifyKeys, SpotifyStats
+from deneb.structs import FBAltert, SpotifyKeys, SpotifyStats
 from deneb.tools import (
     DefaultOrderedDict, clean, fetch_all, grouper, is_present
 )
@@ -132,7 +132,7 @@ def update_user_playlist(user: User, sp: Spotter) -> SpotifyStats:
 
 def update_users_playlists(
     credentials: SpotifyKeys,
-    chatboi: Chatboi,
+    fb_alert: FBAltert,
     user_id: Optional[str],
 ):
     users = User.select()
@@ -147,10 +147,9 @@ def update_users_playlists(
 
         with spotify_client(credentials, user) as sp:
             stats = update_user_playlist(user, sp)
-            if chatboi.notify:
+            if fb_alert.notify:
                 send_message(
                     user.fb_id,
-                    chatboi.chatboi_url,
-                    chatboi.chatboi_key,
+                    fb_alert,
                     stats.describe(),
                 )

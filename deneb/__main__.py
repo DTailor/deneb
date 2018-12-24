@@ -6,7 +6,7 @@ from dotenv import load_dotenv
 from deneb.logger import get_logger
 from deneb.spotify.users import update_users_artists
 from deneb.spotify.weekly_releases import update_users_playlists
-from deneb.structs import SpotifyKeys, Chatboi
+from deneb.structs import SpotifyKeys, FBAltert
 
 load_dotenv()
 
@@ -19,11 +19,13 @@ SPOTIFY_KEYS = SpotifyKeys(
     os.environ["SPOTIPY_REDIRECT_URI"],
 )
 
-CHATBOI = Chatboi(
-    os.environ["CHAPTAIN_KEY"],
-    os.environ["CHAPTAIN_URL"],
-    False,
-)
+
+def get_fb_alert(notify: bool) -> FBAltert:
+    return FBAltert(
+        os.environ["FB_API_KEY"],
+        os.environ["FB_API_URL"],
+        notify,
+    )
 
 
 @click.group()
@@ -68,9 +70,9 @@ def update_followed(user, force):
 @click.command()
 def update_playlists(user, notify):
     click.echo("------------ RUN UPDATE USER PLAYLISTS")
-    CHATBOI.notify = notify
+    fb_alert = get_fb_alert(notify)
     try:
-        update_users_playlists(SPOTIFY_KEYS, CHATBOI, user)
+        update_users_playlists(SPOTIFY_KEYS, fb_alert, user)
     except Exception:
         _LOGGER.exception(f"uhhh ohhhhhhhhhhhhh task failed")
 

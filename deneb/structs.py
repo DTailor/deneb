@@ -6,8 +6,8 @@ import random
 SpotifyKeys = namedtuple(
     "SpotifyKeys", ["client_id", "client_secret", "client_uri"]
 )
-Chatboi = namedtuple(
-    "Chatboi", ["chatboi_key", "chatboi_url", "notify"]
+FBAltert = namedtuple(
+    "FBAltert", ["key", "url", "notify"]
 )
 
 
