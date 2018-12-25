@@ -30,6 +30,9 @@ flake8-eradicate = "*"
 flake8-import-order = "*"
 vulture = "*"
 fabric = "*"
+pylint = "*"
+pytest = "*"
+pytest-cov = "*"
 
 [requires]
 python_version = "3.7"

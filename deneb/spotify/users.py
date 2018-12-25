@@ -13,9 +13,7 @@ _LOGGER = get_logger(__name__)
 
 
 def update_users_artists(
-    credentials: SpotifyKeys,
-    user_id: Optional[str] = None,
-    force_update: bool = False,
+    credentials: SpotifyKeys, user_id: Optional[str] = None, force_update: bool = False
 ):
     users = User.select()
 
@@ -29,14 +27,15 @@ def update_users_artists(
 
         _LOGGER.info(f"updating {user} ...")
 
-        with spotify_client(credentials, user) as sp:             # type: ignore
+        with spotify_client(credentials, user) as sp:  # type: ignore
             new_follows, lost_follows = fetch_user_followed_artists(user, sp)
 
             new_follows_str = ", ".join(str(a) for a in new_follows)
             lost_follows_str = ", ".join(str(a) for a in lost_follows)
 
             _LOGGER.info(
-                f"new follows for {user} ({len(new_follows)}): {new_follows_str}")
+                f"new follows for {user} ({len(new_follows)}): {new_follows_str}"
+            )
             _LOGGER.info(
                 f"lost follows for {user} ({len(lost_follows)}): {lost_follows_str}"
             )
