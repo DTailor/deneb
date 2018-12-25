@@ -2,7 +2,6 @@ import random
 from collections import Counter, namedtuple
 from typing import Dict, List, Optional
 
-from ordered_set import OrderedSet
 
 SpotifyKeys = namedtuple("SpotifyKeys", ["client_id", "client_secret", "client_uri"])
 FBAltert = namedtuple("FBAltert", ["key", "url", "notify"])
@@ -23,7 +22,7 @@ class SpotifyStats:
         self,
         fb_id: str,
         playlist: dict,
-        added_items: Dict[str, OrderedSet],
+        added_items: Dict[str, List],
         artist_data: Counter,
     ):
         self.fb_id = fb_id
