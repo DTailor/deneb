@@ -1,5 +1,5 @@
 import random
-from collections import Counter, namedtuple
+from collections import namedtuple
 from typing import Dict, List, Optional
 
 
@@ -23,7 +23,6 @@ class SpotifyStats:
         fb_id: str,
         playlist: dict,
         added_items: Dict[str, List],
-        artist_data: Counter,
     ):
         self.fb_id = fb_id
         self.playlist = playlist
@@ -44,7 +43,7 @@ class SpotifyStats:
             "No adds, you should follow more artists",
         ]
         total_added = len(self.added_albums) + len(self.added_tracks)
-        return_msg = f"I added the following albums: \n"
+        return_msg = f"{self.playlist['name']}\nI added the following albums: \n"
 
         if total_added:
             for album in self.added_albums:
@@ -53,9 +52,11 @@ class SpotifyStats:
                 for track in album.tracks:
                     tmp_msg = f"{tmp_msg}   * {track['name']}\n"
                 return_msg = f"{return_msg}{tmp_msg}\n"
-            return_msg = f"{return_msg}And some tracks:\n"
-            for track in self.added_tracks:
-                return_msg = f"{return_msg} * {self.humanize_track(track)}\n"
+
+            if self.added_tracks:
+                return_msg = f"{return_msg}And some tracks:\n"
+                for track in self.added_tracks:
+                    return_msg = f"{return_msg} * {self.humanize_track(track)}\n"
 
             return return_msg
 

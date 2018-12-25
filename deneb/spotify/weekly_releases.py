@@ -1,6 +1,5 @@
 """Create spotify playlist with weekly new releases"""
 import calendar
-from collections import Counter
 from datetime import datetime as dt
 from itertools import chain
 from math import ceil
@@ -80,30 +79,12 @@ def generate_tracks_to_add(
             else:
                 already_present_tracks.add(track["name"])
 
-        if album.parent and len(album.tracks) > 3:
-            albums.append(album)
-        else:
-            tracks.append(album)
+            if album.parent and len(album.tracks) > 3:
+                albums.append(album)
+            else:
+                tracks.append(album)
 
     return albums, tracks
-
-
-def sumarize_new_tracks(albums: List[AlbumTracks], tracks: List[AlbumTracks]) -> Counter:
-    co = Counter()          # type: Counter
-
-    tracks_from_albums = []             # type: List[dict]
-    for album in albums:
-        tracks_from_albums.extend(album.tracks)
-    tracks_without_albums = []          # type: List[dict]
-    for fake_album in tracks:
-        tracks_without_albums.extend(fake_album.tracks)
-
-    for artist in chain(
-        *[a["artists"] for a in tracks_from_albums],
-        *[a["artists"] for a in tracks_without_albums],
-    ):
-        co[artist["name"]] += 1
-    return co
 
 
 def update_user_playlist(user: User, sp: Spotter) -> SpotifyStats:
@@ -137,7 +118,7 @@ def update_user_playlist(user: User, sp: Spotter) -> SpotifyStats:
         )
     ):
         album_ids = clean(album_ids)
-
+        album_ids = [a["id"] for a in album_ids]
         try:
             sp.client.user_playlist_add_tracks(
                 sp.userdata["id"], playlist["uri"], album_ids
@@ -145,9 +126,8 @@ def update_user_playlist(user: User, sp: Spotter) -> SpotifyStats:
             all_ids.extend(album_ids)
         except Exception as exc:
             _LOGGER.exception(f"add to playlist '{album_ids}' failed with: {exc}")
-    artits_data = sumarize_new_tracks(albums, tracks)
     albums_and_tracks = {"albums": albums, "tracks": tracks}
-    stats = SpotifyStats(user.fb_id, playlist, albums_and_tracks, artits_data)
+    stats = SpotifyStats(user.fb_id, playlist, albums_and_tracks)
     return stats
 
 
