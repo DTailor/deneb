@@ -16,7 +16,8 @@ def grouper(size, data):
         else:
             yield to_return
             to_return = ""
-    yield to_return
+    if to_return:
+        yield to_return
 
 
 def send_message(
