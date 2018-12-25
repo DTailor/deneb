@@ -32,14 +32,14 @@ class Spotter:
         self.userdata = userdata
 
 
-def get_client(
-    credentials: SpotifyKeys, token_info: dict
-) -> Spotter:
+def get_client(credentials: SpotifyKeys, token_info: dict) -> Spotter:
     """returns a spotter obj with spotipy client"""
     sp_oauth = SpotifyOAuth(
-        credentials.client_id, credentials.client_secret, credentials.client_uri)
+        credentials.client_id, credentials.client_secret, credentials.client_uri
+    )
     client_credentials = SpotifyClientCredentials(
-        credentials.client_id, credentials.client_secret)
+        credentials.client_id, credentials.client_secret
+    )
 
     if "expires_at" not in token_info:
         token_info["expires_at"] = int(time.time()) + 1000

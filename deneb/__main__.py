@@ -21,11 +21,7 @@ SPOTIFY_KEYS = SpotifyKeys(
 
 
 def get_fb_alert(notify: bool) -> FBAltert:
-    return FBAltert(
-        os.environ["FB_API_KEY"],
-        os.environ["FB_API_URL"],
-        notify,
-    )
+    return FBAltert(os.environ["FB_API_KEY"], os.environ["FB_API_URL"], notify)
 
 
 @click.group()
@@ -41,15 +37,12 @@ def cli():
 def full_run(ctx, user, force, notify):
     orig_params = ctx.params.copy()
 
-    ctx.params = {
-        "user": orig_params["user"],
-        "force": orig_params.get("force", False),
-    }
+    ctx.params = {"user": orig_params["user"], "force": orig_params.get("force", False)}
     update_followed.invoke(ctx)
 
     ctx.params = {
         "user": orig_params["user"],
-        "notify": orig_params.get("notify", False)
+        "notify": orig_params.get("notify", False),
     }
     update_playlists.invoke(ctx)
 

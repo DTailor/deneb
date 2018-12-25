@@ -20,11 +20,7 @@ def grouper(size, data):
         yield to_return
 
 
-def send_message(
-        fb_id: str,
-        fb_alert: FBAltert,
-        data: str,
-):
+def send_message(fb_id: str, fb_alert: FBAltert, data: str):
     """send fb user text message"""
     fb_token = {"access_token": fb_alert.key}
 
@@ -33,7 +29,7 @@ def send_message(
         clean_chunk = [a for a in msg_chunk if a is not None]
         contents = {
             "recipient": {"id": fb_id},
-            "message": {"text": ''.join(clean_chunk)},
+            "message": {"text": "".join(clean_chunk)},
         }
         try:
             res = requests.post(fb_alert.url, json=contents, params=fb_token)

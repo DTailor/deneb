@@ -9,21 +9,14 @@ FBAltert = namedtuple("FBAltert", ["key", "url", "notify"])
 
 class AlbumTracks:
     def __init__(
-        self,
-        parent: Optional[Dict] = None,
-        tracks: Optional[List[Dict]] = None
+        self, parent: Optional[Dict] = None, tracks: Optional[List[Dict]] = None
     ):
         self.parent = parent
         self.tracks = tracks or []
 
 
 class SpotifyStats:
-    def __init__(
-        self,
-        fb_id: str,
-        playlist: dict,
-        added_items: Dict[str, List],
-    ):
+    def __init__(self, fb_id: str, playlist: dict, added_items: Dict[str, List]):
         self.fb_id = fb_id
         self.playlist = playlist
         self.added_albums = added_items["albums"]
@@ -32,7 +25,7 @@ class SpotifyStats:
     @staticmethod
     def humanize_track(album: AlbumTracks) -> str:
         track = album.tracks[0]
-        artists = ', '.join(a["name"] for a in track["artists"])
+        artists = ", ".join(a["name"] for a in track["artists"])
         return f"{artists} - {track['name']}"
 
     def describe(self) -> str:
@@ -47,7 +40,7 @@ class SpotifyStats:
 
         if total_added:
             for album in self.added_albums:
-                featuring_artists = ', '.join(a.name for a in album.parent.artists())
+                featuring_artists = ", ".join(a.name for a in album.parent.artists())
                 tmp_msg = f"- [{featuring_artists} - {album.parent.name}]\n"
                 for track in album.tracks:
                     tmp_msg = f"{tmp_msg}   * {track['name']}\n"

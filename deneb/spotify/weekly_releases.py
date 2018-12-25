@@ -108,15 +108,10 @@ def update_user_playlist(user: User, sp: Spotter) -> SpotifyStats:
     playlist_tracks = get_tracks(sp, playlist)
     albums, tracks = generate_tracks_to_add(sp, week_tracks_db, playlist_tracks)
 
-    all_ids = []                                                            # type: List[str]
+    all_ids = []  # type: List[str]
     tracks_from_albums = [a.tracks for a in albums]
     tracks_without_albums = [a.tracks for a in tracks]
-    for album_ids in grouper(
-        100, chain(
-            *tracks_from_albums,
-            *tracks_without_albums,
-        )
-    ):
+    for album_ids in grouper(100, chain(*tracks_from_albums, *tracks_without_albums)):
         album_ids = clean(album_ids)
         album_ids = [a["id"] for a in album_ids]
         try:
@@ -132,9 +127,7 @@ def update_user_playlist(user: User, sp: Spotter) -> SpotifyStats:
 
 
 def update_users_playlists(
-    credentials: SpotifyKeys,
-    fb_alert: FBAltert,
-    user_id: Optional[str],
+    credentials: SpotifyKeys, fb_alert: FBAltert, user_id: Optional[str]
 ):
     users = User.select()
 
@@ -149,8 +142,4 @@ def update_users_playlists(
         with spotify_client(credentials, user) as sp:
             stats = update_user_playlist(user, sp)
             if fb_alert.notify:
-                send_message(
-                    user.fb_id,
-                    fb_alert,
-                    stats.describe(),
-                )
+                send_message(user.fb_id, fb_alert, stats.describe())
