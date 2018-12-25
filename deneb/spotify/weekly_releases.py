@@ -1,18 +1,19 @@
 """Create spotify playlist with weekly new releases"""
 import calendar
+from collections import Counter
 from datetime import datetime as dt
 from itertools import chain
 from math import ceil
-from typing import Dict, List, Optional
+from typing import List, Optional, Tuple
+
+from ordered_set import OrderedSet
 
 from deneb.chatbot.message import send_message
 from deneb.db import Album, User
 from deneb.logger import get_logger
 from deneb.sp import Spotter, spotify_client
-from deneb.structs import FBAltert, SpotifyKeys, SpotifyStats
-from deneb.tools import (
-    DefaultOrderedDict, clean, fetch_all, grouper, is_present
-)
+from deneb.structs import AlbumTracks, FBAltert, SpotifyKeys, SpotifyStats
+from deneb.tools import clean, fetch_all, grouper, is_present
 
 _LOGGER = get_logger(__name__)
 
@@ -54,48 +55,67 @@ def get_tracks(sp: Spotter, playlist: dict) -> List[dict]:
     return fetch_all(sp, tracks)
 
 
-def get_album_tracks(sp: Spotter, album: Album) -> List[dict]:
+def get_album_tracks(sp: Spotter, album: Album) -> AlbumTracks:
     tracks = []  # type: List[dict]
     album_data = sp.client.album(album.uri)
     tracks = fetch_all(sp, album_data["tracks"])
-    return tracks
+    return AlbumTracks(album, tracks)
 
 
 def generate_tracks_to_add(
     sp: Spotter, db_tracks: List[Album], pl_tracks: List[dict]
-) -> Dict[str, DefaultOrderedDict]:
+) -> Tuple[OrderedSet, OrderedSet]:
     """return list of tracks to be added"""
     already_present_tracks = {a["track"]["name"] for a in pl_tracks}
 
-    tracks = {"album": DefaultOrderedDict(list), "track": DefaultOrderedDict(list)}
+    albums = []
+    tracks = []
     for item in db_tracks:
         if item.type == "album":
-            check_tracks = get_album_tracks(sp, item)
+            album = get_album_tracks(sp, item)
         else:
-            check_tracks = [sp.client.track(item.uri)]
-        for track in check_tracks:
-            track_type = item.type
-            if isinstance(track, Album):
-                track_name = track.name
-                track_id = track.spotify_id
-            else:
-                track_name = track["name"]
-                track_id = track["id"]
-            if track_name in already_present_tracks:
+            album = AlbumTracks(None, [sp.client.track(item.uri)])
+
+        for track in album.tracks:
+            if track["name"] in already_present_tracks:
                 continue
             else:
-                already_present_tracks.add(track_name)
-            if len(check_tracks) <= 3:
-                # put all <= 3 track albums to tracks list
-                track_type = "track"
-            tracks[track_type][track_id].append(track)
+                already_present_tracks.add(track["name"])
 
-    return tracks
+        if album.parent and len(album.tracks) > 3:
+            albums.append(album)
+        else:
+            tracks.append(album)
+
+    return albums, tracks
+
+
+def sumarize_new_tracks(albums: OrderedSet, tracks: OrderedSet) -> Counter:
+    co = Counter()          # type: Counter
+
+    tracks_from_albums = []             # type: List[dict]
+    for album in albums:
+        tracks_from_albums.extend(album.tracks)
+    tracks_without_albums = []          # type: List[dict]
+    for fake_album in tracks:
+        tracks_without_albums.extend(fake_album.tracks)
+
+    for artist in chain(
+        *[a["artists"] for a in tracks_from_albums],
+        *[a["artists"] for a in tracks_without_albums],
+    ):
+        co[artist["name"]] += 1
+    return co
 
 
 def update_user_playlist(user: User, sp: Spotter) -> SpotifyStats:
     today = dt.now()
-    monday_date = today.day - today.weekday()
+    # -------------------------------------------
+    from datetime import timedelta
+    tmp_date = today - timedelta(days=10)
+    monday_date = tmp_date.day
+    # -------------------------------------------
+    # monday_date = today.day - today.weekday()
     monday = today.replace(day=monday_date)
     week_tracks_db = user.released_from_weekday(monday)
 
@@ -110,23 +130,31 @@ def update_user_playlist(user: User, sp: Spotter) -> SpotifyStats:
         playlist = sp.client.user_playlist_create(
             sp.userdata["id"], playlist_name, public=False
         )
+
     playlist_tracks = get_tracks(sp, playlist)
-    tracks = generate_tracks_to_add(sp, week_tracks_db, playlist_tracks)
+    albums, tracks = generate_tracks_to_add(sp, week_tracks_db, playlist_tracks)
 
     all_ids = []                                                            # type: List[str]
+    tracks_from_albums = [a.tracks for a in albums]
+    tracks_without_albums = [a.tracks for a in tracks]
     for album_ids in grouper(
-        100, chain(tracks["album"].keys(), tracks["track"].keys())
+        100, chain(
+            *tracks_from_albums,
+            *tracks_without_albums,
+        )
     ):
         album_ids = clean(album_ids)
+
         try:
-            sp.client.user_playlist_add_tracks(
-                sp.userdata["id"], playlist["uri"], album_ids
-            )
+            # sp.client.user_playlist_add_tracks(
+            #     sp.userdata["id"], playlist["uri"], album_ids
+            # )
             all_ids.extend(album_ids)
         except Exception as exc:
             _LOGGER.exception(f"add to playlist '{album_ids}' failed with: {exc}")
-
-    stats = SpotifyStats(user.fb_id, playlist, all_ids)
+    artits_data = sumarize_new_tracks(albums, tracks)
+    albums_and_tracks = {"albums": albums, "tracks": tracks}
+    stats = SpotifyStats(user.fb_id, playlist, albums_and_tracks, artits_data)
     return stats
 
 
