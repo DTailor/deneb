@@ -6,7 +6,7 @@ from dotenv import load_dotenv
 from deneb.logger import get_logger
 from deneb.spotify.users import update_users_artists
 from deneb.spotify.weekly_releases import update_users_playlists
-from deneb.structs import SpotifyKeys, FBAltert
+from deneb.structs import SpotifyKeys, FBAlert
 
 load_dotenv()
 
@@ -20,8 +20,8 @@ SPOTIFY_KEYS = SpotifyKeys(
 )
 
 
-def get_fb_alert(notify: bool) -> FBAltert:
-    return FBAltert(os.environ["FB_API_KEY"], os.environ["FB_API_URL"], notify)
+def get_fb_alert(notify: bool) -> FBAlert:
+    return FBAlert(os.environ["FB_API_KEY"], os.environ["FB_API_URL"], notify)
 
 
 @click.group()

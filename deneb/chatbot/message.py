@@ -1,7 +1,7 @@
 import requests
 
 from deneb.logger import get_logger
-from deneb.structs import FBAltert
+from deneb.structs import FBAlert
 
 
 _LOGGER = get_logger(__name__)
@@ -20,7 +20,7 @@ def grouper(size, data):
         yield to_return
 
 
-def send_message(fb_id: str, fb_alert: FBAltert, data: str):
+def send_message(fb_id: str, fb_alert: FBAlert, data: str):
     """send fb user text message"""
     fb_token = {"access_token": fb_alert.key}
 

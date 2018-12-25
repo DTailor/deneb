@@ -4,7 +4,7 @@ from typing import Dict, List, Optional
 
 
 SpotifyKeys = namedtuple("SpotifyKeys", ["client_id", "client_secret", "client_uri"])
-FBAltert = namedtuple("FBAltert", ["key", "url", "notify"])
+FBAlert = namedtuple("FBAlert", ["key", "url", "notify"])
 
 
 class AlbumTracks:
