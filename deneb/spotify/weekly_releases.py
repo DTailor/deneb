@@ -139,9 +139,9 @@ def update_user_playlist(user: User, sp: Spotter) -> SpotifyStats:
         album_ids = clean(album_ids)
 
         try:
-            # sp.client.user_playlist_add_tracks(
-            #     sp.userdata["id"], playlist["uri"], album_ids
-            # )
+            sp.client.user_playlist_add_tracks(
+                sp.userdata["id"], playlist["uri"], album_ids
+            )
             all_ids.extend(album_ids)
         except Exception as exc:
             _LOGGER.exception(f"add to playlist '{album_ids}' failed with: {exc}")
