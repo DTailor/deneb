@@ -322,9 +322,9 @@
         },
         "eradicate": {
             "hashes": [
-                "sha256:f9af01c544ccd8f71bc2f7f3fa39dc363d842cfcb9c730a83676a59026ab5f24"
+                "sha256:4ffda82aae6fd49dfffa777a857cb758d77502a1f2e0f54c9ac5155a39d2d01a"
             ],
-            "version": "==0.2.1"
+            "version": "==1.0"
         },
         "fabric": {
             "hashes": [
@@ -368,11 +368,11 @@
         },
         "flake8-eradicate": {
             "hashes": [
-                "sha256:750e51d4180a253df468a0ebe6ab115a3cf766035269dbbd78589a1d1de7584e",
-                "sha256:83dfeb5980ada63a73ccdfe64f233fc7ddf9ea702299b9f599dad9c2adc9036e"
+                "sha256:0953cd3bcae4bfd04d45075234e0b5fd465ff50ecc56cdcaf0027da751632127",
+                "sha256:c762fbb5c3e3694c9ba656d38477b2dcca6599b8baeee4984d05d655591a6f83"
             ],
             "index": "pypi",
-            "version": "==0.1.1"
+            "version": "==0.2.0"
         },
         "flake8-import-order": {
             "hashes": [
