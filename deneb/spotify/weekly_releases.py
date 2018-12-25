@@ -6,8 +6,6 @@ from itertools import chain
 from math import ceil
 from typing import List, Optional, Tuple
 
-from ordered_set import OrderedSet
-
 from deneb.chatbot.message import send_message
 from deneb.db import Album, User
 from deneb.logger import get_logger
@@ -64,7 +62,7 @@ def get_album_tracks(sp: Spotter, album: Album) -> AlbumTracks:
 
 def generate_tracks_to_add(
     sp: Spotter, db_tracks: List[Album], pl_tracks: List[dict]
-) -> Tuple[OrderedSet, OrderedSet]:
+) -> Tuple[List[AlbumTracks], List[AlbumTracks]]:
     """return list of tracks to be added"""
     already_present_tracks = {a["track"]["name"] for a in pl_tracks}
 
@@ -90,7 +88,7 @@ def generate_tracks_to_add(
     return albums, tracks
 
 
-def sumarize_new_tracks(albums: OrderedSet, tracks: OrderedSet) -> Counter:
+def sumarize_new_tracks(albums: List[AlbumTracks], tracks: List[AlbumTracks]) -> Counter:
     co = Counter()          # type: Counter
 
     tracks_from_albums = []             # type: List[dict]
@@ -110,12 +108,7 @@ def sumarize_new_tracks(albums: OrderedSet, tracks: OrderedSet) -> Counter:
 
 def update_user_playlist(user: User, sp: Spotter) -> SpotifyStats:
     today = dt.now()
-    # -------------------------------------------
-    from datetime import timedelta
-    tmp_date = today - timedelta(days=10)
-    monday_date = tmp_date.day
-    # -------------------------------------------
-    # monday_date = today.day - today.weekday()
+    monday_date = today.day - today.weekday()
     monday = today.replace(day=monday_date)
     week_tracks_db = user.released_from_weekday(monday)
 

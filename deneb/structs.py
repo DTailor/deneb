@@ -39,7 +39,7 @@ class SpotifyStats:
             "No adds, you should follow more artists",
         ]
         total_added = len(self.added_albums) + len(self.added_tracks)
-        return_msg = f""
+        return_msg = f"I added the following albums: \n"
         if total_added:
             for album in self.added_albums:
                 featuring_artists = ', '.join(a.name for a in album.parent.artists())
