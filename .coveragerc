@@ -3,3 +3,7 @@ omit =
         *__init__.py*
         deneb/migrations/*
         deneb/__main__.py
+        deneb/logger.py
+        deneb/structs.py
+        deneb/tools.py
+        deneb/db.py

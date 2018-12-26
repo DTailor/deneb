@@ -250,11 +250,12 @@ class SeenAlbum(DenebModel):
     user = ForeignKeyField(User)
 
 
-Artist.create_table(fail_silently=True)
-Market.create_table(fail_silently=True)
-User.create_table(fail_silently=True)
-Album.create_table(fail_silently=True)
-AvailableMarket.create_table(fail_silently=True)
-SeenAlbum.create_table(fail_silently=True)
-ArtistFollowers.create_table(fail_silently=True)
-AlbumArtist.create_table(fail_silently=True)
+# flake8: noqa
+# Artist.create_table(fail_silently=True)
+# Market.create_table(fail_silently=True)
+# User.create_table(fail_silently=True)
+# Album.create_table(fail_silently=True)
+# AvailableMarket.create_table(fail_silently=True)
+# SeenAlbum.create_table(fail_silently=True)
+# ArtistFollowers.create_table(fail_silently=True)
+# AlbumArtist.create_table(fail_silently=True)
