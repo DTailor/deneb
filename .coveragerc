@@ -1,0 +1,5 @@
+[run]
+omit =
+        *__init__.py*
+        deneb/migrations/*
+        deneb/__main__.py
