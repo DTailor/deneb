@@ -35,19 +35,19 @@ class SpotifyStats:
             "Sad day, no new music",
             "No adds, you should follow more artists",
         ]
-        total_added = len(self.added_albums) + len(self.added_tracks)
-        return_msg = f"{self.playlist['name']}\nI added the following albums: \n"
+        if self.added_albums or self.added_tracks:
+            return_msg = f"{self.playlist['name']}\n"
 
-        if total_added:
-            for album in self.added_albums:
-                featuring_artists = ", ".join(a.name for a in album.parent.artists())
-                tmp_msg = f"- [{featuring_artists} - {album.parent.name}]\n"
-                for track in album.tracks:
-                    tmp_msg = f"{tmp_msg}   * {track['name']}\n"
-                return_msg = f"{return_msg}{tmp_msg}\n"
+            if self.added_albums:
+                return_msg = f"{return_msg}Albums:\n"
+                for album in self.added_albums:
+                    tmp_msg = f"- [{album.parent.human_name()}]\n"
+                    for track in album.tracks:
+                        tmp_msg = f"{tmp_msg}   * {track['name']}\n"
+                    return_msg = f"{return_msg}{tmp_msg}\n"
 
             if self.added_tracks:
-                return_msg = f"{return_msg}And some tracks:\n"
+                return_msg = f"{return_msg}Tracks:\n"
                 for track in self.added_tracks:
                     return_msg = f"{return_msg} * {self.humanize_track(track)}\n"
 

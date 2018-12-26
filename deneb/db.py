@@ -108,6 +108,10 @@ class Album(DenebModel):
     def uri(self):
         return f"spotify:{self.type}:{self.spotify_id}"
 
+    def human_name(self):
+        artists = ", ".join([a.name for a in self.artists()])
+        return f"{artists} - {self.name}"
+
     def __str__(self):
         artists = ", ".join([a.name for a in self.artists()])
         return f"<{self.uri}> - {artists} ({self.name} [{self.release}])"
@@ -188,13 +192,19 @@ class AvailableMarket(DenebModel):
 class User(DenebModel):
     username = CharField()
     fb_id = CharField()
+    display_name = CharField(default='')
     market = ForeignKeyField(Market, null=True)
     following = ManyToManyField(Artist, backref="followers")
     spotify_token = CharField(max_length=1000)
     state_id = CharField()
 
     def __str__(self) -> str:
-        return f"<user:{self.fb_id}:{self.username}>"
+        base = f"spotify:user:{self.username}>"
+        if self.display_name:
+            base = f"<{self.display_name}:{base}"
+        else:
+            base = f"<{base}"
+        return base
 
     def following_ids(self: "User") -> List[Artist]:
         return self.following.select(Artist.id)
@@ -217,6 +227,7 @@ class User(DenebModel):
     def sync_data(self, sp):
         self.market = Market.to_obj(sp.userdata["country"])
         self.username = sp.userdata["id"]
+        self.display_name = sp.userdata["display_name"]
         if "refresh_token" not in sp.client.client_credentials_manager.token_info:
             raise ValueError("Missing refresh token")
         self.spotify_token = json.dumps(sp.client.client_credentials_manager.token_info)

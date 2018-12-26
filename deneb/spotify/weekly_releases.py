@@ -67,11 +67,21 @@ def generate_tracks_to_add(
 
     albums = []
     tracks = []
+
     for item in db_tracks:
         if item.type == "album":
             album = get_album_tracks(sp, item)
         else:
             album = AlbumTracks(None, [sp.client.track(item.uri)])
+
+        # we want albums with less than 3 tracks to be listed as tracks
+        # because often they contain just remixes with 1 song or so.
+        # figure out later how to spot this things and have a smarter handling
+        # for albums which indeed have 3 different songs
+        can_be_added_to_tracks = True
+        if album.parent and len(album.tracks) > 3:
+            albums.append(album)
+            can_be_added_to_tracks = False
 
         for track in album.tracks:
             if track["name"] in already_present_tracks:
@@ -79,9 +89,7 @@ def generate_tracks_to_add(
             else:
                 already_present_tracks.add(track["name"])
 
-            if album.parent and len(album.tracks) > 3:
-                albums.append(album)
-            else:
+            if can_be_added_to_tracks:
                 tracks.append(album)
 
     return albums, tracks
