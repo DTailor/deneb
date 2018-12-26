@@ -108,6 +108,10 @@ class Album(DenebModel):
     def uri(self):
         return f"spotify:{self.type}:{self.spotify_id}"
 
+    def human_name(self):
+        artists = ", ".join([a.name for a in self.artists()])
+        return f"{artists} - {self.name}"
+
     def __str__(self):
         artists = ", ".join([a.name for a in self.artists()])
         return f"<{self.uri}> - {artists} ({self.name} [{self.release}])"
