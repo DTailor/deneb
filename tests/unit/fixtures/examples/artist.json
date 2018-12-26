@@ -1,0 +1,39 @@
+{
+    "external_urls": {
+        "spotify": "https://open.spotify.com/artist/test-id"
+    },
+    "followers": {
+        "href": null,
+        "total": 58601
+    },
+    "genres": [
+        "garage rock",
+        "modern blues rock",
+        "neo-psychedelic",
+        "space rock",
+        "stoner rock"
+    ],
+    "href": "https://api.spotify.com/v1/artists/test-id",
+    "id": "test-id-TESTID",
+    "images": [
+        {
+            "height": 640,
+            "url": "img",
+            "width": 640
+        },
+        {
+            "height": 320,
+            "url": "img",
+            "width": 320
+        },
+        {
+            "height": 160,
+            "url": "img",
+            "width": 160
+        }
+    ],
+    "name": "TEST_ID",
+    "popularity": 1,
+    "type": "artist",
+    "uri": "spotify:artist:test-id"
+}

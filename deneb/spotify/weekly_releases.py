@@ -8,8 +8,8 @@ from typing import List, Optional, Tuple
 from deneb.chatbot.message import send_message
 from deneb.db import Album, User
 from deneb.logger import get_logger
-from deneb.sp import Spotter, spotify_client
-from deneb.structs import AlbumTracks, FBAlert, SpotifyKeys, SpotifyStats
+from deneb.sp import SpotifyStats, Spotter, spotify_client
+from deneb.structs import AlbumTracks, FBAlert, SpotifyKeys
 from deneb.tools import clean, fetch_all, grouper, is_present
 
 _LOGGER = get_logger(__name__)
