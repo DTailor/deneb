@@ -229,7 +229,12 @@ class User(DenebModel):
         self.username = sp.userdata["id"]
         self.display_name = sp.userdata["display_name"]
         if "refresh_token" not in sp.client.client_credentials_manager.token_info:
-            raise ValueError("Missing refresh token")
+            raise ValueError(f"""
+            no refresh token present.
+            CRED_MAN: {sp.client.client_credentials_manager}
+            TOK_INF: {sp.client.client_credentials_manager.token_info}
+            IN_DB: {self.spotify_token}
+            """)
         self.spotify_token = json.dumps(sp.client.client_credentials_manager.token_info)
         self.save()
 

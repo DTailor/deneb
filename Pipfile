@@ -11,6 +11,7 @@ logzero = "*"
 requests = "*"
 python-dotenv = "*"
 click = "*"
+sentry-sdk = "*"
 
 [dev-packages]
 ipdb = "*"
