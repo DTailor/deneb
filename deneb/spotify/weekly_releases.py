@@ -97,7 +97,7 @@ def generate_tracks_to_add(
     return albums, tracks
 
 
-def update_user_playlist(user: User, sp: Spotter) -> SpotifyStats:
+def update_user_playlist(user: User, sp: Spotter, dry_run: Optional[bool] = False) -> SpotifyStats:
     today = dt.now()
     monday_date = today.day - today.weekday()
     monday = today.replace(day=monday_date)
@@ -118,27 +118,26 @@ def update_user_playlist(user: User, sp: Spotter) -> SpotifyStats:
     playlist_tracks = get_tracks(sp, playlist)
     albums, tracks = generate_tracks_to_add(sp, week_tracks_db, playlist_tracks)
 
-    all_ids = []  # type: List[str]
     tracks_from_albums = [a.tracks for a in albums]
     tracks_without_albums = [a.tracks for a in tracks]
 
-    for album_ids in grouper(100, chain(*tracks_from_albums, *tracks_without_albums)):
-        album_ids = clean(album_ids)
-        album_ids = [a["id"] for a in album_ids]
-        try:
-            sp.client.user_playlist_add_tracks(
-                sp.userdata["id"], playlist["uri"], album_ids
-            )
-            all_ids.extend(album_ids)
-        except Exception as exc:
-            _LOGGER.exception(f"add to playlist '{album_ids}' failed with: {exc}")
+    if not dry_run:
+        for album_ids in grouper(100, chain(*tracks_from_albums, *tracks_without_albums)):
+            album_ids = clean(album_ids)
+            album_ids = [a["id"] for a in album_ids]
+            try:
+                sp.client.user_playlist_add_tracks(
+                    sp.userdata["id"], playlist["uri"], album_ids
+                )
+            except Exception as exc:
+                _LOGGER.exception(f"add to playlist '{album_ids}' failed with: {exc}")
     albums_and_tracks = {"albums": albums, "tracks": tracks}
     stats = SpotifyStats(user.fb_id, playlist, albums_and_tracks)
     return stats
 
 
 def update_users_playlists(
-    credentials: SpotifyKeys, fb_alert: FBAlert, user_id: Optional[str]
+    credentials: SpotifyKeys, fb_alert: FBAlert, user_id: Optional[str], dry_run: Optional[bool]
 ):
     users = User.select()
 
@@ -151,6 +150,6 @@ def update_users_playlists(
             continue
 
         with spotify_client(credentials, user) as sp:
-            stats = update_user_playlist(user, sp)
+            stats = update_user_playlist(user, sp, dry_run)
             if fb_alert.notify:
                 send_message(user.fb_id, fb_alert, stats.describe())

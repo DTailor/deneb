@@ -31,10 +31,11 @@ def cli():
 
 @click.option("--force", is_flag=True)
 @click.option("--notify", is_flag=True)
+@click.option("--dry-run", is_flag=True)
 @click.option("--user")
 @click.command()
 @click.pass_context
-def full_run(ctx, user, force, notify):
+def full_run(ctx, user, force, notify, dry_run):
     orig_params = ctx.params.copy()
 
     ctx.params = {"user": orig_params["user"], "force": orig_params.get("force", False)}
@@ -43,6 +44,7 @@ def full_run(ctx, user, force, notify):
     ctx.params = {
         "user": orig_params["user"],
         "notify": orig_params.get("notify", False),
+        "dry_run":  orig_params.get("dry_run", False),
     }
     update_playlists.invoke(ctx)
 
@@ -59,13 +61,14 @@ def update_followed(user, force):
 
 
 @click.option("--notify", is_flag=True)
+@click.option("--dry-run", is_flag=True)
 @click.option("--user")
 @click.command()
-def update_playlists(user, notify):
+def update_playlists(user, notify, dry_run):
     click.echo("------------ RUN UPDATE USER PLAYLISTS")
     fb_alert = get_fb_alert(notify)
     try:
-        update_users_playlists(SPOTIFY_KEYS, fb_alert, user)
+        update_users_playlists(SPOTIFY_KEYS, fb_alert, user, dry_run)
     except Exception:
         _LOGGER.exception(f"uhhh ohhhhhhhhhhhhh task failed")
 
