@@ -63,7 +63,7 @@ def generate_tracks_to_add(
     sp: Spotter, db_tracks: List[Album], pl_tracks: List[dict]
 ) -> Tuple[List[AlbumTracks], List[AlbumTracks]]:
     """return list of tracks to be added"""
-    already_present_tracks = {a["track"]["name"] for a in pl_tracks}
+    already_present_tracks = {a["track"]["id"] for a in pl_tracks}
 
     albums = []
     tracks = []
@@ -78,19 +78,21 @@ def generate_tracks_to_add(
         # because often they contain just remixes with 1 song or so.
         # figure out later how to spot this things and have a smarter handling
         # for albums which indeed have 3 different songs
-        can_be_added_to_tracks = True
         if album.parent and len(album.tracks) > 3:
-            albums.append(album)
-            can_be_added_to_tracks = False
+            # clean list of duplicates
+            album.tracks = [a for a in album.tracks if a['id'] not in already_present_tracks]
+            # update list with new ids
+            already_present_tracks.update({a["id"] for a in album.tracks})
+            # add album to albums list if has songs to show
+            if album.tracks:
+                albums.append(album)
+            continue
 
         for track in album.tracks:
-            if track["name"] in already_present_tracks:
+            if track["id"] in already_present_tracks:
                 continue
-            else:
-                already_present_tracks.add(track["name"])
-
-            if can_be_added_to_tracks:
-                tracks.append(album)
+            tracks.append(album)
+            already_present_tracks.add(track["id"])
 
     return albums, tracks
 
@@ -119,6 +121,7 @@ def update_user_playlist(user: User, sp: Spotter) -> SpotifyStats:
     all_ids = []  # type: List[str]
     tracks_from_albums = [a.tracks for a in albums]
     tracks_without_albums = [a.tracks for a in tracks]
+
     for album_ids in grouper(100, chain(*tracks_from_albums, *tracks_without_albums)):
         album_ids = clean(album_ids)
         album_ids = [a["id"] for a in album_ids]
