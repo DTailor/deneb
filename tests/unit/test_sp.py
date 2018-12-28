@@ -83,13 +83,21 @@ class TestSpotifyStats:
         for line1, line2 in zip(output.splitlines(), expected):
             assert line1 == line2
 
-    def test_describe_added_track(self, playlist, track):
-        album_tracks = AlbumTracks(parent=None, tracks=[track])
+    def test_describe_added_track(self, album, playlist, track):
+        album_tracks = AlbumTracks(parent=album, tracks=[track])
         stats = SpotifyStats(
             "test-id", playlist, {"tracks": [album_tracks], "albums": []}
         )
 
-        expected = ["Test Playlist", "Tracks:", " * Test Track - Test Track"]
+        expected = [
+            "Playlist: Test Playlist",
+            "",
+            "-==Tracks from albums ==-",
+            "Test Artist - Test Album",
+            "   Test Artist - Test Track",
+            "",
+            "Link: https://open.spotify.com/playlist/test_playlist",
+        ]
 
         output = stats.describe()
 
