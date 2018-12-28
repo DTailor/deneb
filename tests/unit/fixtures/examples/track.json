@@ -104,5 +104,9 @@
     "preview_url": "img",
     "track_number": 1,
     "type": "track",
-    "uri": "spotify:track:test_track"
+    "uri": "spotify:track:test_track",
+    "album": {
+        "id": "test_album",
+        "name": "test-album"
+    }
 }

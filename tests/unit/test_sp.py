@@ -99,21 +99,25 @@ class TestSpotifyStats:
 
     def test_describe_added_tracks_and_albums(self, playlist, album_db, track):
         album_tracks = AlbumTracks(parent=album_db, tracks=[track, track, track])
-        just_tracks = AlbumTracks(parent=None, tracks=[track, track, track])
         stats = SpotifyStats(
-            "test-id", playlist, {"tracks": [just_tracks], "albums": [album_tracks]}
+            "test-id", playlist, {"tracks": [album_tracks], "albums": [album_tracks]}
         )
 
         expected = [
-            "Test Playlist",
-            "Albums:",
-            "- [Test Artist - Test Album]",
+            "Playlist: Test Playlist",
+            "",
+            "-== Albums ==-",
+            "Test Artist - Test Album",
             "   * Test Track",
             "   * Test Track",
             "   * Test Track",
             "",
-            "Tracks:",
-            " * Test Track - Test Track",
+            "-==Tracks from albums ==-",
+            "   Test Track - Test Track",
+            "   Test Track - Test Track",
+            "   Test Track - Test Track",
+            "",
+            "Link: https://open.spotify.com/playlist/test_playlist",
         ]
 
         output = stats.describe()

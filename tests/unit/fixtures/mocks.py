@@ -53,6 +53,11 @@ def album_db() -> MagicMock:
     album.human_name = MagicMock()
     album.human_name.return_value = "Test Artist - Test Album"
 
+    album.to_dict = MagicMock(return_value={
+        "name": "test-name",
+        "id": "test_id"
+    })
+
     return album
 
 

@@ -89,7 +89,7 @@ class SpotifyStats:
             if self.added_albums:
                 return_msg = f"{return_msg}-== Albums ==-\n"
                 for album in self.added_albums:
-                    tmp_msg = f"{album.parent.human_name()}\n"
+                    tmp_msg = f"{self.humanize_track(album.parent)}\n"
                     for track in album.tracks:
                         tmp_msg = f"{tmp_msg}   * {track['name']}\n"
                     return_msg = f"{return_msg}{tmp_msg}\n"
