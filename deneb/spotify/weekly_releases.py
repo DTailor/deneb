@@ -66,7 +66,7 @@ def generate_tracks_to_add(
     already_present_tracks = {a["track"]["id"] for a in pl_tracks}
 
     albums = []
-    tracks = []
+    orphaned_tracks = {}         # type: dict
 
     for item in db_tracks:
         if item.type == "album":
@@ -89,12 +89,22 @@ def generate_tracks_to_add(
             continue
 
         for track in album.tracks:
-            if track["id"] in already_present_tracks:
+            if track["id"] in already_present_tracks or album in albums:
                 continue
-            tracks.append(album)
+
+            # in an album with less than 3 tracks
+            if "album" not in track:
+                track["album"] = album.parent.to_dict()
+
+            track_album = track["album"]
+            if track_album["id"] not in orphaned_tracks:
+                orphaned_tracks[track_album["id"]] = AlbumTracks(track_album, [track])
+            else:
+                orphaned_tracks[track_album["id"]].tracks.append(track)
             already_present_tracks.add(track["id"])
 
-    return albums, tracks
+    orphan_albums = list(orphaned_tracks.values())
+    return albums, orphan_albums
 
 
 def update_user_playlist(user: User, sp: Spotter, dry_run: Optional[bool] = False) -> SpotifyStats:
