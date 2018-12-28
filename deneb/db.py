@@ -108,15 +108,6 @@ class Album(DenebModel):
     def uri(self):
         return f"spotify:{self.type}:{self.spotify_id}"
 
-    def to_dict(self):
-        data = {
-            "id": self.spotify_id,
-            "name": self.name,
-            "artists": [
-                dict(id=a.spotify_id, name=a.name) for a in self.artists()
-            ]
-        }
-        return data
     def human_name(self):
         artists = ", ".join([a.name for a in self.artists()])
         return f"{artists} - {self.name}"

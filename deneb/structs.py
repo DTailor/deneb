@@ -1,7 +1,6 @@
 from collections import namedtuple
-from typing import Dict, List, Optional, Union
+from typing import Dict, List, Optional
 
-from deneb.db import Album
 
 SpotifyKeys = namedtuple("SpotifyKeys", ["client_id", "client_secret", "client_uri"])
 FBAlert = namedtuple("FBAlert", ["key", "url", "notify"])
