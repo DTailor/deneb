@@ -44,7 +44,7 @@ def full_run(ctx, user, force, notify, dry_run):
     ctx.params = {
         "user": orig_params["user"],
         "notify": orig_params.get("notify", False),
-        "dry_run":  orig_params.get("dry_run", False),
+        "dry_run": orig_params.get("dry_run", False),
     }
     update_playlists.invoke(ctx)
 

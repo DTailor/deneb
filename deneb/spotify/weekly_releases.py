@@ -3,7 +3,7 @@ import calendar
 from datetime import datetime as dt
 from itertools import chain
 from math import ceil
-from typing import Dict, List, Optional, Tuple          # noqa:F401
+from typing import Dict, List, Optional, Tuple  # noqa:F401
 
 from deneb.chatbot.message import send_message
 from deneb.db import Album, User
@@ -84,8 +84,8 @@ def generate_tracks_to_add(
     # Both first and second types are group in a list are called main_albums.
     # The third one is like a bonus, called featuring_albums
 
-    main_albums = []                  # type: List[AlbumTracks]
-    featuring_albums = {}             # type: Dict[str, AlbumTracks]
+    main_albums = []  # type: List[AlbumTracks]
+    featuring_albums = {}  # type: Dict[str, AlbumTracks]
 
     for item in db_tracks:
         is_album = item.type == "album"
@@ -101,7 +101,9 @@ def generate_tracks_to_add(
         # for albums which indeed have 3 different songs
         if is_album and len(album.tracks) > 3:
             # clean list of duplicates
-            album.tracks = [a for a in album.tracks if a['id'] not in already_present_tracks]
+            album.tracks = [
+                a for a in album.tracks if a["id"] not in already_present_tracks
+            ]
             # update list with new ids
             already_present_tracks.update({a["id"] for a in album.tracks})
             # add album to albums list if has songs to show
@@ -125,7 +127,9 @@ def generate_tracks_to_add(
     return main_albums, orphan_albums
 
 
-def update_user_playlist(user: User, sp: Spotter, dry_run: Optional[bool] = False) -> SpotifyStats:
+def update_user_playlist(
+    user: User, sp: Spotter, dry_run: Optional[bool] = False
+) -> SpotifyStats:
     today = dt.now()
     monday_date = today.day - today.weekday()
     monday = today.replace(day=monday_date)
@@ -150,7 +154,9 @@ def update_user_playlist(user: User, sp: Spotter, dry_run: Optional[bool] = Fals
     tracks_without_albums = [a.tracks for a in tracks]
 
     if not dry_run:
-        for album_ids in grouper(100, chain(*tracks_from_albums, *tracks_without_albums)):
+        for album_ids in grouper(
+            100, chain(*tracks_from_albums, *tracks_without_albums)
+        ):
             album_ids = clean(album_ids)
             album_ids = [a["id"] for a in album_ids]
             try:
@@ -165,7 +171,10 @@ def update_user_playlist(user: User, sp: Spotter, dry_run: Optional[bool] = Fals
 
 
 def update_users_playlists(
-    credentials: SpotifyKeys, fb_alert: FBAlert, user_id: Optional[str], dry_run: Optional[bool]
+    credentials: SpotifyKeys,
+    fb_alert: FBAlert,
+    user_id: Optional[str],
+    dry_run: Optional[bool],
 ):
     users = User.select()
 

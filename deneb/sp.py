@@ -100,7 +100,9 @@ class SpotifyStats:
                         tmp_msg = f"{tmp_msg}   {self.humanize_track(track)}\n"
                     return_msg = f"{return_msg}{tmp_msg}\n"
 
-            return_msg = f"{return_msg}Link: {self.playlist['external_urls']['spotify']}"
+            return_msg = (
+                f"{return_msg}Link: {self.playlist['external_urls']['spotify']}"
+            )
             return return_msg
 
         return random.choice(didnt_add_responses)

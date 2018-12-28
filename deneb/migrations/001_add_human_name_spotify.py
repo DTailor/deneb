@@ -10,6 +10,4 @@ my_db = PostgresqlDatabase(
 )
 migrator = PostgresqlMigrator(my_db)
 
-migrate(
-    migrator.add_column('user', 'display_name', CharField(default='')),
-)
+migrate(migrator.add_column("user", "display_name", CharField(default="")))
