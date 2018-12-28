@@ -3,7 +3,7 @@ import calendar
 from datetime import datetime as dt
 from itertools import chain
 from math import ceil
-from typing import List, Optional, Tuple
+from typing import Dict, List, Optional, Tuple          # noqa:F401
 
 from deneb.chatbot.message import send_message
 from deneb.db import Album, User
@@ -65,20 +65,21 @@ def generate_tracks_to_add(
     """return list of tracks to be added"""
     already_present_tracks = {a["track"]["id"] for a in pl_tracks}
 
-    albums = []
-    orphaned_tracks = {}         # type: dict
+    albums = []                  # type: List[AlbumTracks]
+    orphaned_tracks = {}         # type: Dict[str, AlbumTracks]
 
     for item in db_tracks:
         if item.type == "album":
             album = get_album_tracks(sp, item)
         else:
-            album = AlbumTracks(None, [sp.client.track(item.uri)])
+            track = sp.client.track(item.uri)
+            album = AlbumTracks(track["album"], [track])
 
         # we want albums with less than 3 tracks to be listed as tracks
         # because often they contain just remixes with 1 song or so.
         # figure out later how to spot this things and have a smarter handling
         # for albums which indeed have 3 different songs
-        if album.parent and len(album.tracks) > 3:
+        if isinstance(album.parent, Album) and len(album.tracks) > 3:
             # clean list of duplicates
             album.tracks = [a for a in album.tracks if a['id'] not in already_present_tracks]
             # update list with new ids
@@ -94,14 +95,18 @@ def generate_tracks_to_add(
 
             # in an album with less than 3 tracks
             if "album" not in track:
-                track["album"] = album.parent.to_dict()
+                if isinstance(album.parent, Album):
+                    track["album"] = album.parent.to_dict()
+                else:
+                    track["album"] = album.parent
 
             track_album = track["album"]
             if track_album["id"] not in orphaned_tracks:
-                orphaned_tracks[track_album["id"]] = AlbumTracks(track_album, [track])
+                orphaned_tracks[track_album["id"]] = album
+                already_present_tracks.update({a["id"] for a in album.tracks})
             else:
                 orphaned_tracks[track_album["id"]].tracks.append(track)
-            already_present_tracks.add(track["id"])
+                already_present_tracks.add(track["id"])
 
     orphan_albums = list(orphaned_tracks.values())
     return albums, orphan_albums

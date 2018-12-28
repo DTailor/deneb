@@ -3,14 +3,14 @@ import json
 import random
 import time
 from contextlib import contextmanager
-from typing import Dict, Generator, List
+from typing import Dict, Generator, List, Union
 
 from spotipy.client import Spotify
 from spotipy.oauth2 import SpotifyClientCredentials, SpotifyOAuth
 
-from deneb.db import User
+from deneb.db import Album, User
 from deneb.logger import get_logger
-from deneb.structs import AlbumTracks, SpotifyKeys
+from deneb.structs import SpotifyKeys
 
 _LOGGER = get_logger(__name__)
 
@@ -69,9 +69,12 @@ class SpotifyStats:
         self.added_tracks = added_items["tracks"]
 
     @staticmethod
-    def humanize_track(track: dict) -> str:
-        artists = ", ".join(a["name"] for a in track["artists"])
-        return f"{artists} - {track['name']}"
+    def humanize_track(track: Union[Dict, Album]) -> str:
+        if isinstance(track, Album):
+            return track.human_name()
+        else:
+            artists = ", ".join(a["name"] for a in track["artists"])
+            return f"{artists} - {track['name']}"
 
     def describe(self) -> str:
         didnt_add_responses = [
