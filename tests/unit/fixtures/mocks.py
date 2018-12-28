@@ -34,9 +34,23 @@ def get_artist(name: str = "") -> dict:
     return json.loads(artist_data)
 
 
+def get_album(name: str = "") -> dict:
+    album_path = os.path.join(os.path.dirname(__file__), "examples", "album.json")
+    with open(album_path, "r") as f:
+        album_data = f.read()
+    album_data = album_data.replace("TESTID", name.lower())
+    album_data = album_data.replace("TEST_ID", name.capitalize())
+    return json.loads(album_data)
+
+
 @pytest.fixture
 def artist() -> dict:
     return get_artist()
+
+
+@pytest.fixture
+def album() -> dict:
+    return get_album()
 
 
 @pytest.fixture
@@ -52,6 +66,11 @@ def album_db() -> MagicMock:
 
     album.human_name = MagicMock()
     album.human_name.return_value = "Test Artist - Test Album"
+
+    album.to_dict = MagicMock(return_value={
+        "name": "test-name",
+        "id": "test_id"
+    })
 
     return album
 

@@ -3,14 +3,14 @@ import json
 import random
 import time
 from contextlib import contextmanager
-from typing import Dict, Generator, List
+from typing import Dict, Generator, List, Union
 
 from spotipy.client import Spotify
 from spotipy.oauth2 import SpotifyClientCredentials, SpotifyOAuth
 
-from deneb.db import User
+from deneb.db import Album, User
 from deneb.logger import get_logger
-from deneb.structs import AlbumTracks, SpotifyKeys
+from deneb.structs import SpotifyKeys
 
 _LOGGER = get_logger(__name__)
 
@@ -69,8 +69,7 @@ class SpotifyStats:
         self.added_tracks = added_items["tracks"]
 
     @staticmethod
-    def humanize_track(album: AlbumTracks) -> str:
-        track = album.tracks[0]
+    def humanize_track(track: Union[Dict, Album]) -> str:
         artists = ", ".join(a["name"] for a in track["artists"])
         return f"{artists} - {track['name']}"
 
@@ -82,21 +81,26 @@ class SpotifyStats:
             "No adds, you should follow more artists",
         ]
         if self.added_albums or self.added_tracks:
-            return_msg = f"{self.playlist['name']}\n"
+            return_msg = f"Playlist: {self.playlist['name']}\n\n"
 
             if self.added_albums:
-                return_msg = f"{return_msg}Albums:\n"
+                return_msg = f"{return_msg}-== Albums ==-\n"
                 for album in self.added_albums:
-                    tmp_msg = f"- [{album.parent.human_name()}]\n"
+                    tmp_msg = f"{self.humanize_track(album.parent)}\n"
                     for track in album.tracks:
                         tmp_msg = f"{tmp_msg}   * {track['name']}\n"
                     return_msg = f"{return_msg}{tmp_msg}\n"
 
             if self.added_tracks:
-                return_msg = f"{return_msg}Tracks:\n"
-                for track in self.added_tracks:
-                    return_msg = f"{return_msg} * {self.humanize_track(track)}\n"
+                return_msg = f"{return_msg}-==Tracks from albums ==-\n"
+                for album in self.added_tracks:
+                    tmp_msg = f"{self.humanize_track(album.parent)}\n"
 
+                    for track in album.tracks:
+                        tmp_msg = f"{tmp_msg}   {self.humanize_track(track)}\n"
+                    return_msg = f"{return_msg}{tmp_msg}\n"
+
+            return_msg = f"{return_msg}Link: {self.playlist['external_urls']['spotify']}"
             return return_msg
 
         return random.choice(didnt_add_responses)
