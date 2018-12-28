@@ -1,7 +1,7 @@
 # flake8: noqa
 from deneb.sp import SpotifyStats, spotify_client, get_client, Spotter
 from deneb.structs import AlbumTracks, SpotifyKeys
-from tests.unit.fixtures.mocks import album_db, playlist, track
+from tests.unit.fixtures.mocks import album, playlist, track
 from unittest.mock import MagicMock, patch
 
 
@@ -58,11 +58,11 @@ class TestSpotifyStats:
 
         assert (
             SpotifyStats.humanize_track(noalbum_tracks.tracks[0])
-            == "Test Track - Test Track"
+            == "Test Artist - Test Track"
         )
 
-    def test_describe_added_album(self, playlist, album_db, track):
-        album_tracks = AlbumTracks(parent=album_db, tracks=[track, track, track])
+    def test_describe_added_album(self, playlist, album, track):
+        album_tracks = AlbumTracks(parent=album, tracks=[track, track, track])
         stats = SpotifyStats(
             "test-id", playlist, {"tracks": [], "albums": [album_tracks]}
         )
@@ -78,7 +78,6 @@ class TestSpotifyStats:
             "",
             "Link: https://open.spotify.com/playlist/test_playlist",
         ]
-
         output = stats.describe()
 
         for line1, line2 in zip(output.splitlines(), expected):
@@ -97,8 +96,8 @@ class TestSpotifyStats:
         for line1, line2 in zip(output.splitlines(), expected):
             assert line1 == line2
 
-    def test_describe_added_tracks_and_albums(self, playlist, album_db, track):
-        album_tracks = AlbumTracks(parent=album_db, tracks=[track, track, track])
+    def test_describe_added_tracks_and_albums(self, playlist, album, track):
+        album_tracks = AlbumTracks(parent=album, tracks=[track, track, track])
         stats = SpotifyStats(
             "test-id", playlist, {"tracks": [album_tracks], "albums": [album_tracks]}
         )
@@ -113,9 +112,10 @@ class TestSpotifyStats:
             "   * Test Track",
             "",
             "-==Tracks from albums ==-",
-            "   Test Track - Test Track",
-            "   Test Track - Test Track",
-            "   Test Track - Test Track",
+            "Test Artist - Test Album",
+            "   Test Artist - Test Track",
+            "   Test Artist - Test Track",
+            "   Test Artist - Test Track",
             "",
             "Link: https://open.spotify.com/playlist/test_playlist",
         ]
