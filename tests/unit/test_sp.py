@@ -55,7 +55,7 @@ class TestSpotifyStats:
     def test_humanize_track(self, track):
         noalbum_tracks = AlbumTracks(parent=None, tracks=[track])
 
-        assert SpotifyStats.humanize_track(noalbum_tracks) == "Test Track - Test Track"
+        assert SpotifyStats.humanize_track(noalbum_tracks.tracks[0]) == "Test Track - Test Track"
 
     def test_describe_added_album(self, playlist, album_db, track):
         album_tracks = AlbumTracks(parent=album_db, tracks=[track, track, track])
