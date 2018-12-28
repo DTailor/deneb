@@ -9,7 +9,7 @@ FBAlert = namedtuple("FBAlert", ["key", "url", "notify"])
 
 class AlbumTracks:
     def __init__(
-        self, parent: Union[Dict, Album], tracks: Optional[List[Dict]] = None
+        self, parent: Dict, tracks: Optional[List[Dict]] = None
     ):
         self.parent = parent
         self.tracks = tracks or []
