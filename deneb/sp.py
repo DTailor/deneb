@@ -70,11 +70,8 @@ class SpotifyStats:
 
     @staticmethod
     def humanize_track(track: Union[Dict, Album]) -> str:
-        if isinstance(track, Album):
-            return track.human_name()
-        else:
-            artists = ", ".join(a["name"] for a in track["artists"])
-            return f"{artists} - {track['name']}"
+        artists = ", ".join(a["name"] for a in track["artists"])
+        return f"{artists} - {track['name']}"
 
     def describe(self) -> str:
         didnt_add_responses = [
