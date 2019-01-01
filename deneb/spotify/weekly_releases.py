@@ -1,6 +1,7 @@
 """Create spotify playlist with weekly new releases"""
 import calendar
 from datetime import datetime as dt
+from datetime import timedelta
 from itertools import chain
 from math import ceil
 from typing import Dict, List, Optional, Tuple  # noqa:F401
@@ -131,8 +132,7 @@ def update_user_playlist(
     user: User, sp: Spotter, dry_run: Optional[bool] = False
 ) -> SpotifyStats:
     today = dt.now()
-    monday_date = today.day - today.weekday()
-    monday = today.replace(day=monday_date)
+    monday = today - timedelta(days=today.weekday())
     week_tracks_db = user.released_from_weekday(monday)
 
     playlist_name = generate_playlist_name()
