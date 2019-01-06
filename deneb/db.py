@@ -217,9 +217,7 @@ class User(DenebModel):
             .where(
                 AvailableMarket.market == self.market,
                 AlbumArtist.artist_id << self.following_ids(),
-                (Album.release.year == date.year)
-                & (Album.release.month == date.month)
-                & (Album.release.day >= date.day),
+                Album.release >= date,
             )
             .distinct()
         )
