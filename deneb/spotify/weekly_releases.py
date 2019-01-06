@@ -190,4 +190,3 @@ def update_users_playlists(
             stats = update_user_playlist(user, sp, dry_run)
             if fb_alert.notify:
                 send_message(user.fb_id, fb_alert, stats.describe())
-            _LOGGER.info(f"{stats.describe()}")
