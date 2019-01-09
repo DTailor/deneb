@@ -151,11 +151,12 @@ def update_user_playlist(
     albums, tracks = generate_tracks_to_add(sp, week_tracks_db, playlist_tracks)
 
     tracks_from_albums = [a.tracks for a in albums]
-    tracks_without_albums = [a.tracks for a in tracks]
+    tracks_without_albums = [a.tracks for a in tracks if a.parent["album_type"] != "compilation"]
+    track_compilations = [a.tracks for a in tracks if a.parent["album_type"] == "compilation"]
 
     if not dry_run:
         for album_ids in grouper(
-            100, chain(*tracks_from_albums, *tracks_without_albums)
+            100, chain(*tracks_from_albums, *tracks_without_albums, *track_compilations)
         ):
             album_ids = clean(album_ids)
             album_ids = [a["id"] for a in album_ids]
