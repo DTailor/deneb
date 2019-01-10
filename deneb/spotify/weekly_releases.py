@@ -96,6 +96,10 @@ def generate_tracks_to_add(
             track = sp.client.track(item.uri)
             album = AlbumTracks(track["album"], [track])
 
+        if album.parent['album_type'] == "compilation":
+            # they mess up
+            continue
+
         # we want albums with less than 3 tracks to be listed as tracks
         # because often they contain just remixes with 1 song or so.
         # figure out later how to spot this things and have a smarter handling
@@ -152,15 +156,15 @@ def update_user_playlist(
 
     tracks_from_albums = [a.tracks for a in albums]
     tracks_without_albums = [
-        a.tracks for a in tracks if a.parent["album_type"] != "compilation"
+        a.tracks for a in tracks if len(a.tracks) > 1
     ]
-    track_compilations = [
-        a.tracks for a in tracks if a.parent["album_type"] == "compilation"
+    track_singles = [
+        a.tracks for a in tracks if len(a.tracks) == 1
     ]
 
     if not dry_run:
         for album_ids in grouper(
-            100, chain(*tracks_from_albums, *tracks_without_albums, *track_compilations)
+            100, chain(*track_singles, *tracks_from_albums, *tracks_without_albums)
         ):
             album_ids = clean(album_ids)
             album_ids = [a["id"] for a in album_ids]
