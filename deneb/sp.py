@@ -65,6 +65,7 @@ class SpotifyStats:
     def __init__(self, fb_id: str, playlist: dict, added_items: Dict[str, List]):
         self.fb_id = fb_id
         self.playlist = playlist
+        self.added_singles = added_items["singles"]
         self.added_albums = added_items["albums"]
         self.added_tracks = added_items["tracks"]
 
@@ -80,15 +81,23 @@ class SpotifyStats:
             "Sad day, no new music",
             "No adds, you should follow more artists",
         ]
-        if self.added_albums or self.added_tracks:
+        if self.added_albums or self.added_tracks or self.added_singles:
             return_msg = f"Playlist: {self.playlist['name']}\n\n"
+
+            if self.added_singles:
+                return_msg = f"{return_msg}-== Singles ==-\n"
+                for album in self.added_singles:
+                    tmp_msg = f"{self.humanize_track(album.parent)}\n"
+                    for track in album.tracks:
+                        tmp_msg = f"{tmp_msg}   {track['name']}\n"
+                    return_msg = f"{return_msg}{tmp_msg}\n"
 
             if self.added_albums:
                 return_msg = f"{return_msg}-== Albums ==-\n"
                 for album in self.added_albums:
                     tmp_msg = f"{self.humanize_track(album.parent)}\n"
                     for track in album.tracks:
-                        tmp_msg = f"{tmp_msg}   * {track['name']}\n"
+                        tmp_msg = f"{tmp_msg}   {track['name']}\n"
                     return_msg = f"{return_msg}{tmp_msg}\n"
 
             if self.added_tracks:

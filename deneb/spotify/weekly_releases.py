@@ -62,7 +62,7 @@ def get_album_tracks(sp: Spotter, album: Album) -> AlbumTracks:
 
 def generate_tracks_to_add(
     sp: Spotter, db_tracks: List[Album], pl_tracks: List[dict]
-) -> Tuple[List[AlbumTracks], List[AlbumTracks]]:
+) -> Tuple[List[AlbumTracks], List[AlbumTracks], List[AlbumTracks]]:
     """return list of tracks to be added"""
     already_present_tracks = {a["track"]["id"] for a in pl_tracks}
 
@@ -85,6 +85,7 @@ def generate_tracks_to_add(
     # Both first and second types are group in a list are called main_albums.
     # The third one is like a bonus, called featuring_albums
 
+    singles = []    # type: List[AlbumTracks]
     main_albums = []  # type: List[AlbumTracks]
     featuring_albums = {}  # type: Dict[str, AlbumTracks]
 
@@ -104,7 +105,7 @@ def generate_tracks_to_add(
         # because often they contain just remixes with 1 song or so.
         # figure out later how to spot this things and have a smarter handling
         # for albums which indeed have 3 different songs
-        if is_album and len(album.tracks) > 3:
+        if is_album and len(album.tracks) > 2:
             # clean list of duplicates
             album.tracks = [
                 a for a in album.tracks if a["id"] not in already_present_tracks
@@ -114,6 +115,10 @@ def generate_tracks_to_add(
             # add album to albums list if has songs to show
             if album.tracks:
                 main_albums.append(album)
+            continue
+
+        if album.parent["album_type"] == "single":
+            singles.append(album)
             continue
 
         for track in album.tracks:
@@ -129,7 +134,7 @@ def generate_tracks_to_add(
                 already_present_tracks.add(track["id"])
 
     orphan_albums = list(featuring_albums.values())
-    return main_albums, orphan_albums
+    return singles, main_albums, orphan_albums
 
 
 def update_user_playlist(
@@ -152,19 +157,16 @@ def update_user_playlist(
         )
 
     playlist_tracks = get_tracks(sp, playlist)
-    albums, tracks = generate_tracks_to_add(sp, week_tracks_db, playlist_tracks)
+    singles, albums, tracks = generate_tracks_to_add(sp, week_tracks_db, playlist_tracks)
 
+    tracks_from_singles = [a.tracks for a in singles]
     tracks_from_albums = [a.tracks for a in albums]
-    tracks_without_albums = [
-        a.tracks for a in tracks if len(a.tracks) > 1
-    ]
-    track_singles = [
-        a.tracks for a in tracks if len(a.tracks) == 1
-    ]
+    tracks_without_albums = [a.tracks for a in tracks]
 
     if not dry_run:
         for album_ids in grouper(
-            100, chain(*track_singles, *tracks_from_albums, *tracks_without_albums)
+            100,
+            chain(*tracks_from_singles, *tracks_from_albums, *tracks_without_albums)
         ):
             album_ids = clean(album_ids)
             album_ids = [a["id"] for a in album_ids]
@@ -174,8 +176,8 @@ def update_user_playlist(
                 )
             except Exception as exc:
                 _LOGGER.exception(f"add to playlist '{album_ids}' failed with: {exc}")
-    albums_and_tracks = {"albums": albums, "tracks": tracks}
-    stats = SpotifyStats(user.fb_id, playlist, albums_and_tracks)
+    singles_albums_and_tracks = {"singles": singles, "albums": albums, "tracks": tracks}
+    stats = SpotifyStats(user.fb_id, playlist, singles_albums_and_tracks)
     return stats
 
 
