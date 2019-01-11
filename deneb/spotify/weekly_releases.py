@@ -77,21 +77,18 @@ def generate_tracks_to_add(
     already_present_tracks = {a["track"]["id"] for a in pl_tracks}
 
     # there are three types of releases to keep an eye on
-    # 1. album tracks - the main focus of this app is to report new album tracks
-    #                   and add work that data out later
-    # 2. pre-album tracks - these are from an upcoming album. This include in them
-    #                   eps, singles, etc.
+    # 1. singles - these are from an upcoming album. This includes in them
+    #              singles. They are to be listed first at the moment, afterwards
+    #              let the user decide the ordering
+    # 2. album tracks - the main focus of this app is to report new album tracks
+    #              and add work that data out later
     # 3. featured tracks - also there are releases from an artist which
-    #                   is a feature on a different artist's song. Also
-    #                   there are compilations and other unexplored album
-    #                   types. These can keep coming from different artists
-    #                   you follow, but still being on the same album. It's like
-    #                   an indirect linked album to the artist.
-    #                   Why Dict[str, AlbumTracks] ?
-    #                   Track coming from different artists are respectively stored
-    #                   under different album all pointing to the same one (maybe do this
-    #                   at an earlier step?) and need to be only under ONE. This way we know
-    #                   from which album is what by having the key.
+    #              is a feature on a different artist's song.
+    #              Why Dict[str, AlbumTracks] ?
+    #              Track coming from different artists are respectively stored
+    #              under different album all pointing to the same one (maybe do this
+    #              at an earlier step?) and need to be only under ONE. This way we know
+    #              from which album is what by having the key.
     # Both first and second types are group in a list are called main_albums.
     # The third one is like a bonus, called featuring_albums
 
