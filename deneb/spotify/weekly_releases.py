@@ -153,13 +153,19 @@ def update_spotify_playlist(
 ):
     """Add the ids from track iterable to the playlist, insert_top bool does it
     on top of all the items, for fridays"""
+
+    index = 0
     for album_ids in grouper(100, tracks):
         album_ids = clean(album_ids)
         album_ids = [a["id"] for a in album_ids]
+        args = (sp.userdata["id"], playlist_uri, album_ids)
+
+        if insert_top:
+            args = args + (index,)  # type: ignore
+
         try:
-            sp.client.user_playlist_add_tracks(
-                sp.userdata["id"], playlist_uri, album_ids
-            )
+            sp.client.user_playlist_add_tracks(*args)
+            index += len(album_ids) - 1
         except Exception as exc:
             _LOGGER.exception(f"add to playlist '{album_ids}' failed with: {exc}")
 
@@ -200,7 +206,16 @@ def update_user_playlist(
         to_add_tracks = chain(
             *tracks_from_singles, *tracks_from_albums, *tracks_without_albums
         )
-        update_spotify_playlist(to_add_tracks, playlist["uri"], sp)
+
+        insert_top = False
+        if today.weekday() == 4:
+            # it's friday the release day so intert today's things from the
+            # beggining of the playlist as it's the most important release day
+            # of the week
+            insert_top = True
+
+        if today.weekday() == 4:
+            update_spotify_playlist(to_add_tracks, playlist["uri"], sp, insert_top)
 
     return stats
 
