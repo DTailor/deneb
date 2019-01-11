@@ -4,7 +4,7 @@ from datetime import datetime as dt
 from datetime import timedelta
 from itertools import chain
 from math import ceil
-from typing import Dict, List, Optional, Tuple  # noqa:F401
+from typing import Dict, Iterator, List, Optional, Tuple  # noqa:F401
 
 from deneb.chatbot.message import send_message
 from deneb.db import Album, User
@@ -148,6 +148,22 @@ def generate_tracks_to_add(
     return singles, main_albums, orphan_albums
 
 
+def update_spotify_playlist(
+    tracks: Iterator, playlist_uri: str, sp: Spotter, insert_top: bool = False
+):
+    """Add the ids from track iterable to the playlist, insert_top bool does it
+    on top of all the items, for fridays"""
+    for album_ids in grouper(100, tracks):
+        album_ids = clean(album_ids)
+        album_ids = [a["id"] for a in album_ids]
+        try:
+            sp.client.user_playlist_add_tracks(
+                sp.userdata["id"], playlist_uri, album_ids
+            )
+        except Exception as exc:
+            _LOGGER.exception(f"add to playlist '{album_ids}' failed with: {exc}")
+
+
 def update_user_playlist(
     user: User, sp: Spotter, dry_run: Optional[bool] = False
 ) -> SpotifyStats:
@@ -176,21 +192,16 @@ def update_user_playlist(
     tracks_from_albums = [a.tracks for a in albums]
     tracks_without_albums = [a.tracks for a in tracks]
 
+    stats = SpotifyStats(
+        user.fb_id, playlist, {"singles": singles, "albums": albums, "tracks": tracks}
+    )
+
     if not dry_run:
-        for album_ids in grouper(
-            100,
-            chain(*tracks_from_singles, *tracks_from_albums, *tracks_without_albums),
-        ):
-            album_ids = clean(album_ids)
-            album_ids = [a["id"] for a in album_ids]
-            try:
-                sp.client.user_playlist_add_tracks(
-                    sp.userdata["id"], playlist["uri"], album_ids
-                )
-            except Exception as exc:
-                _LOGGER.exception(f"add to playlist '{album_ids}' failed with: {exc}")
-    singles_albums_and_tracks = {"singles": singles, "albums": albums, "tracks": tracks}
-    stats = SpotifyStats(user.fb_id, playlist, singles_albums_and_tracks)
+        to_add_tracks = chain(
+            *tracks_from_singles, *tracks_from_albums, *tracks_without_albums
+        )
+        update_spotify_playlist(to_add_tracks, playlist["uri"], sp)
+
     return stats
 
 
