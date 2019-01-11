@@ -89,8 +89,6 @@ def generate_tracks_to_add(
     #              under different album all pointing to the same one (maybe do this
     #              at an earlier step?) and need to be only under ONE. This way we know
     #              from which album is what by having the key.
-    # Both first and second types are group in a list are called main_albums.
-    # The third one is like a bonus, called featuring_albums
 
     singles = []  # type: List[AlbumTracks]
     main_albums = []  # type: List[AlbumTracks]
