@@ -214,8 +214,7 @@ def update_user_playlist(
             # of the week
             insert_top = True
 
-        if today.weekday() == 4:
-            update_spotify_playlist(to_add_tracks, playlist["uri"], sp, insert_top)
+        update_spotify_playlist(to_add_tracks, playlist["uri"], sp, insert_top)
 
     return stats
 
