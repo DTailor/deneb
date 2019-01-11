@@ -60,6 +60,16 @@ def get_album_tracks(sp: Spotter, album: Album) -> AlbumTracks:
     return AlbumTracks(album_data, tracks)
 
 
+def verify_already_present(
+    album: AlbumTracks, already_present_tracks: set
+) -> Tuple[AlbumTracks, set]:
+    """helper method to clean up already present items from playlist and update it"""
+    album.tracks = [a for a in album.tracks if a["id"] not in already_present_tracks]
+    # update list with new ids
+    already_present_tracks.update({a["id"] for a in album.tracks})
+    return album, already_present_tracks
+
+
 def generate_tracks_to_add(
     sp: Spotter, db_tracks: List[Album], pl_tracks: List[dict]
 ) -> Tuple[List[AlbumTracks], List[AlbumTracks], List[AlbumTracks]]:
@@ -85,7 +95,7 @@ def generate_tracks_to_add(
     # Both first and second types are group in a list are called main_albums.
     # The third one is like a bonus, called featuring_albums
 
-    singles = []    # type: List[AlbumTracks]
+    singles = []  # type: List[AlbumTracks]
     main_albums = []  # type: List[AlbumTracks]
     featuring_albums = {}  # type: Dict[str, AlbumTracks]
 
@@ -97,28 +107,29 @@ def generate_tracks_to_add(
             track = sp.client.track(item.uri)
             album = AlbumTracks(track["album"], [track])
 
-        if album.parent['album_type'] == "compilation":
-            # they mess up
+        if album.parent["album_type"] == "compilation":
+            # they are messed up, later let user configure if he wants them
             continue
 
         # we want albums with less than 3 tracks to be listed as tracks
         # because often they contain just remixes with 1 song or so.
         # figure out later how to spot this things and have a smarter handling
         # for albums which indeed have 3 different songs
+
         if is_album and len(album.tracks) > 2:
-            # clean list of duplicates
-            album.tracks = [
-                a for a in album.tracks if a["id"] not in already_present_tracks
-            ]
-            # update list with new ids
-            already_present_tracks.update({a["id"] for a in album.tracks})
-            # add album to albums list if has songs to show
+            album, already_present_tracks = verify_already_present(
+                album, already_present_tracks
+            )
             if album.tracks:
                 main_albums.append(album)
             continue
 
         if album.parent["album_type"] == "single":
-            singles.append(album)
+            album, already_present_tracks = verify_already_present(
+                album, already_present_tracks
+            )
+            if album.tracks:
+                singles.append(album)
             continue
 
         for track in album.tracks:
@@ -157,7 +168,9 @@ def update_user_playlist(
         )
 
     playlist_tracks = get_tracks(sp, playlist)
-    singles, albums, tracks = generate_tracks_to_add(sp, week_tracks_db, playlist_tracks)
+    singles, albums, tracks = generate_tracks_to_add(
+        sp, week_tracks_db, playlist_tracks
+    )
 
     tracks_from_singles = [a.tracks for a in singles]
     tracks_from_albums = [a.tracks for a in albums]
@@ -166,7 +179,7 @@ def update_user_playlist(
     if not dry_run:
         for album_ids in grouper(
             100,
-            chain(*tracks_from_singles, *tracks_from_albums, *tracks_without_albums)
+            chain(*tracks_from_singles, *tracks_from_albums, *tracks_without_albums),
         ):
             album_ids = clean(album_ids)
             album_ids = [a["id"] for a in album_ids]
