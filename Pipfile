@@ -5,13 +5,14 @@ name = "pypi"
 
 [packages]
 spotipy = "*"
-peewee = "*"
 "psycopg2-binary" = "*"
 logzero = "*"
 requests = "*"
 python-dotenv = "*"
 click = "*"
 sentry-sdk = "*"
+aiopg = "*"
+gino = "*"
 
 [dev-packages]
 ipdb = "*"
@@ -34,6 +35,10 @@ fabric = "*"
 pylint = "*"
 pytest = "*"
 pytest-cov = "*"
+profiling = "*"
 
 [requires]
 python_version = "3.7"
+
+[pipenv]
+allow_prereleases = true

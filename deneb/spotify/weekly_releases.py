@@ -7,15 +7,17 @@ from math import ceil
 from typing import Dict, Iterator, List, Optional, Tuple  # noqa:F401
 
 from deneb.chatbot.message import send_message
-from deneb.db import Album, User
+from deneb.db_async import User, Album
 from deneb.logger import get_logger
-from deneb.sp import SpotifyStats, Spotter, spotify_client
+from deneb.sp_async import SpotifyStats, Spotter, spotify_client
 from deneb.structs import AlbumTracks, FBAlert, SpotifyKeys
 from deneb.tools import clean, fetch_all, grouper, is_present
+from perf import print_stats, timeit
 
 _LOGGER = get_logger(__name__)
 
 
+@timeit
 def week_of_month(dt: dt) -> int:
     """ Returns the week of the month for the specified date.
     """
@@ -28,6 +30,7 @@ def week_of_month(dt: dt) -> int:
     return int(ceil(adjusted_dom / 7.0))
 
 
+@timeit
 def generate_playlist_name() -> str:
     """return a string of format <Month> W<WEEK_NR> <Year>"""
     now = dt.now()
@@ -36,6 +39,7 @@ def generate_playlist_name() -> str:
     return f"{month_name} W{week_nr} {now.year}"
 
 
+@timeit
 def fetch_user_playlists(sp: Spotter) -> List[dict]:
     """Return user playlists"""
     playlists = []  # type: List[dict]
@@ -45,6 +49,7 @@ def fetch_user_playlists(sp: Spotter) -> List[dict]:
     return playlists
 
 
+@timeit
 def get_tracks(sp: Spotter, playlist: dict) -> List[dict]:
     """return playlist tracks"""
     tracks = sp.client.user_playlist(
@@ -53,6 +58,7 @@ def get_tracks(sp: Spotter, playlist: dict) -> List[dict]:
     return fetch_all(sp, tracks)
 
 
+@timeit
 def get_album_tracks(sp: Spotter, album: Album) -> AlbumTracks:
     tracks = []  # type: List[dict]
     album_data = sp.client.album(album.uri)
@@ -60,6 +66,7 @@ def get_album_tracks(sp: Spotter, album: Album) -> AlbumTracks:
     return AlbumTracks(album_data, tracks)
 
 
+@timeit
 def verify_already_present(
     album: AlbumTracks, already_present_tracks: set
 ) -> Tuple[AlbumTracks, set]:
@@ -70,6 +77,7 @@ def verify_already_present(
     return album, already_present_tracks
 
 
+@timeit
 def generate_tracks_to_add(
     sp: Spotter, db_tracks: List[Album], pl_tracks: List[dict]
 ) -> Tuple[List[AlbumTracks], List[AlbumTracks], List[AlbumTracks]]:
@@ -143,6 +151,7 @@ def generate_tracks_to_add(
     return singles, main_albums, orphan_albums
 
 
+@timeit
 def update_spotify_playlist(
     tracks: Iterator, playlist_uri: str, sp: Spotter, insert_top: bool = False
 ):
@@ -165,13 +174,13 @@ def update_spotify_playlist(
             _LOGGER.exception(f"add to playlist '{album_ids}' failed with: {exc}")
 
 
-def update_user_playlist(
+@timeit
+async def update_user_playlist(
     user: User, sp: Spotter, dry_run: Optional[bool] = False
 ) -> SpotifyStats:
     today = dt.now()
     monday = today - timedelta(days=today.weekday())
-    week_tracks_db = user.released_from_weekday(monday)
-
+    week_tracks_db = await user.released_from_weekday(monday)
     playlist_name = generate_playlist_name()
 
     # fetch or create playlist
@@ -214,23 +223,25 @@ def update_user_playlist(
     return stats
 
 
-def update_users_playlists(
+@timeit
+async def update_users_playlists(
     credentials: SpotifyKeys,
     fb_alert: FBAlert,
     user_id: Optional[str],
     dry_run: Optional[bool],
 ):
-    users = User.select()
-
     if user_id:
-        users = [User.get(User.username == user_id)]
+        users = [await User.get_by_username(user_id)]
+    else:
+        users = await User.query.gino.all()
 
     for user in users:
         if not user.spotify_token:
             _LOGGER.info(f"can't update {user}, token not present.")
             continue
 
-        with spotify_client(credentials, user) as sp:
-            stats = update_user_playlist(user, sp, dry_run)
+        async with spotify_client(credentials, user) as sp:
+            stats = await update_user_playlist(user, sp, dry_run)
             if fb_alert.notify:
                 send_message(user.fb_id, fb_alert, stats.describe())
+    print_stats()
