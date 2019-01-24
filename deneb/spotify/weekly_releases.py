@@ -232,5 +232,5 @@ def update_users_playlists(
 
         with spotify_client(credentials, user) as sp:
             stats = update_user_playlist(user, sp, dry_run)
-            if fb_alert.notify:
+            if fb_alert.notify and stats.has_new_releases():
                 send_message(user.fb_id, fb_alert, stats.describe())
