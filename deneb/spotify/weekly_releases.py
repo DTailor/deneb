@@ -202,12 +202,11 @@ def update_user_playlist(
             *tracks_from_singles, *tracks_from_albums, *tracks_without_albums
         )
 
-        insert_top = False
-        if today.weekday() == 4:
-            # it's friday the release day so intert today's things from the
-            # beggining of the playlist as it's the most important release day
-            # of the week
-            insert_top = True
+        is_friday = lambda: today.weekday() == 4  # noqa: E731
+        # it's friday the release day so intert today's things from the
+        # beggining of the playlist as it's the most important release day
+        # of the week
+        insert_top = True if is_friday() else False
 
         update_spotify_playlist(to_add_tracks, playlist["uri"], sp, insert_top)
 
