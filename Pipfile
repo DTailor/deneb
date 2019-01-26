@@ -5,14 +5,13 @@ name = "pypi"
 
 [packages]
 spotipy = "*"
-"psycopg2-binary" = "*"
 logzero = "*"
 requests = "*"
 python-dotenv = "*"
 click = "*"
 sentry-sdk = "*"
-aiopg = "*"
-gino = "*"
+tortoise-orm = "*"
+asyncpg = "*"
 
 [dev-packages]
 ipdb = "*"

@@ -231,10 +231,9 @@ async def update_users_playlists(
     dry_run: Optional[bool],
 ):
     if user_id:
-        users = [await User.get_by_username(user_id)]
+        users = await User.filter(username=user_id)
     else:
-        users = await User.query.gino.all()
-
+        users = await User.all()
     for user in users:
         if not user.spotify_token:
             _LOGGER.info(f"can't update {user}, token not present.")

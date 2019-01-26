@@ -3,7 +3,7 @@ import os
 
 import click
 from dotenv import load_dotenv
-
+from deneb.db_async import init_db, close_db
 from deneb.logger import get_logger
 # from deneb.spotify.users import update_users_artists
 from deneb.spotify.weekly_releases import update_users_playlists
@@ -28,7 +28,13 @@ def get_fb_alert(notify: bool) -> FBAlert:
 def runner(func, args):
     loop = asyncio.get_event_loop()
     loop.set_debug(True)
-    loop.run_until_complete(func(*args))
+    try:
+        loop.run_until_complete(init_db())
+        loop.run_until_complete(func(*args))
+    finally:
+        loop.run_until_complete(close_db())
+        loop.close()
+
 
 
 @click.group()
