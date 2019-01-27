@@ -61,6 +61,9 @@ class Album(Model):  # type: ignore
     def __repr__(self):
         return self.__str__()
 
+    async def update_timestamp(self):
+        await Album.filter(id=self.id).update(timestamp=datetime.datetime.now())
+
 
 class Artist(Model):  # type: ignore
     id = fields.IntField(pk=True)
@@ -73,6 +76,22 @@ class Artist(Model):  # type: ignore
 
     def __repr__(self):
         return self.__str__()
+
+    def can_update(self, hours_delta=4):
+        """check if artist can be updated
+
+        returns True if last update time is bigger
+        the the hours_delta, else False
+        """
+        if not self.timestamp:
+            return True
+        delta = datetime.datetime.now() - self.timestamp
+        if delta.total_seconds() / 3600 > hours_delta:
+            return True
+        return False
+
+    async def update_timestamp(self):
+        await Artist.filter(id=self.id).update(timestamp=datetime.datetime.now())
 
 
 class User(Model):  # type: ignore

@@ -33,7 +33,7 @@ def generate_release_date(date: str, precision: str) -> datetime.datetime:
     return datetime.datetime.strptime(f"{date}{suffix[precision]}", "%Y-%m-%d")
 
 
-def fetch_all(sp: Spotify, data: dict) -> List[dict]:
+async def fetch_all(sp: Spotify, data: dict) -> List[dict]:
     """iterates till gets all the albums"""
     contents = []  # type: List[dict]
     while data:

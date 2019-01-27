@@ -40,31 +40,31 @@ def generate_playlist_name() -> str:
 
 
 @timeit
-def fetch_user_playlists(sp: Spotter) -> List[dict]:
+async def fetch_user_playlists(sp: Spotter) -> List[dict]:
     """Return user playlists"""
     playlists = []  # type: List[dict]
     # TODO: make async call
     data = sp.client.user_playlists(sp.userdata["id"])
-    playlists = fetch_all(sp, data)
+    playlists = await fetch_all(sp, data)
     return playlists
 
 
 @timeit
-def get_tracks(sp: Spotter, playlist: dict) -> List[dict]:
+async def get_tracks(sp: Spotter, playlist: dict) -> List[dict]:
     """return playlist tracks"""
     # TODO: make async call
     tracks = sp.client.user_playlist(
         sp.userdata["id"], playlist["id"], fields="tracks,next"
     )["tracks"]
-    return fetch_all(sp, tracks)
+    return await fetch_all(sp, tracks)
 
 
 @timeit
-def get_album_tracks(sp: Spotter, album: Album) -> AlbumTracks:
+async def get_album_tracks(sp: Spotter, album: Album) -> AlbumTracks:
     tracks = []  # type: List[dict]
     # TODO: make async call
     album_data = sp.client.album(album.uri)
-    tracks = fetch_all(sp, album_data["tracks"])
+    tracks = await fetch_all(sp, album_data["tracks"])
     return AlbumTracks(album_data, tracks)
 
 
@@ -80,7 +80,7 @@ def verify_already_present(
 
 
 @timeit
-def generate_tracks_to_add(
+async def generate_tracks_to_add(
     sp: Spotter, db_tracks: List[Album], pl_tracks: List[dict]
 ) -> Tuple[List[AlbumTracks], List[AlbumTracks], List[AlbumTracks]]:
     """return list of tracks to be added"""
@@ -107,7 +107,7 @@ def generate_tracks_to_add(
     for item in db_tracks:
         is_album = item.type == "album"
         if is_album:
-            album = get_album_tracks(sp, item)
+            album = await get_album_tracks(sp, item)
         else:
             # TODO: make async call
             track = sp.client.track(item.uri)
@@ -155,7 +155,7 @@ def generate_tracks_to_add(
 
 
 @timeit
-def update_spotify_playlist(
+async def update_spotify_playlist(
     tracks: Iterator, playlist_uri: str, sp: Spotter, insert_top: bool = False
 ):
     """Add the ids from track iterable to the playlist, insert_top bool does it
@@ -188,7 +188,7 @@ async def update_user_playlist(
     playlist_name = generate_playlist_name()
 
     # fetch or create playlist
-    user_playlists = fetch_user_playlists(sp)
+    user_playlists = await fetch_user_playlists(sp)
     _LOGGER.info(f"updating playlist: <{playlist_name}> for {user}")
 
     playlist = is_present(playlist_name, user_playlists, "name")
@@ -198,8 +198,8 @@ async def update_user_playlist(
             sp.userdata["id"], playlist_name, public=False
         )
 
-    playlist_tracks = get_tracks(sp, playlist)
-    singles, albums, tracks = generate_tracks_to_add(
+    playlist_tracks = await get_tracks(sp, playlist)
+    singles, albums, tracks = await generate_tracks_to_add(
         sp, week_tracks_db, playlist_tracks
     )
 
@@ -223,7 +223,7 @@ async def update_user_playlist(
             # of the week
             insert_top = True
 
-        update_spotify_playlist(to_add_tracks, playlist["uri"], sp, insert_top)
+        await update_spotify_playlist(to_add_tracks, playlist["uri"], sp, insert_top)
 
     return stats
 
