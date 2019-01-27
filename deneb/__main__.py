@@ -3,9 +3,9 @@ import os
 
 import click
 from dotenv import load_dotenv
-from deneb.db_async import init_db, close_db
+from deneb.db import init_db, close_db
 from deneb.logger import get_logger
-# from deneb.spotify.users import update_users_artists
+from deneb.spotify.users import update_users_artists
 from deneb.spotify.weekly_releases import update_users_playlists
 from deneb.structs import SpotifyKeys, FBAlert
 
@@ -33,8 +33,6 @@ def runner(func, args):
         loop.run_until_complete(func(*args))
     finally:
         loop.run_until_complete(close_db())
-        loop.close()
-
 
 
 @click.group()

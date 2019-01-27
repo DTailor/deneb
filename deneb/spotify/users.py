@@ -3,9 +3,9 @@
 from typing import Optional
 
 from deneb.artist_update import get_new_releases
-from deneb.db_async import User
+from deneb.db import User
 from deneb.logger import get_logger
-from deneb.sp_async import spotify_client
+from deneb.sp import spotify_client
 from deneb.structs import SpotifyKeys
 from deneb.user_update import fetch_user_followed_artists
 

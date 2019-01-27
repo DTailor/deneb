@@ -3,10 +3,10 @@ from typing import Iterable, List, Tuple
 from asyncio import Queue
 from spotipy import Spotify
 
-from deneb.db_async import Album, Artist, Market
+from deneb.db import Album, Artist, Market
 from deneb.logger import get_logger
 from deneb.tools import (
-    clean, fetch_all, generate_release_date, grouper, is_present
+    clean, fetch_all, generate_release_date, is_present
 )
 
 _LOGGER = get_logger(__name__)
@@ -54,15 +54,6 @@ class FetchDetailedAlbum:
         return await self.detailed_albums.get()
 
 
-def fetch_detailed_album(sp: Spotify, albums: List[dict]) -> Iterable[dict]:
-    """Fetch detailed album view from spotify for a simplified album list"""
-    for albums_chunk in grouper(20, albums):
-        albums_chunk = clean(albums_chunk)
-        data = sp.client.albums(albums=[a["id"] for a in albums_chunk])
-        for album in data["albums"]:
-            yield album
-
-
 def is_in_artists_list(artist: Artist, item: dict) -> bool:
     """True if appears in artists list, else False"""
     return bool(is_present(artist.spotify_id, item["artists"], "id"))
@@ -91,12 +82,11 @@ async def get_or_create_album(album: dict, dry_run: bool = False) -> Tuple[bool,
         release_date = generate_release_date(
             album["release_date"], album["release_date_precision"]
         )
-        db_album = await Album.save_to_db(
+        db_album = await Album.create(
             name=album["name"],
-            release_date=release_date,
-            a_type=album["type"],
+            release=release_date,
+            type=album["type"],
             spotify_id=album["id"],
-            no_db=dry_run,
         )
         created = True
     return created, db_album
@@ -151,7 +141,7 @@ async def sync_with_db(
 
         has_artist = await db_album.artists.filter(id=artist.id)
         if not has_artist:
-            db_album.artists.add(artist)
+            await db_album.artists.add(artist)
 
         # update it's marketplaces, for availability
         await update_album_marketplace(db_album, album["available_markets"])

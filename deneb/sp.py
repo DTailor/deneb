@@ -2,8 +2,8 @@
 import json
 import random
 import time
-from contextlib import contextmanager
-from typing import Dict, Generator, List
+from contextlib import asynccontextmanager
+from typing import Dict, List
 
 from spotipy.client import Spotify
 from spotipy.oauth2 import SpotifyClientCredentials, SpotifyOAuth
@@ -15,17 +15,17 @@ from deneb.structs import SpotifyKeys
 _LOGGER = get_logger(__name__)
 
 
-@contextmanager
-def spotify_client(credentials: SpotifyKeys, user: User) -> Generator:
+@asynccontextmanager
+async def spotify_client(credentials: SpotifyKeys, user: User):
     """
     context manager to aquire spotify client
     """
     token_info = json.loads(user.spotify_token)
-    sp = get_client(credentials, token_info)
+    sp = await get_client(credentials, token_info)
     try:
         yield sp
     finally:
-        user.sync_data(sp)
+        await user.async_data(sp)
 
 
 class Spotter:
@@ -34,7 +34,7 @@ class Spotter:
         self.userdata = userdata
 
 
-def get_client(credentials: SpotifyKeys, token_info: dict) -> Spotter:
+async def get_client(credentials: SpotifyKeys, token_info: dict) -> Spotter:
     """returns a spotter obj with spotipy client"""
     sp_oauth = SpotifyOAuth(
         credentials.client_id, credentials.client_secret, credentials.client_uri
@@ -49,11 +49,14 @@ def get_client(credentials: SpotifyKeys, token_info: dict) -> Spotter:
     client = Spotify(client_credentials_manager=client_credentials)
 
     try:
+        # TODO: make async call
         current_user = client.current_user()
     except Exception:
+        # TODO: make async call
         token_info = sp_oauth.refresh_access_token(token_info["refresh_token"])
         client_credentials.token_info = token_info
         client = Spotify(client_credentials_manager=client_credentials)
+        # TODO: make async call
         current_user = client.current_user()
         _LOGGER.info(f"aquired new token for {current_user['id']}")
 

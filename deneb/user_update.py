@@ -2,7 +2,7 @@
 
 from itertools import zip_longest
 
-from deneb.db_async import Artist
+from deneb.db import Artist
 from deneb.logger import get_logger
 from deneb.tools import grouper
 

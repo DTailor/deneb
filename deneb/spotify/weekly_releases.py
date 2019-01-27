@@ -7,9 +7,9 @@ from math import ceil
 from typing import Dict, Iterator, List, Optional, Tuple  # noqa:F401
 
 from deneb.chatbot.message import send_message
-from deneb.db_async import User, Album
+from deneb.db import User, Album
 from deneb.logger import get_logger
-from deneb.sp_async import SpotifyStats, Spotter, spotify_client
+from deneb.sp import SpotifyStats, Spotter, spotify_client
 from deneb.structs import AlbumTracks, FBAlert, SpotifyKeys
 from deneb.tools import clean, fetch_all, grouper, is_present
 from perf import print_stats, timeit
