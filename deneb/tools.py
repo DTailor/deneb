@@ -38,5 +38,6 @@ def fetch_all(sp: Spotify, data: dict) -> List[dict]:
     contents = []  # type: List[dict]
     while data:
         contents.extend(data["items"])
+        # TODO: make async call
         data = sp.client.next(data)  # noqa: B305
     return contents

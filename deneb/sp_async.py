@@ -49,11 +49,14 @@ async def get_client(credentials: SpotifyKeys, token_info: dict) -> Spotter:
     client = Spotify(client_credentials_manager=client_credentials)
 
     try:
+        # TODO: make async call
         current_user = client.current_user()
     except Exception:
+        # TODO: make async call
         token_info = sp_oauth.refresh_access_token(token_info["refresh_token"])
         client_credentials.token_info = token_info
         client = Spotify(client_credentials_manager=client_credentials)
+        # TODO: make async call
         current_user = client.current_user()
         _LOGGER.info(f"aquired new token for {current_user['id']}")
 
