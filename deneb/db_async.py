@@ -1,14 +1,12 @@
 """Database handling."""
 
-import asyncio
 import datetime
-from tortoise.models import Model
 import json
 import os
-from tortoise import Tortoise
-from tortoise import fields
 
 from dotenv import load_dotenv
+from tortoise import Tortoise, fields
+from tortoise.models import Model
 
 from deneb.logger import get_logger
 
@@ -33,6 +31,14 @@ async def close_db() -> None:
     await Tortoise.close_connections()
 
 
+class Market(Model):
+    id = fields.IntField(pk=True)
+    name = fields.CharField(max_length=255)
+
+    def __repr__(self):
+        return self.name
+
+
 class Album(Model):  # type: ignore
     id = fields.IntField(pk=True)
     name = fields.CharField(max_length=255)
@@ -40,15 +46,17 @@ class Album(Model):  # type: ignore
     spotify_id = fields.CharField(max_length=255)
     release = fields.DateField()
     timestamp = fields.DatetimeField(default=datetime.datetime.now)
+    artists = fields.ManyToManyField(
+        "models.Artist", through="album_artist_through", related_name="albums"
+    )
+    markets = fields.ManyToManyField("models.Market", through="album_market_through")
 
     @property
     def uri(self):
         return f"spotify:{self.type}:{self.spotify_id}"
 
     def __str__(self):
-        # artists = ", ".join([a.name for a in self.artists()])
-        # return f"<{self.uri}> - {artists} ({self.name} [{self.release}])"
-        return f"< {self.uri} - {self.name} >"
+        return f"<{self.uri}> - ({self.name} [{self.release}])"
 
     def __repr__(self):
         return self.__str__()
@@ -67,31 +75,15 @@ class Artist(Model):  # type: ignore
         return self.__str__()
 
 
-# class UserXArtist(Model):  # type: ignore
-#     __tablename__ = "user_artist_through"
-
-#     user_id = _DB.Column(_DB.Integer, _DB.ForeignKey("user.id"))
-#     artist_id = _DB.Column(_DB.Integer, _DB.ForeignKey("artist.id"))
-
-
 class User(Model):  # type: ignore
     id = fields.IntField(pk=True)
     username = fields.CharField(max_length=255)
     fb_id = fields.CharField(max_length=255)
     display_name = fields.CharField(max_length=255, default="")
-    # market = ForeignKeyField(Market, null=True)
-    # following = ManyToManyField(Artist, backref="followers")
+    market = fields.ForeignKeyField("models.Market", null=True)
+    artists = fields.ManyToManyField("models.Artist", through="user_artist_through")
     spotify_token = fields.CharField(max_length=255)
     state_id = fields.CharField(max_length=255)
-
-#     @property
-#     def following(self):
-#         return self._following
-
-#     @following.setter  # type: ignore
-#     def add_follow(self, artist):
-#         self._following.add(artist)
-#         artist._followers.add(self)
 
     def __str__(self) -> str:
         base = f"spotify:user:{self.username}>"
@@ -106,67 +98,25 @@ class User(Model):  # type: ignore
 
     async def async_data(self, sp):
         if "refresh_token" not in sp.client.client_credentials_manager.token_info:
-            raise ValueError(f"""
+            raise ValueError(
+                f"""
             no refresh token present.
             CRED_MAN: {sp.client.client_credentials_manager}
             TOK_INF: {sp.client.client_credentials_manager.token_info}
             IN_DB: {self.spotify_token}
-            """)
-        # self.market = Market.to_obj(sp.userdata["country"])
+            """
+            )
+        market, _ = await Market.get_or_create(name=sp.userdata["country"])
         await User.filter(id=self.id).update(
             username=sp.userdata["id"],
             display_name=sp.userdata["display_name"],
             spotify_token=json.dumps(sp.client.client_credentials_manager.token_info),
+            market_id=market.id,
         )
 
-#     async def get_followed_artists(self):
-#         # query = User.outerjoin(UserXArtist).outerjoin(Artist).select()
-#         # parents = await query.gino.load(
-#         #     Parent.distinct(Parent.id).load(add_child=Child.distinct(Child.id))
-#         # ).all()
-#         pass
-
-#     @staticmethod
-#     async def get_by_username(username):
-#         query, loader = USER_WITH_FOLLOWS
-#         return await query.where(User.username == username).gino.load(loader).first()
-
-#     async def released_from_weekday(self, date):
-#         albums = await Album.select(Album).where(Album.release >= date).gino.all()
-#         following_artists = await self.get_followed_artists()
-
-#         # return (
-#         #     Album.select()
-#         #     .join(AvailableMarket, on=(AvailableMarket.album_id == Album.id))
-#         #     .join(AlbumArtist, on=(AlbumArtist.album_id == Album.id))
-#         #     .where(
-#         #         AvailableMarket.market == self.market,
-#         #         AlbumArtist.artist_id << self.following_ids(),
-#         #         Album.release >= date,
-#         #     )
-#         #     .distinct()
-#         # )
-
-# # some loaders (query, loade)
-# # query.gino.load(loader).all()
-# USER_WITH_FOLLOWS = (
-#     User.outerjoin(UserXArtist).outerjoin(Artist).select(),
-#     User.distinct(User.id).load(add_follow=Artist.distinct(Artist.id)),
-# )
-
-# async def config_db():
-#     global _DB
-#     user = os.environ["DB_USER"]
-#     password = os.environ["DB_PASSWORD"]
-#     host = os.environ["DB_HOST"]
-#     name = os.environ["DB_NAME"]
-#     await _DB.set_bind(f"postgresql+asyncpg://{user}:{password}@{host}:5432/{name}")
-#     await _DB.gino.create_all()
-
-#     # query = User.outerjoin(UserXArtist).outerjoin(Artist).select()
-#     # await query.gino.load(
-#     #     User.distinct(User.id).load(add_follow=Artist.distinct(Artist.id))
-#     # ).all()
-
-
-# asyncio.get_event_loop().run_until_complete(config_db())
+    async def released_from_weekday(self, date):
+        followed_ids = await self.artists.filter().values_list("id")
+        followed_ids = [a[0] for a in followed_ids]
+        return await Album.filter(
+            release__gte=date, artists__id__in=followed_ids, markets__id=self.market_id
+        )
