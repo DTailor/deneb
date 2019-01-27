@@ -6,12 +6,12 @@ name = "pypi"
 [packages]
 spotipy = "*"
 logzero = "*"
-requests = "*"
 python-dotenv = "*"
 click = "*"
 sentry-sdk = "*"
 tortoise-orm = "*"
 asyncpg = "*"
+aiohttp = "*"
 
 [dev-packages]
 ipdb = "*"

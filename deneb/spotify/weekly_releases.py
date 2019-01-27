@@ -242,5 +242,5 @@ async def update_users_playlists(
         async with spotify_client(credentials, user) as sp:
             stats = await update_user_playlist(user, sp, dry_run)
             if fb_alert.notify:
-                send_message(user.fb_id, fb_alert, stats.describe())
+                await send_message(user.fb_id, fb_alert, stats.describe())
     print_stats()
