@@ -27,7 +27,6 @@ def get_fb_alert(notify: bool) -> FBAlert:
 
 def runner(func, args):
     loop = asyncio.get_event_loop()
-    loop.set_debug(True)
     try:
         loop.run_until_complete(init_db())
         loop.run_until_complete(func(*args))

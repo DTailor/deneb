@@ -1,13 +1,12 @@
 """Module to handle artist related updates"""
-from typing import Iterable, List, Tuple
 import asyncio
+from typing import Iterable, List, Tuple
+
 from spotipy import Spotify
 
 from deneb.db import Album, Artist, Market
 from deneb.logger import get_logger
-from deneb.tools import (
-    clean, fetch_all, generate_release_date, is_present
-)
+from deneb.tools import clean, fetch_all, generate_release_date, is_present
 
 _LOGGER = get_logger(__name__)
 
@@ -142,7 +141,7 @@ async def handle_album_sync(
 
 def sync_with_db(
     albums: List[dict], artist: Artist
-) -> List[asyncio.Future]:
+) -> List[asyncio.Task]:
     """Adds new albums to db, and returns db instances and new inserts"""
     tasks = [asyncio.create_task(handle_album_sync(a, artist)) for a in albums]
     return tasks
@@ -150,7 +149,7 @@ def sync_with_db(
 
 async def update_artist_albums(
     sp: Spotify, artist: Artist, dry_run: bool = False
-) -> List[Album]:
+) -> Tuple[Artist, List[Album]]:
     """update artist albums by adding them to the db"""
     albums = await fetch_albums(sp, artist)
     processed_albums = []
@@ -177,11 +176,6 @@ async def update_artist_albums(
 
     await artist.update_timestamp()
     return artist, new_inserts
-
-from itertools import islice
-def take(n, iterable):
-    "Return first n items of the iterable as a list"
-    return list(islice(iterable, n))
 
 
 def make_artist_tasks(sp: Spotify, artists: List[Artist]) -> List[asyncio.Future]:
@@ -218,8 +212,10 @@ async def get_new_releases(
 
         for task in asyncio.as_completed(tasks):
             artist, new_additions = await task
-            _LOGGER.info(f"fetched {len(new_additions)} albums for {artist}")
 
             if new_additions:
+                _LOGGER.info(f"fetched {len(new_additions)} albums for {artist}")
                 albums_nr += len(new_additions)
                 updated_nr += 1
+
+    return albums_nr, updated_nr
