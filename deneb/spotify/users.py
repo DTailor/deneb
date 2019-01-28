@@ -8,7 +8,6 @@ from deneb.logger import get_logger
 from deneb.sp import spotify_client
 from deneb.structs import SpotifyKeys
 from deneb.user_update import fetch_user_followed_artists
-
 _LOGGER = get_logger(__name__)
 
 

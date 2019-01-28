@@ -1,6 +1,6 @@
 """Module to handle artist related updates"""
 from typing import Iterable, List, Tuple
-from asyncio import Queue
+import asyncio
 from spotipy import Spotify
 
 from deneb.db import Album, Artist, Market
@@ -30,7 +30,7 @@ class FetchDetailedAlbum:
     def __init__(self, sp: Spotify, albums: List[dict]) -> None:
         self.sp = sp
         self.albums = albums
-        self.detailed_albums = Queue()    # type: Queue
+        self.detailed_albums = asyncio.Queue()    # type: asyncio.Queue
 
     def __aiter__(self):
         return self
@@ -125,29 +125,27 @@ async def update_album_marketplace(
         await album.markets.add(market)
 
 
-async def sync_with_db(
-    albums: List[dict], artist: Artist, dry_run: bool = False
-) -> List[Album]:
+async def handle_album_sync(
+    album: dict, artist: Artist
+) -> Tuple[bool, Album]:
+    created, db_album = await get_or_create_album(album)
+    has_artist = await db_album.artists.filter(id=artist.id)
+    if not has_artist:
+        await db_album.artists.add(artist)
+
+    # update it's marketplaces, for availability
+    await update_album_marketplace(db_album, album["available_markets"])
+
+    await db_album.update_timestamp()
+    return created, db_album
+
+
+def sync_with_db(
+    albums: List[dict], artist: Artist
+) -> List[asyncio.Future]:
     """Adds new albums to db, and returns db instances and new inserts"""
-    db_albums = []  # type: list
-    new_inserts = []
-
-    for album in albums:
-        # get or init album
-        created, db_album = await get_or_create_album(album, dry_run)
-        db_albums.append(db_album)
-        if created:
-            new_inserts.append(db_album)
-
-        has_artist = await db_album.artists.filter(id=artist.id)
-        if not has_artist:
-            await db_album.artists.add(artist)
-
-        # update it's marketplaces, for availability
-        await update_album_marketplace(db_album, album["available_markets"])
-        await db_album.update_timestamp()
-
-    return new_inserts
+    tasks = [asyncio.create_task(handle_album_sync(a, artist)) for a in albums]
+    return tasks
 
 
 async def update_artist_albums(
@@ -168,9 +166,26 @@ async def update_artist_albums(
         else:
             processed_albums.append(detailed_album)
 
-    new_inserts = await sync_with_db(processed_albums, artist, dry_run)
+    new_inserts = []
 
-    return new_inserts
+    tasks = sync_with_db(processed_albums, artist)
+    for task in asyncio.as_completed(tasks):    # type: asyncio.Future
+        created, album = await task
+
+        if created:
+            new_inserts.append(album)
+
+    await artist.update_timestamp()
+    return artist, new_inserts
+
+from itertools import islice
+def take(n, iterable):
+    "Return first n items of the iterable as a list"
+    return list(islice(iterable, n))
+
+
+def make_artist_tasks(sp: Spotify, artists: List[Artist]) -> List[asyncio.Future]:
+    return [asyncio.create_task(update_artist_albums(sp, a)) for a in artists]
 
 
 async def get_new_releases(
@@ -179,13 +194,32 @@ async def get_new_releases(
     """update artists with released albums"""
     updated_nr = 0
     albums_nr = 0
+
+    artist_jobs = []
     for artist in artists:
-        # TODO: make and gather tasks
         if artist.can_update() or force_update:
-            new_additions = await update_artist_albums(sp, artist)
+            artist_jobs.append(artist)
+
+        if len(artist_jobs) >= 10:
+
+            tasks = make_artist_tasks(sp, artist_jobs)
+            for task in asyncio.as_completed(tasks):
+                artist, new_additions = await task
+
+                if new_additions:
+                    _LOGGER.info(f"fetched {len(new_additions)} albums for {artist}")
+                    albums_nr += len(new_additions)
+                    updated_nr += 1
+
+            artist_jobs = []
+
+    if artist_jobs:
+        tasks = make_artist_tasks(sp, artist_jobs)
+
+        for task in asyncio.as_completed(tasks):
+            artist, new_additions = await task
+            _LOGGER.info(f"fetched {len(new_additions)} albums for {artist}")
+
             if new_additions:
-                _LOGGER.info(f"fetched {len(new_additions)} albums for {artist}")
                 albums_nr += len(new_additions)
-            await artist.update_timestamp()
-            updated_nr += 1
-    return albums_nr, updated_nr
+                updated_nr += 1

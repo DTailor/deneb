@@ -16,14 +16,15 @@ _LOGGER = get_logger(__name__)
 
 
 async def init_db() -> None:
-
     host = os.environ["DB_HOST"]
     user = os.environ["DB_USER"]
     password = os.environ["DB_PASSWORD"]
     name = os.environ["DB_NAME"]
+    dsn = f"postgres://{user}:{password}@{host}:5432/{name}"
+
     await Tortoise.init(
-        db_url=f"postgres://{user}:{password}@{host}:5432/{name}",
-        modules={"models": ["deneb.db_async"]},
+        db_url=dsn,
+        modules={"models": ["deneb.db"]},
     )
 
 
