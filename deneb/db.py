@@ -102,7 +102,7 @@ class User(Model):  # type: ignore
     display_name = fields.CharField(max_length=255, default="")
     market = fields.ForeignKeyField("models.Market", null=True)
     artists = fields.ManyToManyField("models.Artist", through="user_artist_through")
-    spotify_token = fields.CharField(max_length=255)
+    spotify_token = fields.CharField(max_length=255, null=True)
     state_id = fields.CharField(max_length=255)
 
     def __str__(self) -> str:
