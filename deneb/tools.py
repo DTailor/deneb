@@ -36,8 +36,10 @@ def generate_release_date(date: str, precision: str) -> datetime.datetime:
 async def fetch_all(sp: Spotify, data: dict) -> List[dict]:
     """iterates till gets all the albums"""
     contents = []  # type: List[dict]
-    while data:
+    while True:
         contents.extend(data["items"])
-        # TODO: make async call
-        data = sp.client.next(data)  # noqa: B305
+        if not data["next"]:
+            break
+        data = await sp.client.next(data)  # noqa: B305
+
     return contents

@@ -43,8 +43,7 @@ def generate_playlist_name() -> str:
 async def fetch_user_playlists(sp: Spotter) -> List[dict]:
     """Return user playlists"""
     playlists = []  # type: List[dict]
-    # TODO: make async call
-    data = sp.client.user_playlists(sp.userdata["id"])
+    data = await sp.client.user_playlists(sp.userdata["id"])
     playlists = await fetch_all(sp, data)
     return playlists
 
@@ -52,8 +51,7 @@ async def fetch_user_playlists(sp: Spotter) -> List[dict]:
 @timeit
 async def get_tracks(sp: Spotter, playlist: dict) -> List[dict]:
     """return playlist tracks"""
-    # TODO: make async call
-    tracks = sp.client.user_playlist(
+    tracks = await sp.client.user_playlist(
         sp.userdata["id"], playlist["id"], fields="tracks,next"
     )["tracks"]
     return await fetch_all(sp, tracks)
@@ -62,8 +60,7 @@ async def get_tracks(sp: Spotter, playlist: dict) -> List[dict]:
 @timeit
 async def get_album_tracks(sp: Spotter, album: Album) -> AlbumTracks:
     tracks = []  # type: List[dict]
-    # TODO: make async call
-    album_data = sp.client.album(album.uri)
+    album_data = await sp.client.album(album.uri)
     tracks = await fetch_all(sp, album_data["tracks"])
     return AlbumTracks(album_data, tracks)
 
@@ -109,8 +106,7 @@ async def generate_tracks_to_add(
         if is_album:
             album = await get_album_tracks(sp, item)
         else:
-            # TODO: make async call
-            track = sp.client.track(item.uri)
+            track = await sp.client.track(item.uri)
             album = AlbumTracks(track["album"], [track])
 
         if album.parent["album_type"] == "compilation":
@@ -171,8 +167,7 @@ async def update_spotify_playlist(
             args = args + (index,)  # type: ignore
 
         try:
-            # TODO: make async call
-            sp.client.user_playlist_add_tracks(*args)
+            await sp.client.user_playlist_add_tracks(*args)
             index += len(album_ids) - 1
         except Exception as exc:
             _LOGGER.exception(f"add to playlist '{album_ids}' failed with: {exc}")
@@ -193,8 +188,7 @@ async def update_user_playlist(
 
     playlist = is_present(playlist_name, user_playlists, "name")
     if not playlist:
-        # TODO: make async calls
-        playlist = sp.client.user_playlist_create(
+        playlist = await sp.client.user_playlist_create(
             sp.userdata["id"], playlist_name, public=False
         )
 

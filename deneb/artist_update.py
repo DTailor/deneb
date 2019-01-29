@@ -14,8 +14,7 @@ _LOGGER = get_logger(__name__)
 async def fetch_albums(sp: Spotify, artist: Artist, retry: bool = False) -> List[dict]:
     """fetches artist albums from spotify"""
     try:
-        # TODO: make async call
-        data = sp.client.artist_albums(artist.spotify_id, limit=50)
+        data = await sp.client.artist_albums(artist.spotify_id, limit=50)
         albums = await fetch_all(sp, data)
     except Exception as exc:
         if not retry:
@@ -35,8 +34,7 @@ class FetchDetailedAlbum:
         return self
 
     async def fetch_update_albums(self, album_ids) -> None:
-        # TODO: make async call
-        data = self.sp.client.albums(albums=[a["id"] for a in album_ids])
+        data = await self.sp.client.albums(albums=[a["id"] for a in album_ids])
         for album in data["albums"]:
             await self.detailed_albums.put(album)
 

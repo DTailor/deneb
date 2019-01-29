@@ -1,5 +1,5 @@
 """Module to handle user related updates"""
-
+import asyncio
 from itertools import zip_longest
 
 from deneb.db import Artist
@@ -12,15 +12,13 @@ _LOGGER = get_logger(__name__)
 async def fetch_artists(sp):
     """fetch user followed artists"""
     artists = []
-    # TODO: make async call
-    artists_data = sp.client.current_user_followed_artists(limit=50)
+    artists_data = await sp.client.current_user_followed_artists(limit=50)
 
     while True:
         artists.extend(artists_data["artists"]["items"])
         if not artists_data["artists"]["next"]:
             break
-        # TODO: make async call
-        artists_data = sp.client.next(artists_data["artists"])  # noqa:B305
+        artists_data = await sp.client.next(artists_data["artists"])  # noqa:B305
 
     clean_artists = list({v["id"]: v for v in artists}.values())
     return clean_artists
@@ -46,8 +44,7 @@ async def check_follows(sp, artists):
     lost_follows = []
     for batch in grouper(50, artists):
         artists_ids = ",".join([a.spotify_id for a in batch if a is not None])
-        # TODO: make async call
-        result = sp.client._get("me/following/contains", type="artist", ids=artists_ids)
+        result = await sp.client._get("me/following/contains", type="artist", ids=artists_ids)
         for artist, is_followed in zip_longest(batch, result, fillvalue=None):
             if artist is None:
                 break

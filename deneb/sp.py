@@ -4,8 +4,9 @@ import random
 import time
 from contextlib import asynccontextmanager
 from typing import Dict, List
+import aiohttp
 
-from spotipy.client import Spotify
+from spotipy.client import Spotify, SpotifyException
 from spotipy.oauth2 import SpotifyClientCredentials, SpotifyOAuth
 
 from deneb.db import User
@@ -34,6 +35,101 @@ class Spotter:
         self.userdata = userdata
 
 
+class AsyncSpotify(Spotify):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.session = aiohttp.ClientSession()
+        self.trace = False
+
+    async def _get(self, url, args=None, payload=None, **kwargs):
+        coro = await self._async_get(url, args=None, payload=None, **kwargs)
+        return await coro
+
+    async def __async_internal_call(self, method, url, payload, params):
+        # remove all none valued keys
+        # aiohttp fails to encode those
+        params = {key: val for key, val in params.items() if val}
+        args = dict(params=params)
+
+        # commented out this as well, aiohttp fails on this none as well
+        # args["timeout"] = self.requests_timeout
+
+        if not url.startswith('http'):
+            url = self.prefix + url
+        headers = self._auth_headers()
+        headers['Content-Type'] = 'application/json'
+
+        if payload:
+            args["data"] = json.dumps(payload)
+
+        if self.trace_out:
+            print(url)
+
+        async with aiohttp.request(method, url, headers=headers, **args) as r:
+            if self.trace:  # pragma: no cover
+                print()
+                print('headers', headers)
+                print('http status', r.status_code)
+                print(method, r.url)
+                if payload:
+                    print("DATA", json.dumps(payload))
+
+            try:
+                r.text = await r.text()
+                r.raise_for_status()
+            except:
+                if r.text and len(r.text) > 0 and r.text != 'null':
+                    raise SpotifyException(r.status_code,
+                        -1, '%s:\n %s' % (r.url, r.json()['error']['message']),
+                        headers=r.headers)
+                else:
+                    raise SpotifyException(r.status_code,
+                        -1, '%s:\n %s' % (r.url, 'error'), headers=r.headers)
+            if r.text and len(r.text) > 0 and r.text != 'null':
+                results = r.json()
+                if self.trace:  # pragma: no cover
+                    print('RESP', results)
+                    print()
+                return results
+            else:
+                return None
+
+    async def _async_get(self, url, args=None, payload=None, **kwargs):
+        if args:
+            kwargs.update(args)
+        retries = self.max_get_retries
+        delay = 1
+        while retries > 0:
+            try:
+                return await self.__async_internal_call('GET', url, payload, kwargs)
+            except SpotifyException as e:
+                retries -= 1
+                status = e.http_status
+                # 429 means we hit a rate limit, backoff
+                if status == 429 or (status >= 500 and status < 600):
+                    if retries < 0:
+                        raise
+                    else:
+                        sleep_seconds = int(e.headers.get('Retry-After', delay))
+                        print('retrying ...' + str(sleep_seconds) + 'secs')
+                        time.sleep(sleep_seconds)
+                        delay += 1
+                else:
+                    raise
+            except Exception as e:
+                raise
+                print('exception', str(e))
+                # some other exception. Requests have
+                # been know to throw a BadStatusLine exception
+                retries -= 1
+                if retries >= 0:
+                    sleep_seconds = int(e.headers.get('Retry-After', delay))
+                    print('retrying ...' + str(delay) + 'secs')
+                    time.sleep(sleep_seconds)
+                    delay += 1
+                else:
+                    raise
+
 async def get_client(credentials: SpotifyKeys, token_info: dict) -> Spotter:
     """returns a spotter obj with spotipy client"""
     sp_oauth = SpotifyOAuth(
@@ -46,18 +142,15 @@ async def get_client(credentials: SpotifyKeys, token_info: dict) -> Spotter:
     if "expires_at" not in token_info:
         token_info["expires_at"] = int(time.time()) + 1000
     client_credentials.token_info = token_info
-    client = Spotify(client_credentials_manager=client_credentials)
+    client = AsyncSpotify(client_credentials_manager=client_credentials)
 
     try:
-        # TODO: make async call
-        current_user = client.current_user()
+        current_user = await client.current_user()
     except Exception:
-        # TODO: make async call
-        token_info = sp_oauth.refresh_access_token(token_info["refresh_token"])
+        token_info = await sp_oauth.refresh_access_token(token_info["refresh_token"])
         client_credentials.token_info = token_info
         client = Spotify(client_credentials_manager=client_credentials)
-        # TODO: make async call
-        current_user = client.current_user()
+        current_user = await client.current_user()
         _LOGGER.info(f"aquired new token for {current_user['id']}")
 
     sp = Spotter(client, current_user)
