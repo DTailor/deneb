@@ -130,6 +130,7 @@ class AsyncSpotify(Spotify):
                 else:
                     raise
 
+
 async def get_client(credentials: SpotifyKeys, token_info: dict) -> Spotter:
     """returns a spotter obj with spotipy client"""
     sp_oauth = SpotifyOAuth(
@@ -147,7 +148,7 @@ async def get_client(credentials: SpotifyKeys, token_info: dict) -> Spotter:
     try:
         current_user = await client.current_user()
     except Exception:
-        token_info = await sp_oauth.refresh_access_token(token_info["refresh_token"])
+        token_info = sp_oauth.refresh_access_token(token_info["refresh_token"])
         client_credentials.token_info = token_info
         client = Spotify(client_credentials_manager=client_credentials)
         current_user = await client.current_user()
