@@ -44,7 +44,7 @@ class AsyncSpotify(Spotify):
     def __init__(self, session, *args, **kwargs):
         super().__init__(*args, **kwargs)
         conn = aiohttp.TCPConnector(limit=30)
-        self.session = aiohttp.ClientSession(connection=conn)
+        self.session = aiohttp.ClientSession(connector=conn)
         self.trace = False
 
     async def init_session(self):
