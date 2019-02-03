@@ -141,8 +141,8 @@ class AsyncSpotify(Spotify):
                         raise
                     else:
                         sleep_seconds = int(e.headers.get("Retry-After", delay)) + 1
-                        print(f"wait {sleep_seconds} seconds...")
-                        _LOGGER.warning(f"request for {url}, waits {sleep_seconds} seconds")
+                        # print(f"wait {sleep_seconds} seconds...")
+                        # _LOGGER.warning(f"request for {url}, waits {sleep_seconds} seconds")
                         await asyncio.sleep(sleep_seconds)
                         delay += 1
                 else:
@@ -155,8 +155,8 @@ class AsyncSpotify(Spotify):
                 retries -= 1
                 if retries >= 0:
                     sleep_seconds = int(e.headers.get("Retry-After", delay)) + 1
-                    print(f"wait {sleep_seconds} seconds...")
-                    _LOGGER.warning(f"request for {url}, waits {sleep_seconds} seconds, retry nr. {retries}")
+                    # print(f"wait {sleep_seconds} seconds...")
+                    # _LOGGER.warning(f"request for {url}, waits {sleep_seconds} seconds, retry nr. {retries}")
                     await asyncio.time.sleep(sleep_seconds)
                     delay += 1
                 else:
