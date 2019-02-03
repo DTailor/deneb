@@ -156,7 +156,6 @@ class AsyncSpotify(Spotify):
                     _LOGGER.exception(f"bad request {url}: {e}")
                     raise
             except Exception as e:
-                raise
                 print("exception", str(e))
                 # some other exception. Requests have
                 # been know to throw a BadStatusLine exception
