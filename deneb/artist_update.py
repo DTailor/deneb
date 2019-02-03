@@ -207,6 +207,8 @@ async def get_new_releases(
     artists_batch, artists_left = take_artists(ARTISTS_QUEUE, artists, force_update)
     jobs = make_artist_tasks(sp, artists_batch)
     _LOGGER.info(f"updating {total_count} artists")
+    tstart = time.time()
+
     while run:
         done_tasks, pending = await asyncio.wait(jobs, return_when=asyncio.FIRST_COMPLETED)
         while done_tasks:
@@ -222,7 +224,7 @@ async def get_new_releases(
                 _LOGGER.warning(f"!!! no albums for {artist}")
 
             if total_count % 50 == 0:
-                _LOGGER.info(f"{total_count} artists left")
+                _LOGGER.info(f"{total_count} artists left; elapsed {tstart - time.time()}")
 
             processed += len(all_albums)
             iter_new += len(new_additions)
