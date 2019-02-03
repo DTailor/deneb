@@ -216,6 +216,7 @@ async def get_new_releases(
         while done_tasks:
             done_task = done_tasks.pop()
             jobs.remove(done_task)
+            total_count -= 1
             artist, new_additions = await done_task
 
             if new_additions:
