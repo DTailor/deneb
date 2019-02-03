@@ -12,6 +12,9 @@ sentry-sdk = "*"
 tortoise-orm = "*"
 asyncpg = "*"
 aiohttp = "*"
+aiologger = "*"
+cytoolz = "*"
+ipython = "*"
 
 [dev-packages]
 ipdb = "*"

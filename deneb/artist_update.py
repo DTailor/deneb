@@ -1,5 +1,6 @@
 """Module to handle artist related updates"""
 import asyncio
+import time
 from typing import Iterable, List, Tuple
 
 from spotipy import Spotify
@@ -7,6 +8,7 @@ from spotipy import Spotify
 from deneb.db import Album, Artist, Market
 from deneb.logger import get_logger
 from deneb.tools import clean, fetch_all, generate_release_date, is_present
+import cytoolz
 
 _LOGGER = get_logger(__name__)
 
@@ -28,7 +30,7 @@ class FetchDetailedAlbum:
     def __init__(self, sp: Spotify, albums: List[dict]) -> None:
         self.sp = sp
         self.albums = albums
-        self.detailed_albums = asyncio.Queue()    # type: asyncio.Queue
+        self.detailed_albums = asyncio.Queue()  # type: asyncio.Queue
 
     def __aiter__(self):
         return self
@@ -122,9 +124,7 @@ async def update_album_marketplace(
         await album.markets.add(market)
 
 
-async def handle_album_sync(
-    album: dict, artist: Artist
-) -> Tuple[bool, Album]:
+async def handle_album_sync(album: dict, artist: Artist) -> Tuple[bool, Album]:
     created, db_album = await get_or_create_album(album)
     has_artist = await db_album.artists.filter(id=artist.id)
     if not has_artist:
@@ -137,14 +137,15 @@ async def handle_album_sync(
     return created, db_album
 
 
-def sync_with_db(
-    albums: List[dict], artist: Artist
-) -> List[asyncio.Task]:
+def sync_with_db(albums: List[dict], artist: Artist) -> List[asyncio.Task]:
     """Adds new albums to db, and returns db instances and new inserts"""
     tasks = [asyncio.create_task(handle_album_sync(a, artist)) for a in albums]
     return tasks
 
 
+import perf
+
+@perf.timeit
 async def update_artist_albums(
     sp: Spotify, artist: Artist, dry_run: bool = False
 ) -> Tuple[Artist, List[Album]]:
@@ -166,54 +167,60 @@ async def update_artist_albums(
     new_inserts = []
 
     tasks = sync_with_db(processed_albums, artist)
-    for task in asyncio.as_completed(tasks):    # type: asyncio.Future
+    for task in asyncio.as_completed(tasks):  # type: asyncio.Future
         created, album = await task
 
         if created:
             new_inserts.append(album)
 
     await artist.update_timestamp()
-    return artist, new_inserts
+    return artist, new_inserts, albums
 
 
 def make_artist_tasks(sp: Spotify, artists: List[Artist]) -> List[asyncio.Future]:
     return [asyncio.create_task(update_artist_albums(sp, a)) for a in artists]
 
 
+def take_artists(amount: int, artists: List[Artist], force_update: bool) -> Tuple[List[Artist], List[Artist]]:
+    taken_artists = []  # type: list
+
+    for idx, artist in enumerate(artists):
+        if len(taken_artists) == 10:
+            return taken_artists, artists[idx:]
+        if artist.can_update() or force_update:
+            taken_artists.append(artist)
+
+    return taken_artists, []
+
+
 async def get_new_releases(
-    sp: Spotify, artists: Iterable[Artist], force_update: bool = False
+    sp: Spotify, artists: List[Artist], force_update: bool = False
 ) -> Tuple[int, int]:
     """update artists with released albums"""
     updated_nr = 0
     albums_nr = 0
+    processed = 0
+    iter_new = 0
+    run = True
+    artists_batch, artists_left = take_artists(10, artists, force_update)
+    jobs = make_artist_tasks(sp, artists_batch)
 
-    artist_jobs = []
-    for artist in artists:
-        if artist.can_update() or force_update:
-            artist_jobs.append(artist)
-
-        if len(artist_jobs) >= 10:
-
-            tasks = make_artist_tasks(sp, artist_jobs)
-            for task in asyncio.as_completed(tasks):
-                artist, new_additions = await task
-
-                if new_additions:
-                    _LOGGER.info(f"fetched {len(new_additions)} albums for {artist}")
-                    albums_nr += len(new_additions)
-                    updated_nr += 1
-
-            artist_jobs = []
-
-    if artist_jobs:
-        tasks = make_artist_tasks(sp, artist_jobs)
-
-        for task in asyncio.as_completed(tasks):
-            artist, new_additions = await task
-
+    while run:
+        done_tasks, pending = await asyncio.wait(jobs, return_when=asyncio.FIRST_COMPLETED)
+        while done_tasks:
+            done_task = done_tasks.pop()
+            jobs.remove(done_task)
+            artist, new_additions, all_albums = await done_task
+            _LOGGER.info(f"fetched {len(all_albums)} albums for {artist}")
             if new_additions:
-                _LOGGER.info(f"fetched {len(new_additions)} albums for {artist}")
                 albums_nr += len(new_additions)
                 updated_nr += 1
+            processed += len(all_albums)
+            iter_new += len(new_additions)
+
+        if artists_left:
+            required_amount = 10 - len(pending)
+            artists_batch, artists_left = take_artists(required_amount, artists_left, force_update)
+            jobs.extend(make_artist_tasks(sp, artists_batch))
 
     return albums_nr, updated_nr
