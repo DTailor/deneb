@@ -185,14 +185,14 @@ def take_artists(amount: int, artists: List[Artist], force_update: bool) -> Tupl
     taken_artists = []  # type: list
 
     for idx, artist in enumerate(artists):
-        if len(taken_artists) == 10:
+        if len(taken_artists) == amount:
             return taken_artists, artists[idx:]
         if artist.can_update() or force_update:
             taken_artists.append(artist)
 
     return taken_artists, []
 
-
+ARTISTS_QUEUE = 5
 async def get_new_releases(
     sp: Spotify, artists: List[Artist], force_update: bool = False
 ) -> Tuple[int, int]:
@@ -202,7 +202,7 @@ async def get_new_releases(
     processed = 0
     iter_new = 0
     run = True
-    artists_batch, artists_left = take_artists(10, artists, force_update)
+    artists_batch, artists_left = take_artists(ARTISTS_QUEUE, artists, force_update)
     jobs = make_artist_tasks(sp, artists_batch)
 
     while run:
@@ -219,7 +219,7 @@ async def get_new_releases(
             iter_new += len(new_additions)
 
         if artists_left:
-            required_amount = 10 - len(pending)
+            required_amount = ARTISTS_QUEUE - len(pending)
             artists_batch, artists_left = take_artists(required_amount, artists_left, force_update)
             jobs.extend(make_artist_tasks(sp, artists_batch))
 
