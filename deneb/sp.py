@@ -43,16 +43,9 @@ import json
 class AsyncSpotify(Spotify):
     def __init__(self, session, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        conn = aiohttp.TCPConnector(limit=15)
+        conn = aiohttp.TCPConnector(limit=10)
         self.session = aiohttp.ClientSession(connector=conn)
         self.trace = False
-
-    async def init_session(self):
-        try:
-            self.session = await aiohttp.ClientSession()
-        except Exception as exc:
-            import ipdb; ipdb.set_trace()
-            pass
 
     async def _get(self, url, args=None, payload=None, **kwargs):
         result = await self._async_get(url, args=None, payload=None, **kwargs)
