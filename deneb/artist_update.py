@@ -60,7 +60,8 @@ def is_in_artists_list(artist: Artist, item: dict) -> bool:
 
 async def get_featuring_songs(sp: Spotify, artist: Artist, album: dict) -> List[dict]:
     """get feature tracks from an album with the artist"""
-    tracks = await fetch_all(sp, album["tracks"])
+    tracks = await sp.client.album_tracks(album_id=album["id"], limit=50)
+    tracks = await fetch_all(sp, tracks)
     feature_tracks = []
 
     for track in tracks:
@@ -152,17 +153,17 @@ async def update_artist_albums(
     """update artist albums by adding them to the db"""
     albums = await fetch_albums(sp, artist)
     processed_albums = []
-    async for detailed_album in FetchDetailedAlbum(sp, albums):
-        if not is_in_artists_list(artist, detailed_album):
+    for album in albums:
+        if not is_in_artists_list(artist, album):
             # Some releases are not directly related to the artist himself.
             # It happens that if an artist has some feature songs on an album
             # for a different artist, it will be returned to the artist in cause
             # as well, so that this function checks that, and returns only feature
             # songs if it's the case.
-            tracks = await get_featuring_songs(sp, artist, detailed_album)
+            tracks = await get_featuring_songs(sp, artist, album)
             processed_albums.extend(tracks)
         else:
-            processed_albums.append(detailed_album)
+            processed_albums.append(album)
 
     new_inserts = []
 

@@ -134,7 +134,7 @@ class AsyncSpotify(Spotify):
         if args:
             kwargs.update(args)
         retries = self.max_get_retries
-        delay = 1
+        delay = 2
         while retries > 0:
             try:
                 return await self.__async_internal_call("GET", url, payload, kwargs)
