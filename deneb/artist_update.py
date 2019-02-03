@@ -224,7 +224,8 @@ async def get_new_releases(
                 _LOGGER.warning(f"!!! no albums for {artist}")
 
             if total_count % 50 == 0:
-                _LOGGER.info(f"{total_count} artists left; elapsed {tstart - time.time()}")
+                _LOGGER.info(f"{total_count} artists left; elapsed {time.time() - tstart}s")
+                tstart = time.time()
 
             processed += len(all_albums)
             iter_new += len(new_additions)
