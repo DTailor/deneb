@@ -8,7 +8,6 @@ from spotipy import Spotify
 from deneb.db import Album, Artist, Market
 from deneb.logger import get_logger
 from deneb.tools import clean, fetch_all, generate_release_date, is_present
-import cytoolz
 
 _LOGGER = get_logger(__name__)
 
@@ -144,9 +143,6 @@ def sync_with_db(albums: List[dict], artist: Artist) -> List[asyncio.Task]:
     return tasks
 
 
-import perf
-
-@perf.timeit
 async def update_artist_albums(
     sp: Spotify, artist: Artist, dry_run: bool = False
 ) -> Tuple[Artist, List[Album]]:
@@ -175,7 +171,8 @@ async def update_artist_albums(
             new_inserts.append(album)
 
     await artist.update_timestamp()
-    return artist, new_inserts, albums
+
+    return artist, new_inserts
 
 
 def make_artist_tasks(sp: Spotify, artists: List[Artist]) -> List[asyncio.Future]:
@@ -200,35 +197,35 @@ async def get_new_releases(
     """update artists with released albums"""
     updated_nr = 0
     albums_nr = 0
-    processed = 0
-    iter_new = 0
-    run = True
     total_count = len(artists)
     artists_batch, artists_left = take_artists(ARTISTS_QUEUE, artists, force_update)
     jobs = make_artist_tasks(sp, artists_batch)
     _LOGGER.info(f"updating {total_count} artists")
-    tstart = time.time()
 
+    # profile time run per 50 tasks
+    tstart = time.time()
+    profile_count = total_count
+
+    run = True
     while run:
         done_tasks, pending = await asyncio.wait(jobs, return_when=asyncio.FIRST_COMPLETED)
         while done_tasks:
             done_task = done_tasks.pop()
             jobs.remove(done_task)
-            artist, new_additions, all_albums = await done_task
+            artist, new_additions = await done_task
             total_count -= 1
+
             if new_additions:
                 albums_nr += len(new_additions)
                 updated_nr += 1
-                _LOGGER.info(f"fetched {len(all_albums)} albums for {artist}")
-            if not all_albums:
-                _LOGGER.warning(f"!!! no albums for {artist}")
+                _LOGGER.info(f"fetched {len(new_additions)} albums for {artist}")
 
             if total_count % 50 == 0:
-                _LOGGER.info(f"{total_count} artists left; elapsed {time.time() - tstart}s")
+                elapsed_time = time.time() - tstart
+                completed = profile_count - total_count
+                _LOGGER.info(f"{total_count} artists left; elapsed {elapsed_time}s ({elapsed_time / completed} ~ per task)")
                 tstart = time.time()
-
-            processed += len(all_albums)
-            iter_new += len(new_additions)
+                profile_count = total_count
 
         if artists_left:
             required_amount = ARTISTS_QUEUE - len(pending)
