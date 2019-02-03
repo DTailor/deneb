@@ -43,7 +43,7 @@ import json
 class AsyncSpotify(Spotify):
     def __init__(self, session, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        conn = aiohttp.TCPConnector(limit=10)
+        conn = aiohttp.TCPConnector(limit=15)
         self.session = aiohttp.ClientSession(connector=conn)
         self.trace = False
 
