@@ -190,7 +190,7 @@ def take_artists(amount: int, artists: List[Artist], force_update: bool) -> Tupl
 
     return taken_artists, []
 
-ARTISTS_QUEUE = 20
+ARTISTS_QUEUE = 15
 async def get_new_releases(
     sp: Spotify, artists: List[Artist], force_update: bool = False
 ) -> Tuple[int, int]:
