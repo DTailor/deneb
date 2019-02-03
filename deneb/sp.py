@@ -43,7 +43,7 @@ import json
 class AsyncSpotify(Spotify):
     def __init__(self, session, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        conn = aiohttp.TCPConnector(limit=30)
+        conn = aiohttp.TCPConnector(limit=10)
         self.session = aiohttp.ClientSession(connector=conn)
         self.trace = False
 
@@ -136,7 +136,7 @@ class AsyncSpotify(Spotify):
                         raise
                     else:
                         sleep_seconds = int(e.headers.get("Retry-After", delay)) + 1
-                        print("retrying ..." + str(sleep_seconds) + "secs")
+                        # print("retrying ..." + str(sleep_seconds) + "secs")
                         await asyncio.sleep(sleep_seconds)
                         delay += 1
                 else:
@@ -149,7 +149,7 @@ class AsyncSpotify(Spotify):
                 retries -= 1
                 if retries >= 0:
                     sleep_seconds = int(e.headers.get("Retry-After", delay)) + 1
-                    print("retrying ..." + str(delay) + "secs")
+                    # print("retrying ..." + str(delay) + "secs")
                     await asyncio.time.sleep(sleep_seconds)
                     delay += 1
                 else:
