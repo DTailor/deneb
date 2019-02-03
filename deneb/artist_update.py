@@ -192,7 +192,7 @@ def take_artists(amount: int, artists: List[Artist], force_update: bool) -> Tupl
 
     return taken_artists, []
 
-ARTISTS_QUEUE = 5
+ARTISTS_QUEUE = 7
 async def get_new_releases(
     sp: Spotify, artists: List[Artist], force_update: bool = False
 ) -> Tuple[int, int]:
@@ -202,19 +202,27 @@ async def get_new_releases(
     processed = 0
     iter_new = 0
     run = True
+    total_count = len(artists)
     artists_batch, artists_left = take_artists(ARTISTS_QUEUE, artists, force_update)
     jobs = make_artist_tasks(sp, artists_batch)
-
+    _LOGGER.info(f"updating {total_count} artists")
     while run:
         done_tasks, pending = await asyncio.wait(jobs, return_when=asyncio.FIRST_COMPLETED)
         while done_tasks:
             done_task = done_tasks.pop()
             jobs.remove(done_task)
             artist, new_additions, all_albums = await done_task
-            _LOGGER.info(f"fetched {len(all_albums)} albums for {artist}")
+            total_count -= 1
             if new_additions:
                 albums_nr += len(new_additions)
                 updated_nr += 1
+                _LOGGER.info(f"fetched {len(all_albums)} albums for {artist}")
+            if not all_albums:
+                _LOGGER.warning(f"!!! no albums for {artist}")
+
+            if total_count % 50 == 0:
+                _LOGGER.info(f"{total_count} artists left")
+
             processed += len(all_albums)
             iter_new += len(new_additions)
 
