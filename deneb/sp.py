@@ -24,8 +24,7 @@ async def spotify_client(credentials: SpotifyKeys, user: User):
     context manager to aquire spotify client
     """
     token_info = json.loads(user.spotify_token)
-    session = aiohttp.ClientSession()
-    sp = await get_client(credentials, token_info, session)
+    sp = await get_client(credentials, token_info)
     # await sp.client.init_session()
     try:
         yield sp
@@ -41,7 +40,7 @@ class Spotter:
 
 import json
 class AsyncSpotify(Spotify):
-    def __init__(self, session, *args, **kwargs):
+    def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         conn = aiohttp.TCPConnector(limit=10)
         self.session = aiohttp.ClientSession(connector=conn)
@@ -89,7 +88,9 @@ class AsyncSpotify(Spotify):
         if self.trace_out:
             print(url)
 
-        async with self.session.request(method, url, headers=headers, timeout=10, **args) as res:
+        # _LOGGER.info(f"request [{method}]> {url}")
+        async with self.session.request(method, url, headers=headers, timeout=60, **args) as res:
+            # _LOGGER.info(f"response [{method}]< {url}")
             if self.trace:  # pragma: no cover
                 print()
                 print("headers", headers)
@@ -102,7 +103,7 @@ class AsyncSpotify(Spotify):
                 res.text = await res.text()
                 res.json = json.loads(res.text)
                 res.raise_for_status()
-            except (Exception, aiohttp.ClientResponseError) as exc:
+            except (aiohttp.ClientResponseError) as exc:
                 if res.text and len(res.text) > 0 and res.text != "null":
                     raise SpotifyException(
                         res.status,
@@ -148,6 +149,17 @@ class AsyncSpotify(Spotify):
                 else:
                     _LOGGER.exception(f"bad request {url}: {e}")
                     raise
+            except asyncio.TimeoutError:
+                retries -= 1
+                if retries >= 0:
+                    sleep_seconds = delay + 1
+                    # print(f"wait {sleep_seconds} seconds...")
+                    # _LOGGER.warning(f"request for {url}, waits {sleep_seconds} seconds, retry nr. {retries}")
+                    await asyncio.sleep(sleep_seconds)
+                    delay += 1
+                else:
+                    raise
+
             except Exception as e:
                 print("exception", str(e))
                 # some other exception. Requests have
@@ -157,13 +169,13 @@ class AsyncSpotify(Spotify):
                     sleep_seconds = int(e.headers.get("Retry-After", delay)) + 1
                     # print(f"wait {sleep_seconds} seconds...")
                     # _LOGGER.warning(f"request for {url}, waits {sleep_seconds} seconds, retry nr. {retries}")
-                    await asyncio.time.sleep(sleep_seconds)
+                    await asyncio.sleep(sleep_seconds)
                     delay += 1
                 else:
                     raise
 
 
-async def get_client(credentials: SpotifyKeys, token_info: dict, session: aiohttp.ClientSession) -> Spotter:
+async def get_client(credentials: SpotifyKeys, token_info: dict) -> Spotter:
     """returns a spotter obj with spotipy client"""
     sp_oauth = SpotifyOAuth(
         credentials.client_id, credentials.client_secret, credentials.client_uri
@@ -175,7 +187,7 @@ async def get_client(credentials: SpotifyKeys, token_info: dict, session: aiohtt
     if "expires_at" not in token_info:
         token_info["expires_at"] = int(time.time()) + 1000
     client_credentials.token_info = token_info
-    client = AsyncSpotify(client_credentials_manager=client_credentials, session=session)
+    client = AsyncSpotify(client_credentials_manager=client_credentials)
 
     try:
         current_user = await client.current_user()

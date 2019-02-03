@@ -15,7 +15,7 @@ _LOGGER = get_logger(__name__)
 async def fetch_albums(sp: Spotify, artist: Artist, retry: bool = False) -> List[dict]:
     """fetches artist albums from spotify"""
     try:
-        data = await sp.client.artist_albums(artist.spotify_id, limit=50)
+        data = await sp.client.artist_albums(artist.spotify_id, limit=50, album_type='album,single,appears_on')
         albums = await fetch_all(sp, data)
     except Exception as exc:
         if not retry:
@@ -197,23 +197,29 @@ async def get_new_releases(
     """update artists with released albums"""
     updated_nr = 0
     albums_nr = 0
+    artists = artists[:19]
     total_count = len(artists)
     artists_batch, artists_left = take_artists(ARTISTS_QUEUE, artists, force_update)
+    total_count_left_jobs = len(artists_left)
     jobs = make_artist_tasks(sp, artists_batch)
-    _LOGGER.info(f"updating {total_count} artists")
+    _LOGGER.info(f"updating {len(artists)} artists")
 
     # profile time run per 50 tasks
     tstart = time.time()
-    profile_count = total_count
 
-    run = True
+    run = True if jobs else False
+    mode = asyncio.FIRST_COMPLETED
     while run:
-        done_tasks, pending = await asyncio.wait(jobs, return_when=asyncio.FIRST_COMPLETED)
+        print(f"wait {len(jobs)} tasks; {total_count_left_jobs} left")
+        if not total_count_left_jobs:
+            print("switched to ALL COMPLETED")
+            mode = asyncio.ALL_COMPLETED
+
+        done_tasks, pending = await asyncio.wait(jobs, return_when=mode)
         while done_tasks:
             done_task = done_tasks.pop()
             jobs.remove(done_task)
             artist, new_additions = await done_task
-            total_count -= 1
 
             if new_additions:
                 albums_nr += len(new_additions)
@@ -222,14 +228,13 @@ async def get_new_releases(
 
             if total_count % 50 == 0:
                 elapsed_time = time.time() - tstart
-                completed = profile_count - total_count
-                _LOGGER.info(f"{total_count} artists left; elapsed {elapsed_time}s ({elapsed_time / completed} ~ per task)")
+                _LOGGER.info(f"{total_count} artists left; elapsed {elapsed_time}s")
                 tstart = time.time()
-                profile_count = total_count
 
         if artists_left:
             required_amount = ARTISTS_QUEUE - len(pending)
             artists_batch, artists_left = take_artists(required_amount, artists_left, force_update)
+            total_count_left_jobs = len(artists_left)
             jobs.extend(make_artist_tasks(sp, artists_batch))
 
         if not jobs:
