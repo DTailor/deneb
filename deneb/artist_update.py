@@ -209,9 +209,7 @@ async def get_new_releases(
     run = True if jobs else False
     mode = asyncio.FIRST_COMPLETED
     while run:
-        print(f"wait {len(jobs)} tasks; {total_count_left_jobs} left")
         if not total_count_left_jobs:
-            print("switched to ALL COMPLETED")
             mode = asyncio.ALL_COMPLETED
 
         done_tasks, pending = await asyncio.wait(jobs, return_when=mode)
