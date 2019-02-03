@@ -232,4 +232,7 @@ async def get_new_releases(
             artists_batch, artists_left = take_artists(required_amount, artists_left, force_update)
             jobs.extend(make_artist_tasks(sp, artists_batch))
 
+        if not jobs:
+            run = False
+
     return albums_nr, updated_nr
