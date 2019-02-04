@@ -3,7 +3,6 @@ import asyncio
 import json
 import random
 import time
-import typing
 from contextlib import asynccontextmanager
 from typing import Dict, List
 
@@ -38,7 +37,6 @@ class Spotter:
         self.client = client
         self.userdata = userdata
 
-import json
 class AsyncSpotify(Spotify):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

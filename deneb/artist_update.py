@@ -137,12 +137,22 @@ async def handle_album_sync(album: dict, artist: Artist) -> Tuple[bool, Album]:
     return created, db_album
 
 
-def sync_with_db(albums: List[dict], artist: Artist) -> List[asyncio.Task]:
+def sync_with_db(albums: List[dict], artist: Artist) -> List[asyncio.Future]:
     """Adds new albums to db, and returns db instances and new inserts"""
     tasks = [asyncio.create_task(handle_album_sync(a, artist)) for a in albums]
     return tasks
 
 
+def take_albums(amount: int, albums: List[dict]) -> Tuple[List[dict], List[dict]]:
+    taken_albums = []   # type: List[dict]
+    for idx, album in enumerate(albums):
+        if len(taken_albums) == amount:
+            return taken_albums, albums[idx:]
+        taken_albums.append(album)
+    return taken_albums, []
+
+
+ALBUMS_QUEUE = 5
 async def update_artist_albums(
     sp: Spotify, artist: Artist, dry_run: bool = False
 ) -> Tuple[Artist, List[Album]]:
@@ -163,12 +173,27 @@ async def update_artist_albums(
 
     new_inserts = []
 
-    tasks = sync_with_db(processed_albums, artist)
-    for task in asyncio.as_completed(tasks):  # type: asyncio.Future
-        created, album = await task
+    # tasks = sync_with_db(processed_albums, artist)
+    albums_batch, albums_left = take_albums(ALBUMS_QUEUE, processed_albums)
+    jobs = sync_with_db(albums_batch, artist)
+    run = True if jobs else False
 
-        if created:
-            new_inserts.append(album)
+    while run:
+        done_tasks, pending = await asyncio.wait(jobs, return_when=asyncio.FIRST_COMPLETED)
+        while done_tasks:
+            done_task = done_tasks.pop()
+            jobs.remove(done_task)
+            created, album = await done_task
+            if created:
+                new_inserts.append(album)
+
+        if albums_left:
+            required_amount = ALBUMS_QUEUE - len(pending)
+            albums_batch, albums_left = take_albums(required_amount, processed_albums)
+            jobs.extend(sync_with_db(albums_batch, artist))
+
+        if not jobs:
+            run = False
 
     await artist.update_timestamp()
 
@@ -177,6 +202,7 @@ async def update_artist_albums(
 
 def make_artist_tasks(sp: Spotify, artists: List[Artist]) -> List[asyncio.Future]:
     return [asyncio.create_task(update_artist_albums(sp, a)) for a in artists]
+
 
 
 def take_artists(amount: int, artists: List[Artist], force_update: bool) -> Tuple[List[Artist], List[Artist]]:
@@ -190,7 +216,7 @@ def take_artists(amount: int, artists: List[Artist], force_update: bool) -> Tupl
 
     return taken_artists, []
 
-ARTISTS_QUEUE = 10
+ARTISTS_QUEUE = 5
 async def get_new_releases(
     sp: Spotify, artists: List[Artist], force_update: bool = False
 ) -> Tuple[int, int]:
