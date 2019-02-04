@@ -22,10 +22,7 @@ async def init_db() -> None:
     name = os.environ["DB_NAME"]
     dsn = f"postgres://{user}:{password}@{host}:5432/{name}"
 
-    await Tortoise.init(
-        db_url=dsn,
-        modules={"models": ["deneb.db"]},
-    )
+    await Tortoise.init(db_url=dsn, modules={"models": ["deneb.db"]})
 
 
 async def close_db() -> None:
