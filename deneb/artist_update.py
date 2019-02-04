@@ -16,7 +16,7 @@ async def fetch_albums(sp: Spotify, artist: Artist, retry: bool = False) -> List
     """fetches artist albums from spotify"""
     try:
         data = await sp.client.artist_albums(artist.spotify_id, limit=50, album_type='album,single,appears_on')
-        albums = await fetch_all(sp, data)
+        albums = await fetch_all(sp, data, is_album=True)
     except Exception as exc:
         if not retry:
             print(type(exc), exc, artist)
