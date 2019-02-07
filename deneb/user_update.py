@@ -44,7 +44,9 @@ async def check_follows(sp, artists):
     lost_follows = []
     for batch in grouper(50, artists):
         artists_ids = ",".join([a.spotify_id for a in batch if a is not None])
-        result = await sp.client._get("me/following/contains", type="artist", ids=artists_ids)
+        result = await sp.client._get(
+            "me/following/contains", type="artist", ids=artists_ids
+        )
         for artist, is_followed in zip_longest(batch, result, fillvalue=None):
             if artist is None:
                 break
@@ -64,7 +66,9 @@ async def fetch_user_followed_artists(user, sp):
     # convert artists to db objects
     new_follows_db = []
     for artist in new_follows:
-        db_artist, _ = await Artist.get_or_create(name=artist["name"], spotify_id=artist["id"])
+        db_artist, _ = await Artist.get_or_create(
+            name=artist["name"], spotify_id=artist["id"]
+        )
         new_follows_db.append(db_artist)
 
     if new_follows_db:

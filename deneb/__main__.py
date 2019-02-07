@@ -33,6 +33,7 @@ def runner(func, args):
         loop.run_until_complete(func(*args))
     finally:
         loop.run_until_complete(close_db())
+        loop.close()
 
 
 @click.group()

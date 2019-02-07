@@ -105,7 +105,7 @@ class User(Model):  # type: ignore
     def __str__(self) -> str:
         base = f"spotify:user:{self.username}>"
         if self.display_name:
-            base = f"<{self.display_name}:{base}"
+            base = f"<{self.display_name} {base}"
         else:
             base = f"<{base}"
         return base
@@ -134,6 +134,9 @@ class User(Model):  # type: ignore
     async def released_from_weekday(self, date):
         followed_ids = await self.artists.filter().values_list("id")
         followed_ids = [a[0] for a in followed_ids]
+        if not followed_ids:
+            _LOGGER.info(f"user {self} has no followers")
+            return []
         return await Album.filter(
             release__gte=date, artists__id__in=followed_ids, markets__id=self.market_id
         )
