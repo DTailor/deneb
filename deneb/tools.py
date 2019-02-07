@@ -35,9 +35,9 @@ def generate_release_date(date: str, precision: str) -> datetime.datetime:
 
 def should_fetch_more_albums(albums: List[Dict]) -> Tuple[bool, List[Dict]]:
     required_year = str(datetime.datetime.now().year)
-    new_list = []   # type: List[dict]
+    new_list = []  # type: List[dict]
     for album in albums:
-        if required_year not in album['release_date']:
+        if required_year not in album["release_date"]:
             return False, new_list
         new_list.append(album)
     return True, new_list
