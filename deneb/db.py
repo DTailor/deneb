@@ -5,10 +5,11 @@ import json
 import os
 
 from dotenv import load_dotenv
-from tortoise import Tortoise, fields
+from tortoise import fields
 from tortoise.models import Model
 
 from deneb.logger import get_logger
+from deneb.tortoise_pool import PoolTortoise
 
 load_dotenv()
 
@@ -22,11 +23,11 @@ async def init_db() -> None:
     name = os.environ["DB_NAME"]
     dsn = f"postgres://{user}:{password}@{host}:5432/{name}"
 
-    await Tortoise.init(db_url=dsn, modules={"models": ["deneb.db"]})
+    await PoolTortoise.init(db_url=dsn, modules={"models": ["deneb.db"]})
 
 
 async def close_db() -> None:
-    await Tortoise.close_connections()
+    await PoolTortoise.close_connections()
 
 
 class Market(Model):
