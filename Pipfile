@@ -38,6 +38,7 @@ pylint = "*"
 pytest = "*"
 pytest-cov = "*"
 profiling = "*"
+black = "*"
 
 [requires]
 python_version = "3.7"
