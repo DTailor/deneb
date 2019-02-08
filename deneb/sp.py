@@ -24,7 +24,6 @@ async def spotify_client(credentials: SpotifyKeys, user: User):
     """
     token_info = json.loads(user.spotify_token)
     sp = await get_client(credentials, token_info)
-    # await sp.client.init_session()
     try:
         yield sp
     finally:
@@ -73,9 +72,6 @@ class AsyncSpotify(Spotify):
         params = {key: val for key, val in params.items() if val}
         args = {"params": params}
 
-        # commented out this as well, aiohttp fails on this none as well
-        # args["timeout"] = 60
-
         if not url.startswith("http"):
             url = self.prefix + url
         headers = self._auth_headers()
@@ -84,9 +80,6 @@ class AsyncSpotify(Spotify):
         if payload:
             args["data"] = json.dumps(payload)
 
-        if self.trace_out:
-            print(url)
-
         async with self.session.request(
             method, url, headers=headers, timeout=60, **args
         ) as res:
@@ -94,7 +87,7 @@ class AsyncSpotify(Spotify):
                 res.text = await res.text()
                 res.json = json.loads(res.text)
                 res.raise_for_status()
-            except (aiohttp.ClientResponseError) as exc:
+            except (aiohttp.ClientResponseError):
                 if res.text and len(res.text) > 0 and res.text != "null":
                     raise SpotifyException(
                         res.status,
@@ -158,8 +151,6 @@ class AsyncSpotify(Spotify):
                 retries -= 1
                 if retries >= 0:
                     sleep_seconds = int(e.headers.get("Retry-After", delay)) + 1
-                    # print(f"wait {sleep_seconds} seconds...")
-                    # _LOGGER.warning(f"request for {url}, waits {sleep_seconds} seconds, retry nr. {retries}")
                     await asyncio.sleep(sleep_seconds)
                     delay += 1
                 else:
@@ -182,7 +173,7 @@ async def get_client(credentials: SpotifyKeys, token_info: dict) -> Spotter:
 
     try:
         current_user = await client.current_user()
-    except Exception as exc:
+    except Exception:
         # need new client, close old client session
         await client.session.close()
         token_info = sp_oauth.refresh_access_token(token_info["refresh_token"])
