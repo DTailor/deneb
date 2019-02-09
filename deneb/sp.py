@@ -42,7 +42,6 @@ class AsyncSpotify(Spotify):
         super().__init__(*args, **kwargs)
         conn = aiohttp.TCPConnector(limit=10)
         self.session = aiohttp.ClientSession(connector=conn)
-        self.trace = False
 
     async def _get(self, url, args=None, payload=None, **kwargs):
         result = await self._async_get(url, args=None, payload=None, **kwargs)
@@ -87,7 +86,7 @@ class AsyncSpotify(Spotify):
                 res.text = await res.text()
                 res.json = json.loads(res.text)
                 res.raise_for_status()
-            except (aiohttp.ClientResponseError):
+            except aiohttp.ClientResponseError:
                 if res.text and len(res.text) > 0 and res.text != "null":
                     raise SpotifyException(
                         res.status,
@@ -135,22 +134,10 @@ class AsyncSpotify(Spotify):
                 else:
                     _LOGGER.exception(f"bad request {url}: {e}")
                     raise
-            except asyncio.TimeoutError:
+            except (json.JSONDecodeError, asyncio.TimeoutError):
                 retries -= 1
                 if retries >= 0:
                     sleep_seconds = delay + 1
-                    await asyncio.sleep(sleep_seconds)
-                    delay += 1
-                else:
-                    raise
-
-            except Exception as e:
-                print("exception", str(e))
-                # some other exception. Requests have
-                # been know to throw a BadStatusLine exception
-                retries -= 1
-                if retries >= 0:
-                    sleep_seconds = int(e.headers.get("Retry-After", delay)) + 1
                     await asyncio.sleep(sleep_seconds)
                     delay += 1
                 else:
