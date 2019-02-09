@@ -1,5 +1,4 @@
 """Module to handle user related updates"""
-import asyncio
 from itertools import zip_longest
 
 from deneb.db import Artist
