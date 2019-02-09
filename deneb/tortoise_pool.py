@@ -1,3 +1,4 @@
+import asyncio
 from contextlib import asynccontextmanager
 
 import asyncpg
@@ -21,6 +22,10 @@ class PoolAsyncpgDBClient(AsyncpgDBClient):
         super().__init__(*args, **kwargs)
         self.pool = None
 
+    def __del__(self):
+        loop = asyncio.new_event_loop()
+        loop.run(self.release_pool())
+
     async def init_pool(self):
         dsn = self.DSN_TEMPLATE.format(
             user=self.user,
@@ -30,6 +35,10 @@ class PoolAsyncpgDBClient(AsyncpgDBClient):
             database=self.database,
         )
         self.pool = await asyncpg.create_pool(dsn=dsn, min_size=19, max_size=20)
+        return self.pool
+
+    async def release_pool(self):
+        await self.pool.release()
 
     def acquire_connection(self):
         return get_pool(self)
