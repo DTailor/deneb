@@ -99,7 +99,7 @@ class TestSpotifyStats:
     async def test_describe_added_album(self, playlist, album, track):
         album_tracks = AlbumTracks(parent=album, tracks=[track, track, track])
         stats = SpotifyStats(
-            "test-id", playlist, {"tracks": [], "albums": [album_tracks]}
+            "test-id", playlist, {"tracks": [], "albums": [album_tracks], "singles": []}
         )
 
         expected = [
@@ -107,9 +107,9 @@ class TestSpotifyStats:
             "",
             "-== Albums ==-",
             "Test Artist - Test Album",
-            "   * Test Track",
-            "   * Test Track",
-            "   * Test Track",
+            "   Test Track",
+            "   Test Track",
+            "   Test Track",
             "",
             "Link: https://open.spotify.com/playlist/test_playlist",
         ]
@@ -122,7 +122,7 @@ class TestSpotifyStats:
     async def test_describe_added_track(self, album, playlist, track):
         album_tracks = AlbumTracks(parent=album, tracks=[track])
         stats = SpotifyStats(
-            "test-id", playlist, {"tracks": [album_tracks], "albums": []}
+            "test-id", playlist, {"tracks": [album_tracks], "albums": [], "singles": []}
         )
 
         expected = [
@@ -144,7 +144,7 @@ class TestSpotifyStats:
     async def test_describe_added_tracks_and_albums(self, playlist, album, track):
         album_tracks = AlbumTracks(parent=album, tracks=[track, track, track])
         stats = SpotifyStats(
-            "test-id", playlist, {"tracks": [album_tracks], "albums": [album_tracks]}
+            "test-id", playlist, {"tracks": [album_tracks], "albums": [album_tracks], "singles": []}
         )
 
         expected = [
@@ -152,9 +152,9 @@ class TestSpotifyStats:
             "",
             "-== Albums ==-",
             "Test Artist - Test Album",
-            "   * Test Track",
-            "   * Test Track",
-            "   * Test Track",
+            "   Test Track",
+            "   Test Track",
+            "   Test Track",
             "",
             "-==Tracks from albums ==-",
             "Test Artist - Test Album",
@@ -179,6 +179,6 @@ class TestSpotifyStats:
             "No adds, you should follow more artists",
         ]
 
-        ss = SpotifyStats("test-id", playlist, {"albums": [], "tracks": []})
+        ss = SpotifyStats("test-id", playlist, {"albums": [], "tracks": [], "singles": []})
 
         assert ss.describe() in valid_responses
