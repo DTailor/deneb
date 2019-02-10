@@ -7,12 +7,13 @@ from math import ceil
 from typing import Dict, Iterator, List, Optional, Tuple  # noqa:F401
 
 from deneb.chatbot.message import send_message
-from deneb.db import User, Album
+from deneb.config import Config
+from deneb.db import Album, User
 from deneb.logger import get_logger
 from deneb.sp import SpotifyStats, Spotter, spotify_client
+from deneb.spotify.users import _user_task_filter
 from deneb.structs import AlbumTracks, FBAlert, SpotifyKeys
-from deneb.tools import clean, fetch_all, grouper, is_present
-
+from deneb.tools import clean, fetch_all, grouper, is_present, run_tasks
 
 _LOGGER = get_logger(__name__)
 
@@ -213,6 +214,15 @@ async def update_user_playlist(
     return stats
 
 
+async def _handle_update_user_playlist(
+    credentials: SpotifyKeys, user: User, dry_run: bool, fb_alert: FBAlert
+):
+    async with spotify_client(credentials, user) as sp:
+        stats = await update_user_playlist(user, sp, dry_run)
+        if fb_alert.notify:
+            await send_message(user.fb_id, fb_alert, stats.describe())
+
+
 async def update_users_playlists(
     credentials: SpotifyKeys,
     fb_alert: FBAlert,
@@ -223,12 +233,11 @@ async def update_users_playlists(
         users = await User.filter(username=user_id)
     else:
         users = await User.all()
-    for user in users:
-        if not user.spotify_token:
-            _LOGGER.info(f"can't update {user}, token not present.")
-            continue
 
-        async with spotify_client(credentials, user) as sp:
-            stats = await update_user_playlist(user, sp, dry_run)
-            if fb_alert.notify:
-                await send_message(user.fb_id, fb_alert, stats.describe())
+    args_items = [(credentials, user, dry_run, fb_alert) for user in users]
+    await run_tasks(
+        Config.USERS_TASKS_AMOUNT,
+        args_items,
+        _handle_update_user_playlist,
+        _user_task_filter,
+    )
