@@ -1,5 +1,4 @@
 """Module to handle artist related updates"""
-import asyncio
 import time
 from functools import partial
 from typing import Iterable, List, Tuple
