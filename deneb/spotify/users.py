@@ -26,9 +26,9 @@ async def _update_user_artists(
         followed_artists = await user.artists.filter()
 
         _LOGGER.info(
-            f"new follows for {user} ({len(new_follows)}): {new_follows_str}"
-            f"lost follows for {user} ({len(lost_follows)}): {lost_follows_str}"
-            f"now updating {user} artists ({len(followed_artists)})"
+            f"{user} : follows +({len(new_follows)}): {new_follows_str}"
+            f" -({len(lost_follows)}): {lost_follows_str}"
+            f"; now updating artists ({len(followed_artists)})"
         )  # flake8: noqa
         albums_nr, updated_nr = await get_new_releases(
             sp, followed_artists, force_update
