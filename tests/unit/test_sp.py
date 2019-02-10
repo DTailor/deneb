@@ -10,6 +10,7 @@ from tests.unit.fixtures.mocks import album, playlist, track
 
 
 def _mocked_call(return_value=None):
+    return_value = return_value or AIOMock()
     func = AIOMock()
     func.async_return_value = return_value
     return func
@@ -43,10 +44,14 @@ class TestSpotter:
 
 
 class TestGetClient:
+    @pytest.mark.asyncio
     async def test_get_client(self):
         keys = SpotifyKeys("", "", "")
         token_info = dict()
-        with patch("deneb.sp.Spotify") as mocked_spotify:
+        with patch("deneb.sp.AsyncSpotify") as mocked_spotify:
+            mocked_sp = AIOMock()
+            mocked_sp.current_user.async_return_value = mocked_sp
+            mocked_spotify.return_value = mocked_sp
             sp = await get_client(keys, token_info)
 
             # initialized spotify client
@@ -55,6 +60,7 @@ class TestGetClient:
             # called current user method
             sp.client.current_user.assert_called_once()
 
+    @pytest.mark.asyncio
     @patch("deneb.sp._LOGGER")
     @patch("deneb.sp.SpotifyOAuth")
     @patch("deneb.sp.Spotify.current_user", side_effect=[Exception(), {"id": "test"}])
@@ -62,11 +68,21 @@ class TestGetClient:
         keys = SpotifyKeys("", "", "")
         token_info = {"refresh_token": ""}
 
-        sp = await get_client(keys, token_info)
+        with patch("deneb.sp.AsyncSpotify") as mocked_spotify:
+            mocked_sp = AIOMock()
+            mocked_sp.current_user.async_side_effect = [
+                Exception(),
+                {"id": "test-user"},
+            ]
+            mocked_sp.session.close = _mocked_call()
+            mocked_spotify.return_value = mocked_sp
 
-        oauth.assert_called_once()
-        assert current_user.call_count == 2
-        logger.info.assert_called_once()
+            sp = await get_client(keys, token_info)
+
+            # try and except
+            assert mocked_spotify.call_count == 2
+            assert sp.client.current_user.call_count == 2
+            mocked_sp.session.close.assert_called_once()
 
 
 class TestSpotifyStats:
