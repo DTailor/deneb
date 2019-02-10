@@ -12,12 +12,11 @@ from deneb.logger import get_logger
 from deneb.sp import SpotifyStats, Spotter, spotify_client
 from deneb.structs import AlbumTracks, FBAlert, SpotifyKeys
 from deneb.tools import clean, fetch_all, grouper, is_present
-from perf import print_stats, timeit
+
 
 _LOGGER = get_logger(__name__)
 
 
-@timeit
 def week_of_month(dt: dt) -> int:
     """ Returns the week of the month for the specified date.
     """
@@ -30,7 +29,6 @@ def week_of_month(dt: dt) -> int:
     return int(ceil(adjusted_dom / 7.0))
 
 
-@timeit
 def generate_playlist_name() -> str:
     """return a string of format <Month> W<WEEK_NR> <Year>"""
     now = dt.now()
@@ -39,7 +37,6 @@ def generate_playlist_name() -> str:
     return f"{month_name} W{week_nr} {now.year}"
 
 
-@timeit
 async def fetch_user_playlists(sp: Spotter) -> List[dict]:
     """Return user playlists"""
     playlists = []  # type: List[dict]
@@ -48,7 +45,6 @@ async def fetch_user_playlists(sp: Spotter) -> List[dict]:
     return playlists
 
 
-@timeit
 async def get_tracks(sp: Spotter, playlist: dict) -> List[dict]:
     """return playlist tracks"""
     tracks = await sp.client.user_playlist(
@@ -57,7 +53,6 @@ async def get_tracks(sp: Spotter, playlist: dict) -> List[dict]:
     return await fetch_all(sp, tracks["tracks"])
 
 
-@timeit
 async def get_album_tracks(sp: Spotter, album: Album) -> AlbumTracks:
     tracks = []  # type: List[dict]
     album_data = await sp.client.album(album.uri)
@@ -65,7 +60,6 @@ async def get_album_tracks(sp: Spotter, album: Album) -> AlbumTracks:
     return AlbumTracks(album_data, tracks)
 
 
-@timeit
 def verify_already_present(
     album: AlbumTracks, already_present_tracks: set
 ) -> Tuple[AlbumTracks, set]:
@@ -76,7 +70,6 @@ def verify_already_present(
     return album, already_present_tracks
 
 
-@timeit
 async def generate_tracks_to_add(
     sp: Spotter, db_tracks: List[Album], pl_tracks: List[dict]
 ) -> Tuple[List[AlbumTracks], List[AlbumTracks], List[AlbumTracks]]:
@@ -150,7 +143,6 @@ async def generate_tracks_to_add(
     return singles, main_albums, orphan_albums
 
 
-@timeit
 async def update_spotify_playlist(
     tracks: Iterator, playlist_uri: str, sp: Spotter, insert_top: bool = False
 ):
@@ -173,7 +165,6 @@ async def update_spotify_playlist(
             _LOGGER.exception(f"add to playlist '{album_ids}' failed with: {exc}")
 
 
-@timeit
 async def update_user_playlist(
     user: User, sp: Spotter, dry_run: Optional[bool] = False
 ) -> SpotifyStats:
@@ -222,7 +213,6 @@ async def update_user_playlist(
     return stats
 
 
-@timeit
 async def update_users_playlists(
     credentials: SpotifyKeys,
     fb_alert: FBAlert,
@@ -242,4 +232,3 @@ async def update_users_playlists(
             stats = await update_user_playlist(user, sp, dry_run)
             if fb_alert.notify:
                 await send_message(user.fb_id, fb_alert, stats.describe())
-    print_stats()
