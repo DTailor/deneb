@@ -134,24 +134,6 @@ async def update_artist_albums(
     return artist, new_inserts
 
 
-def make_artist_tasks(sp: Spotify, artists: List[Artist]) -> List[asyncio.Future]:
-    return [asyncio.create_task(update_artist_albums(sp, a)) for a in artists]
-
-
-def take_artists(
-    amount: int, artists: List[Artist], force_update: bool
-) -> Tuple[List[Artist], List[Artist]]:
-    taken_artists = []  # type: list
-
-    for idx, artist in enumerate(artists):
-        if len(taken_artists) == amount:
-            return taken_artists, artists[idx:]
-        if artist.can_update() or force_update:
-            taken_artists.append(artist)
-
-    return taken_artists, []
-
-
 def _album_filter(force: bool, args: Tuple[Spotify, Artist]) -> bool:
     if force or args[1].can_update():
         return True
