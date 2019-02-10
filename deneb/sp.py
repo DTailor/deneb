@@ -188,6 +188,11 @@ class SpotifyStats:
         artists = ", ".join(a["name"] for a in track["artists"])
         return f"{artists} - {track['name']}"
 
+    def has_new_releases(self) -> bool:
+        if self.added_albums or self.added_tracks or self.added_singles:
+            return True
+        return False
+
     def describe(self) -> str:
         didnt_add_responses = [
             "Uhh, sorry, no releases today for you.",
@@ -195,7 +200,7 @@ class SpotifyStats:
             "Sad day, no new music",
             "No adds, you should follow more artists",
         ]
-        if self.added_albums or self.added_tracks or self.added_singles:
+        if self.has_new_releases():
             return_msg = f"Playlist: {self.playlist['name']}\n\n"
 
             if self.added_singles:

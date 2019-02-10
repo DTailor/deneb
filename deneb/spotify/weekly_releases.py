@@ -202,12 +202,11 @@ async def update_user_playlist(
             *tracks_from_singles, *tracks_from_albums, *tracks_without_albums
         )
 
-        insert_top = False
-        if today.weekday() == 4:
-            # it's friday the release day so intert today's things from the
-            # beggining of the playlist as it's the most important release day
-            # of the week
-            insert_top = True
+        is_friday = lambda: today.weekday() == 4  # noqa: E731
+        # it's friday the release day so intert today's things from the
+        # beggining of the playlist as it's the most important release day
+        # of the week
+        insert_top = True if is_friday() else False
 
         await update_spotify_playlist(to_add_tracks, playlist["uri"], sp, insert_top)
 
@@ -219,7 +218,7 @@ async def _handle_update_user_playlist(
 ):
     async with spotify_client(credentials, user) as sp:
         stats = await update_user_playlist(user, sp, dry_run)
-        if fb_alert.notify:
+        if fb_alert.notify and stats.has_new_releases():
             await send_message(user.fb_id, fb_alert, stats.describe())
 
 
