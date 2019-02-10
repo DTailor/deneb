@@ -1,6 +1,6 @@
 """Entry point to deneb spotify watcher"""
 
-from typing import Optional
+from typing import List, Optional
 
 from deneb.artist_update import get_new_releases
 from deneb.config import Config
@@ -42,14 +42,18 @@ def _user_task_filter(args):
     return False
 
 
+async def _get_to_update_users(username: Optional[str] = None) -> List[User]:
+    if username:
+        users = await User.filter(username=username)
+    else:
+        users = await User.all()
+    return users
+
+
 async def update_users_artists(
     credentials: SpotifyKeys, user_id: Optional[str] = None, force_update: bool = False
 ):
-    if user_id:
-        users = await User.filter(username=user_id)
-    else:
-        users = await User.all()
-
+    users = await _get_to_update_users(user_id)
     args_items = [(credentials, user, force_update) for user in users]
     await run_tasks(
         Config.USERS_TASKS_AMOUNT, args_items, _update_user_artists, _user_task_filter

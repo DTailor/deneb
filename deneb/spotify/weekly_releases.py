@@ -11,7 +11,7 @@ from deneb.config import Config
 from deneb.db import Album, User
 from deneb.logger import get_logger
 from deneb.sp import SpotifyStats, Spotter, spotify_client
-from deneb.spotify.users import _user_task_filter
+from deneb.spotify.users import _get_to_update_users, _user_task_filter
 from deneb.structs import AlbumTracks, FBAlert, SpotifyKeys
 from deneb.tools import clean, fetch_all, grouper, is_present, run_tasks
 
@@ -229,11 +229,7 @@ async def update_users_playlists(
     user_id: Optional[str],
     dry_run: Optional[bool],
 ):
-    if user_id:
-        users = await User.filter(username=user_id)
-    else:
-        users = await User.all()
-
+    users = await _get_to_update_users(user_id)
     args_items = [(credentials, user, dry_run, fb_alert) for user in users]
     await run_tasks(
         Config.USERS_TASKS_AMOUNT,
