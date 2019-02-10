@@ -1,0 +1,19 @@
+version: 2
+jobs:
+  build:
+    working_directory: ~/circleci-deneb
+    docker:
+      - image: circleci/python:3.7.2
+    steps:
+      - checkout  # checkout source code to working directory
+      - run:
+          command: |  # use pipenv to install dependencies
+            sudo pip install pipenv
+            pip install pipenv --upgrade
+            pipenv install --dev
+            pipenv run pytest
+      - store_test_results:
+          path: test-results
+      - store_artifacts:
+          path: test-results
+          destination: tr1
