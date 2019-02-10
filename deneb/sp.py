@@ -160,7 +160,9 @@ async def get_client(credentials: SpotifyKeys, token_info: dict) -> Spotter:
 
     try:
         current_user = await client.current_user()
-    except Exception:
+    except Exception as exc:
+        _LOGGER.info(f"got {exc} of type {type(exc)}")
+
         # need new client, close old client session
         await client.session.close()
         token_info = sp_oauth.refresh_access_token(token_info["refresh_token"])
