@@ -67,7 +67,9 @@ async def fetch_user_followed_artists(user, sp):
     for artist in new_follows:
         db_artist = await Artist.filter(spotify_id=artist["id"]).first()
         if not db_artist:
-            db_artist = await Artist.create(name=artist["name"], spotify_id=artist["id"])
+            db_artist = await Artist.create(
+                name=artist["name"], spotify_id=artist["id"]
+            )
         new_follows_db.append(db_artist)
 
     if new_follows_db:
