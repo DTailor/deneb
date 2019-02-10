@@ -6,12 +6,12 @@ from unittest.mock import MagicMock, patch
 
 
 class TestSpotifyClient:
-    def test_context_flow(self):
+    async def test_context_flow(self):
         user = MagicMock()
         user.spotify_token = "{}"
         sp_client = None
         with patch("deneb.sp.get_client") as mock_get_client:
-            with spotify_client(credentials=None, user=user) as sp:
+            async with spotify_client(credentials=None, user=user) as sp:
                 sp_client = sp
             mock_get_client.assert_called_once()
 
