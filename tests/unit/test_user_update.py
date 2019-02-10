@@ -2,14 +2,18 @@
 from unittest.mock import MagicMock
 
 from deneb.user_update import (
-    extract_lost_follows_artists, extract_new_follows_objects, fetch_artists
+    extract_lost_follows_artists,
+    extract_new_follows_objects,
+    fetch_artists,
 )
 from tests.unit.fixtures.mocks import sp_following
+import pytest
 
 
 class TestFetchArtist:
     # implying only 2 artists come at this point
 
+    @pytest.mark.asyncio
     async def test_fetch_artist_ok(self, sp_following):
         artists = await fetch_artists(sp_following)
         assert len(artists) == 2
