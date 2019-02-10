@@ -86,6 +86,7 @@ class TestGetClient:
 
 
 class TestSpotifyStats:
+    @pytest.mark.asyncio
     async def test_humanize_track(self, track):
         noalbum_tracks = AlbumTracks(parent=None, tracks=[track])
 
@@ -94,6 +95,7 @@ class TestSpotifyStats:
             == "Test Artist - Test Track"
         )
 
+    @pytest.mark.asyncio
     async def test_describe_added_album(self, playlist, album, track):
         album_tracks = AlbumTracks(parent=album, tracks=[track, track, track])
         stats = SpotifyStats(
@@ -116,6 +118,7 @@ class TestSpotifyStats:
         for line1, line2 in zip(output.splitlines(), expected):
             assert line1 == line2
 
+    @pytest.mark.asyncio
     async def test_describe_added_track(self, album, playlist, track):
         album_tracks = AlbumTracks(parent=album, tracks=[track])
         stats = SpotifyStats(
@@ -137,6 +140,7 @@ class TestSpotifyStats:
         for line1, line2 in zip(output.splitlines(), expected):
             assert line1 == line2
 
+    @pytest.mark.asyncio
     async def test_describe_added_tracks_and_albums(self, playlist, album, track):
         album_tracks = AlbumTracks(parent=album, tracks=[track, track, track])
         stats = SpotifyStats(
@@ -166,6 +170,7 @@ class TestSpotifyStats:
         for line1, line2 in zip(output.splitlines(), expected):
             assert line1 == line2
 
+    @pytest.mark.asyncio
     async def test_describe_nothing_added(self, playlist):
         valid_responses = [
             "Uhh, sorry, no releases today for you.",
