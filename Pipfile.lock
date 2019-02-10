@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "9c0338d80f860ee25cfe1c167195dd30e92ee2d5aea1354833465df502fd5186"
+            "sha256": "5f1041db1b8320973b56d721d856c8c9b85641d000c2c36870fb65b127a279d4"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -368,6 +368,13 @@
         }
     },
     "develop": {
+        "aiomock": {
+            "hashes": [
+                "sha256:79ba5310b4ad8d20db7d76c50b77e8ad8daad8904821b0ce5d0524c634734476"
+            ],
+            "index": "pypi",
+            "version": "==0.1.0"
+        },
         "appdirs": {
             "hashes": [
                 "sha256:9e5896d1372858f8dd3344faf4e5014d21849c756c8d5701f78f8a103b372d92",
