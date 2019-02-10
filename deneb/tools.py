@@ -79,7 +79,7 @@ def _take(
     for idx, item in enumerate(items):
         if len(taken_items) == amount:
             return taken_items, items[idx:]
-        if can_add_filter(item):
+        if can_add_filter(args=item):
             taken_items.append(item)
     return taken_items, []
 
@@ -90,7 +90,7 @@ async def run_tasks(
     afunc: Callable,
     items_filter: Optional[Callable] = None,
 ) -> List[Any]:
-    items_filter = items_filter or (lambda a: a)
+    items_filter = items_filter or (lambda args: args)
 
     args_items_batch, args_items_left = _take(queue_size, args_items_left, items_filter)
     jobs = _create_jobs(afunc, args_items_batch)

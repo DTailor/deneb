@@ -1,6 +1,7 @@
 """Module to handle artist related updates"""
 import asyncio
 import time
+from functools import partial
 from typing import Iterable, List, Tuple
 
 from spotipy import Spotify
@@ -150,58 +151,37 @@ def take_artists(
     return taken_artists, []
 
 
+def _album_filter(force: bool, args: Tuple[Spotify, Artist]) -> bool:
+    if force or args[1].can_update():
+        return True
+    return False
+
+
 async def get_new_releases(
     sp: Spotify, artists: List[Artist], force_update: bool = False
 ) -> Tuple[int, int]:
     """update artists with released albums"""
     updated_nr = 0
     albums_nr = 0
-    total_count = len(artists)
-    artists_batch, artists_left = take_artists(ARTISTS_QUEUE, artists, force_update)
-    total_count_left_jobs = len(artists_left)
-    jobs = make_artist_tasks(sp, artists_batch)
+
+    args_items = [(sp, a) for a in artists]
+
     _LOGGER.info(f"updating {len(artists)} artists")
 
-    # profile time run per 50 tasks
-    tstart = tstart_inter = time.time()
+    tstart = time.time()
+    filter_func = partial(_album_filter, force=force_update)
+    task_results = await run_tasks(
+        ALBUMS_QUEUE, args_items, update_artist_albums, filter_func
+    )
+    elapsed_time = time.time() - tstart
+    _LOGGER.info(
+        f"finished {len(task_results)} get_new_releases jobs; total elapsed: {elapsed_time}s"
+    )
 
-    run = True if jobs else False
-    mode = asyncio.FIRST_COMPLETED
-    while run:
-        if not total_count_left_jobs:
-            mode = asyncio.ALL_COMPLETED
-
-        done_tasks, pending = await asyncio.wait(jobs, return_when=mode)
-        while done_tasks:
-            done_task = done_tasks.pop()
-            jobs.remove(done_task)
-            total_count -= 1
-            artist, new_additions = await done_task
-
-            if new_additions:
-                albums_nr += len(new_additions)
-                updated_nr += 1
-                _LOGGER.info(f"fetched {len(new_additions)} albums for {artist}")
-
-            if total_count % 50 == 0:
-                elapsed_time = time.time() - tstart_inter
-                _LOGGER.info(f"{total_count} artists left; elapsed {elapsed_time}s")
-                tstart_inter = time.time()
-
-        if artists_left:
-            required_amount = ARTISTS_QUEUE - len(pending)
-            artists_batch, artists_left = take_artists(
-                required_amount, artists_left, force_update
-            )
-            total_count_left_jobs = len(artists_left)
-            jobs.extend(make_artist_tasks(sp, artists_batch))
-
-        if not jobs:
-            run = False
-            elapsed_time = time.time() - tstart
-            _LOGGER.info(
-                f"finished get_new_releases jobs; total elapsed: {elapsed_time}s"
-            )
-            tstart = time.time()
+    for artist, new_additions in task_results:
+        if new_additions:
+            albums_nr += len(new_additions)
+            updated_nr += 1
+            _LOGGER.info(f"fetched {len(new_additions)} albums for {artist}")
 
     return albums_nr, updated_nr
