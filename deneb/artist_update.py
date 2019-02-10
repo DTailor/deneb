@@ -9,10 +9,9 @@ from spotipy import Spotify
 from deneb.db import Album, Artist, Market
 from deneb.logger import get_logger
 from deneb.tools import fetch_all, generate_release_date, is_present, run_tasks
+from deneb.config import Config
 
 _LOGGER = get_logger(__name__)
-ALBUMS_QUEUE = 50
-ARTISTS_QUEUE = 50
 
 
 async def fetch_albums(sp: Spotify, artist: Artist, retry: bool = False) -> List[dict]:
@@ -124,7 +123,9 @@ async def update_artist_albums(
             processed_albums.append(album)
 
     args_items = [(album, artist) for album in processed_albums]
-    task_results = await run_tasks(ALBUMS_QUEUE, args_items, handle_album_sync)
+    task_results = await run_tasks(
+        Config.ALBUMS_TASKS_AMOUNT, args_items, handle_album_sync
+    )
 
     await artist.update_timestamp()
 
@@ -171,7 +172,7 @@ async def get_new_releases(
     tstart = time.time()
     filter_func = partial(_album_filter, force=force_update)
     task_results = await run_tasks(
-        ALBUMS_QUEUE, args_items, update_artist_albums, filter_func
+        Config.ARTISTS_TASKS_AMOUNT, args_items, update_artist_albums, filter_func
     )
     elapsed_time = time.time() - tstart
     _LOGGER.info(
