@@ -39,6 +39,7 @@ pytest = "*"
 pytest-cov = "*"
 profiling = "*"
 black = "*"
+pytest-asyncio = "*"
 
 [requires]
 python_version = "3.7"
