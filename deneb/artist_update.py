@@ -7,7 +7,7 @@ from spotipy import Spotify
 
 from deneb.db import Album, Artist, Market
 from deneb.logger import get_logger
-from deneb.tools import fetch_all, generate_release_date, is_present
+from deneb.tools import fetch_all, generate_release_date, is_present, run_tasks
 
 _LOGGER = get_logger(__name__)
 ALBUMS_QUEUE = 50
@@ -68,16 +68,6 @@ async def get_or_create_album(album: dict, dry_run: bool = False) -> Tuple[bool,
     return created, db_album
 
 
-async def get_or_create_market(marketname: str, dry_run: bool = False) -> Market:
-    """Retrieve or init marketplace instance"""
-    try:
-        market = await Market.get(Market.name == marketname)
-    except Exception:
-        market = await Market.create(market_name=marketname)
-
-    return market
-
-
 async def update_album_marketplace(
     album: Album, new_marketplace_ids: Iterable[str], dry_run: bool = False
 ) -> None:
@@ -114,21 +104,6 @@ async def handle_album_sync(album: dict, artist: Artist) -> Tuple[bool, Album]:
     return created, db_album
 
 
-def sync_with_db(albums: List[dict], artist: Artist) -> List[asyncio.Future]:
-    """Adds new albums to db, and returns db instances and new inserts"""
-    tasks = [asyncio.ensure_future(handle_album_sync(a, artist)) for a in albums]
-    return tasks
-
-
-def take_albums(amount: int, albums: List[dict]) -> Tuple[List[dict], List[dict]]:
-    taken_albums = []  # type: List[dict]
-    for idx, album in enumerate(albums):
-        if len(taken_albums) == amount:
-            return taken_albums, albums[idx:]
-        taken_albums.append(album)
-    return taken_albums, []
-
-
 async def update_artist_albums(
     sp: Spotify, artist: Artist, dry_run: bool = False
 ) -> Tuple[Artist, List[Album]]:
@@ -147,32 +122,12 @@ async def update_artist_albums(
         else:
             processed_albums.append(album)
 
-    new_inserts = []  # type: List[Album]
-
-    albums_batch, albums_left = take_albums(ALBUMS_QUEUE, processed_albums)
-    jobs = sync_with_db(albums_batch, artist)
-    run = True if jobs else False
-
-    while run:
-        done_tasks, pending = await asyncio.wait(
-            jobs, return_when=asyncio.FIRST_COMPLETED
-        )
-        while done_tasks:
-            done_task = done_tasks.pop()
-            jobs.remove(done_task)
-            created, db_album = await done_task
-            if created:
-                new_inserts.append(db_album)
-
-        if albums_left:
-            required_amount = ALBUMS_QUEUE - len(pending)
-            albums_batch, albums_left = take_albums(required_amount, processed_albums)
-            jobs.extend(sync_with_db(albums_batch, artist))
-
-        if not jobs:
-            run = False
+    args_items = [(album, artist) for album in processed_albums]
+    task_results = await run_tasks(ALBUMS_QUEUE, args_items, handle_album_sync)
 
     await artist.update_timestamp()
+
+    new_inserts = [a for created, a in task_results if created]
 
     return artist, new_inserts
 

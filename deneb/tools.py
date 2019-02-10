@@ -1,7 +1,8 @@
 """Helper tools"""
+import asyncio
 import datetime
 from itertools import zip_longest
-from typing import Dict, List, Tuple
+from typing import Any, Callable, Dict, List, Optional, Tuple
 
 from spotipy import Spotify
 
@@ -65,3 +66,51 @@ async def fetch_all(sp: Spotify, data: dict, is_album: bool = False) -> List[Dic
         data = await sp.client.next(data)  # noqa: B305
 
     return contents
+
+
+def _create_jobs(func: Callable, args_items: List[Any]) -> List[asyncio.Future]:
+    return [asyncio.ensure_future(func(*item)) for item in args_items]
+
+
+def _take(
+    amount: int, items: List[Any], can_add_filter: Callable
+) -> Tuple[List[Any], List[Any]]:
+    taken_items = []  # type: List[Any]
+    for idx, item in enumerate(items):
+        if len(taken_items) == amount:
+            return taken_items, items[idx:]
+        if can_add_filter(item):
+            taken_items.append(item)
+    return taken_items, []
+
+
+async def run_tasks(
+    queue_size: int,
+    args_items_left: List[Any],
+    afunc: Callable,
+    items_filter: Optional[Callable] = None,
+) -> List[Any]:
+    items_filter = items_filter or (lambda a: a)
+
+    args_items_batch, args_items_left = _take(queue_size, args_items_left, items_filter)
+    jobs = _create_jobs(afunc, args_items_batch)
+    job_results = []
+
+    while jobs:
+        done_tasks, pending = await asyncio.wait(
+            jobs, return_when=asyncio.FIRST_COMPLETED
+        )
+        while done_tasks:
+            done_task = done_tasks.pop()
+            jobs.remove(done_task)
+            result = await done_task
+            job_results.append(result)
+
+        if args_items_left:
+            required_amount = queue_size - len(pending)
+            args_items_batch, args_items_left = _take(
+                required_amount, args_items_left, items_filter
+            )
+            jobs.extend(_create_jobs(afunc, args_items_batch))
+
+    return job_results
