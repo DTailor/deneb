@@ -36,7 +36,7 @@
 ## Deploy
 
 - `pipenv run fab deploy` - deploy on server
-- `pipenv run fab full-run` - run on server
+- `pipenv run fab full-run` - run whole script on server with predefined parameters; see bellow
   - `--notify=False` - don't send any fb messages
   - `--force=False` - dont update artist if not the case
 
