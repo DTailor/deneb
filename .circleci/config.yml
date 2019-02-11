@@ -13,7 +13,7 @@ jobs:
             pipenv install --dev
       - run: pipenv run pytest
       - run: mkdir test-reports
-      - run: coverage report && coverage xml -o test-results/coverage.xml
+      - run: python -m coverage report && python -m coverage xml -o test-results/coverage.xml
       - store_test_results:
           path: test-results
       - store_artifacts:
