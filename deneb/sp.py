@@ -1,11 +1,13 @@
 """Spotify connection handling"""
+import asyncio
 import json
 import random
 import time
-from contextlib import contextmanager
-from typing import Dict, Generator, List
+from contextlib import asynccontextmanager
+from typing import Dict, List
 
-from spotipy.client import Spotify
+import aiohttp
+from spotipy.client import Spotify, SpotifyException
 from spotipy.oauth2 import SpotifyClientCredentials, SpotifyOAuth
 
 from deneb.db import User
@@ -15,17 +17,18 @@ from deneb.structs import SpotifyKeys
 _LOGGER = get_logger(__name__)
 
 
-@contextmanager
-def spotify_client(credentials: SpotifyKeys, user: User) -> Generator:
+@asynccontextmanager
+async def spotify_client(credentials: SpotifyKeys, user: User):
     """
     context manager to aquire spotify client
     """
     token_info = json.loads(user.spotify_token)
-    sp = get_client(credentials, token_info)
+    sp = await get_client(credentials, token_info)
     try:
         yield sp
     finally:
-        user.sync_data(sp)
+        await user.async_data(sp)
+        await sp.client.session.close()
 
 
 class Spotter:
@@ -34,7 +37,114 @@ class Spotter:
         self.userdata = userdata
 
 
-def get_client(credentials: SpotifyKeys, token_info: dict) -> Spotter:
+class AsyncSpotify(Spotify):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        conn = aiohttp.TCPConnector(limit=10)
+        self.session = aiohttp.ClientSession(connector=conn)
+
+    async def _get(self, url, args=None, payload=None, **kwargs):
+        result = await self._async_get(url, args=None, payload=None, **kwargs)
+        return result
+
+    async def current_user(self):
+        """ Get detailed profile information about the current user.
+            An alias for the 'current_user' method.
+        """
+        return await self.me()
+
+    async def user_playlist(self, user, playlist_id=None, fields=None):
+        """ Gets playlist of a user
+            Parameters:
+                - user - the id of the user
+                - playlist_id - the id of the playlist
+                - fields - which fields to return
+        """
+        if playlist_id is None:
+            return await self._get("users/%s/starred" % (user), fields=fields)
+        plid = self._get_id("playlist", playlist_id)
+        return await self._get("users/%s/playlists/%s" % (user, plid), fields=fields)
+
+    async def __async_internal_call(self, method, url, payload, params):
+        # remove all none valued keys
+        # aiohttp fails to encode those
+        params = {key: val for key, val in params.items() if val}
+        args = {"params": params}
+
+        if not url.startswith("http"):
+            url = self.prefix + url
+        headers = self._auth_headers()
+        headers["Content-Type"] = "application/json"
+
+        if payload:
+            args["data"] = json.dumps(payload)
+
+        async with self.session.request(
+            method, url, headers=headers, timeout=60, **args
+        ) as res:
+            try:
+                res.text = await res.text()
+                res.json = json.loads(res.text)
+                res.raise_for_status()
+            except aiohttp.ClientResponseError:
+                if res.text and len(res.text) > 0 and res.text != "null":
+                    raise SpotifyException(
+                        res.status,
+                        -1,
+                        "%s:\n %s" % (res.url, res.json["error"]["message"]),
+                        headers=res.headers,
+                    )
+                else:
+                    raise SpotifyException(
+                        res.status,
+                        -1,
+                        "%s:\n %s" % (res.url, "error"),
+                        headers=res.headers,
+                    )
+            if res.text and len(res.text) > 0 and res.text != "null":
+                results = res.json
+                return results
+            else:
+                return None
+
+    async def _async_get(self, url, args=None, payload=None, **kwargs):
+        if args:
+            kwargs.update(args)
+        retries = self.max_get_retries
+        delay = 2
+        while retries > 0:
+            try:
+                return await self.__async_internal_call("GET", url, payload, kwargs)
+            except SpotifyException as e:
+                retries -= 1
+                status = e.http_status
+
+                if status == 401:
+                    # unauthorized call; will be handled by refresh token
+                    raise
+
+                # 429 means we hit a rate limit, backoff
+                if status == 429 or (status >= 500 and status < 600):
+                    if retries < 0:
+                        raise
+                    else:
+                        sleep_seconds = int(e.headers.get("Retry-After", delay)) + 1
+                        await asyncio.sleep(sleep_seconds)
+                        delay += 1
+                else:
+                    _LOGGER.exception(f"bad request {url}: {e}")
+                    raise
+            except (json.JSONDecodeError, asyncio.TimeoutError):
+                retries -= 1
+                if retries >= 0:
+                    sleep_seconds = delay + 1
+                    await asyncio.sleep(sleep_seconds)
+                    delay += 1
+                else:
+                    raise
+
+
+async def get_client(credentials: SpotifyKeys, token_info: dict) -> Spotter:
     """returns a spotter obj with spotipy client"""
     sp_oauth = SpotifyOAuth(
         credentials.client_id, credentials.client_secret, credentials.client_uri
@@ -46,15 +156,19 @@ def get_client(credentials: SpotifyKeys, token_info: dict) -> Spotter:
     if "expires_at" not in token_info:
         token_info["expires_at"] = int(time.time()) + 1000
     client_credentials.token_info = token_info
-    client = Spotify(client_credentials_manager=client_credentials)
+    client = AsyncSpotify(client_credentials_manager=client_credentials)
 
     try:
-        current_user = client.current_user()
-    except Exception:
+        current_user = await client.current_user()
+    except Exception as exc:
+        _LOGGER.info(f"got {exc} of type {type(exc)}")
+
+        # need new client, close old client session
+        await client.session.close()
         token_info = sp_oauth.refresh_access_token(token_info["refresh_token"])
         client_credentials.token_info = token_info
-        client = Spotify(client_credentials_manager=client_credentials)
-        current_user = client.current_user()
+        client = AsyncSpotify(client_credentials_manager=client_credentials)
+        current_user = await client.current_user()
         _LOGGER.info(f"aquired new token for {current_user['id']}")
 
     sp = Spotter(client, current_user)

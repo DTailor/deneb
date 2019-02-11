@@ -1,8 +1,9 @@
 import json
 import os
+from unittest.mock import MagicMock
 
 import pytest
-from unittest.mock import MagicMock
+from aiomock import AIOMock
 
 
 @pytest.fixture
@@ -71,17 +72,17 @@ def album_db() -> MagicMock:
 
 
 @pytest.fixture
-def sp_following() -> MagicMock:
-    sp = MagicMock()
+def sp_following() -> AIOMock:
+    sp = AIOMock()
 
     # config returned artists
-    sp.client.current_user_followed_artists = MagicMock()
-    sp.client.current_user_followed_artists.return_value = {
+    sp.client.current_user_followed_artists = AIOMock()
+    sp.client.current_user_followed_artists.async_return_value = {
         "artists": {"items": [get_artist("1")], "next": True}
     }
 
-    sp.client.next = MagicMock()
-    sp.client.next.return_value = {
+    sp.client.next = AIOMock()
+    sp.client.next.async_return_value = {
         "artists": {"items": [get_artist("2")], "next": False}
     }
     return sp

@@ -1,8 +1,9 @@
+import asyncio
 import os
 
 import click
 from dotenv import load_dotenv
-
+from deneb.db import init_db, close_db
 from deneb.logger import get_logger
 from deneb.spotify.users import update_users_artists
 from deneb.spotify.weekly_releases import update_users_playlists
@@ -22,6 +23,16 @@ SPOTIFY_KEYS = SpotifyKeys(
 
 def get_fb_alert(notify: bool) -> FBAlert:
     return FBAlert(os.environ["FB_API_KEY"], os.environ["FB_API_URL"], notify)
+
+
+def runner(func, args):
+    loop = asyncio.new_event_loop()
+    try:
+        loop.run_until_complete(init_db())
+        loop.run_until_complete(func(*args))
+    finally:
+        loop.run_until_complete(close_db())
+        loop.close()
 
 
 @click.group()
@@ -55,7 +66,7 @@ def full_run(ctx, user, force, notify, dry_run):
 def update_followed(user, force):
     click.echo("------------ RUN UPDATE USER ARTISTS")
     try:
-        update_users_artists(SPOTIFY_KEYS, user, force)
+        runner(update_users_artists, (SPOTIFY_KEYS, user, force))
     except Exception:
         _LOGGER.exception(f"uhhh ohhhhhhhhhhhhh task failed")
 
@@ -68,7 +79,7 @@ def update_playlists(user, notify, dry_run):
     click.echo("------------ RUN UPDATE USER PLAYLISTS")
     fb_alert = get_fb_alert(notify)
     try:
-        update_users_playlists(SPOTIFY_KEYS, fb_alert, user, dry_run)
+        runner(update_users_playlists, (SPOTIFY_KEYS, fb_alert, user, dry_run))
     except Exception:
         _LOGGER.exception(f"uhhh ohhhhhhhhhhhhh task failed")
 

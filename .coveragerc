@@ -7,3 +7,4 @@ omit =
         deneb/structs.py
         deneb/tools.py
         deneb/db.py
+        deneb/config.py

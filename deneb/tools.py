@@ -1,7 +1,8 @@
 """Helper tools"""
+import asyncio
 import datetime
 from itertools import zip_longest
-from typing import List
+from typing import Any, Callable, Dict, List, Optional, Tuple
 
 from spotipy import Spotify
 
@@ -33,10 +34,83 @@ def generate_release_date(date: str, precision: str) -> datetime.datetime:
     return datetime.datetime.strptime(f"{date}{suffix[precision]}", "%Y-%m-%d")
 
 
-def fetch_all(sp: Spotify, data: dict) -> List[dict]:
+def should_fetch_more_albums(albums: List[Dict]) -> Tuple[bool, List[Dict]]:
+    required_year = str(datetime.datetime.now().year)
+    new_list = []  # type: List[dict]
+    for album in albums:
+        if required_year not in album["release_date"]:
+            return False, new_list
+        new_list.append(album)
+    return True, new_list
+
+
+async def fetch_all(sp: Spotify, data: dict, is_album: bool = False) -> List[Dict]:
     """iterates till gets all the albums"""
     contents = []  # type: List[dict]
-    while data:
+
+    if is_album:
+        should, contents = should_fetch_more_albums(data["items"])
+        if not should:
+            return contents
+
+    while True:
+        if is_album:
+            should, albums = should_fetch_more_albums(data["items"])
+            if not should:
+                contents.extend(albums)
+                break
+
         contents.extend(data["items"])
-        data = sp.client.next(data)  # noqa: B305
+        if not data["next"]:
+            break
+        data = await sp.client.next(data)  # noqa: B305
+
     return contents
+
+
+def _create_jobs(func: Callable, args_items: List[Any]) -> List[asyncio.Future]:
+    return [asyncio.ensure_future(func(*item)) for item in args_items]
+
+
+def _take(
+    amount: int, items: List[Any], can_add_filter: Callable
+) -> Tuple[List[Any], List[Any]]:
+    taken_items = []  # type: List[Any]
+    for idx, item in enumerate(items):
+        if len(taken_items) == amount:
+            return taken_items, items[idx:]
+        if can_add_filter(args=item):
+            taken_items.append(item)
+    return taken_items, []
+
+
+async def run_tasks(
+    queue_size: int,
+    args_items_left: List[Any],
+    afunc: Callable,
+    items_filter: Optional[Callable] = None,
+) -> List[Any]:
+    items_filter = items_filter or (lambda args: args)
+
+    args_items_batch, args_items_left = _take(queue_size, args_items_left, items_filter)
+    jobs = _create_jobs(afunc, args_items_batch)
+    job_results = []
+
+    while jobs:
+        done_tasks, pending = await asyncio.wait(
+            jobs, return_when=asyncio.FIRST_COMPLETED
+        )
+        while done_tasks:
+            done_task = done_tasks.pop()
+            jobs.remove(done_task)
+            result = await done_task
+            job_results.append(result)
+
+        if args_items_left:
+            required_amount = queue_size - len(pending)
+            args_items_batch, args_items_left = _take(
+                required_amount, args_items_left, items_filter
+            )
+            jobs.extend(_create_jobs(afunc, args_items_batch))
+
+    return job_results

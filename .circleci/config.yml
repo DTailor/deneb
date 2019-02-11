@@ -1,0 +1,26 @@
+version: 2
+jobs:
+  build:
+    working_directory: ~/circleci-deneb
+    docker:
+      - image: circleci/python:3.7.2
+    steps:
+      - checkout
+      - restore_cache:
+          key: deps9-{{ .Branch }}-{{ checksum "Pipfile.lock" }}
+      - run:
+          command: |
+            sudo pip install pipenv
+            pip install pipenv --upgrade
+            pipenv install --dev
+      - run: pipenv run pytest --junitxml test-results/results.xml
+      - run: mkdir test-reports
+      - store_test_results:
+          path: test-results
+      - store_artifacts:
+          path: test-results
+          destination: tr1
+      - save_cache:
+          key: deps9-{{ .Branch }}-{{ checksum "Pipfile.lock" }}
+          paths:
+            - "/home/circleci/.local/share/virtualenvs/circleci-deneb-ZS5KoU3r"
