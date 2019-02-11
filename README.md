@@ -63,4 +63,3 @@ There's a cli tool available to use the tool easier.
 ### CI
 
 - [circleci](https://circleci.com/bb/DTailor/deneb)
-- [codeship](https://app.codeship.com/deneb)
