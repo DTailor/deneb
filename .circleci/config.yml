@@ -11,7 +11,7 @@ jobs:
       - run:
           command: |
             sudo pip install pipenv
-            pip install pipenv pip --upgrade
+            sudo pip install pipenv pip --upgrade
             pipenv install --dev
       - run: pipenv run pytest --junitxml test-results/results.xml
       - run: mkdir test-reports
