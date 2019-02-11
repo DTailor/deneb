@@ -11,9 +11,9 @@ jobs:
             sudo pip install pipenv
             pip install pipenv --upgrade
             pipenv install --dev
-      - run: pipenv run pytest
+      - run: pipenv run pytest --junitxml test-results/results.xml
       - run: mkdir test-reports
-      - run: pipenv run coverage report && pipenv run coverage xml -o test-results/coverage.xml
+      # - run: pipenv run coverage report && pipenv run coverage xml -o test-results/coverage.xml
       - store_test_results:
           path: test-results
       - store_artifacts:
