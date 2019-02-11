@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "5f1041db1b8320973b56d721d856c8c9b85641d000c2c36870fb65b127a279d4"
+            "sha256": "c14ed788541b69a031ec163bb12437080e7d21b58139fe27b6ba3bfbead618f1"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -547,6 +547,7 @@
                 "sha256:f95bc54fb6d61b9f9ff09c4ae8ff6a3f5edc937cda3ca36fc937302a7c152bf1",
                 "sha256:fd0f6be53de40683584e5331c341e65a679dbe5ec489a0697cec7c2ef1a48cda"
             ],
+            "index": "pypi",
             "version": "==5.0a4"
         },
         "cryptography": {
@@ -1119,10 +1120,10 @@
         },
         "rope": {
             "hashes": [
-                "sha256:a108c445e1cd897fe19272ab7877d172e7faf3d4148c80e7d20faba42ea8f7b2"
+                "sha256:031eb54b3eeec89f4304ede816995ed2b93a21e6fba16bd02aff10a0d6c257b7"
             ],
             "index": "pypi",
-            "version": "==0.11.0"
+            "version": "==0.12.0"
         },
         "send2trash": {
             "hashes": [
@@ -1161,9 +1162,9 @@
         },
         "tornado": {
             "hashes": [
-                "sha256:00ebd485a52bd7eaa3f35bdf8ab43c109aaa2edc722849b6905c1ffd8c958e82"
+                "sha256:d3b719a0cb7094e2b1ca94b31f4b601639fa7ad01a548a1a2ccdd6cbdfd56671"
             ],
-            "version": "==6.0a1"
+            "version": "==6.0b1"
         },
         "traitlets": {
             "hashes": [
