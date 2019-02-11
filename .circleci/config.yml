@@ -5,13 +5,15 @@ jobs:
     docker:
       - image: circleci/python:3.7.2
     steps:
-      - checkout  # checkout source code to working directory
+      - checkout
       - run:
-          command: |  # use pipenv to install dependencies
+          command: |
             sudo pip install pipenv
             pip install pipenv --upgrade
             pipenv install --dev
-            pipenv run pytest
+      - run: pipenv run pytest
+      - run: mkdir test-reports
+      - run: coverage report && coverage xml -o test-results/coverage.xml
       - store_test_results:
           path: test-results
       - store_artifacts:
@@ -22,7 +24,8 @@ jobs:
       - run:
           command: |
             sudo pip install pipenv
-            pipenv install
+            pip install pipenv --upgrade
+            pipenv install --dev
       - save_cache: # cache Python dependencies using checksum of Pipfile as the cache-key
           key: deps9-{{ .Branch }}-{{ checksum "Pipfile.lock" }}
           paths:
