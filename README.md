@@ -61,5 +61,6 @@ There's a cli tool available to use the tool easier.
     - `--user <spotify_id>` - full run for specific spotify id
 
 ### CI
- - https://circleci.com/bb/DTailor/deneb
- - https://app.codeship.com/deneb
+
+- [circleci](https://circleci.com/bb/DTailor/deneb)
+- [codeship](https://app.codeship.com/deneb)
