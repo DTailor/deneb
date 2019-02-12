@@ -89,7 +89,12 @@ async def update_album_marketplace(
         market, _ = await Market.get_or_create(name=marketname)
         has_market = await album.markets.filter(id=market.id)
         if not has_market:
-            await album.markets.add(market)
+            try:
+                await album.markets.add(market)
+            except Exception as exc:
+                _LOGGER.exception(
+                    f"duplicate marker err {exc}, {album} {market} has_market: {has_market}"
+                )
 
 
 async def handle_album_sync(album: dict, artist: Artist) -> Tuple[bool, Album]:
