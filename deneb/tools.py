@@ -34,14 +34,22 @@ def generate_release_date(date: str, precision: str) -> datetime.datetime:
     return datetime.datetime.strptime(f"{date}{suffix[precision]}", "%Y-%m-%d")
 
 
-def should_fetch_more_albums(albums: List[Dict]) -> Tuple[bool, List[Dict]]:
+def should_fetch_more_albums(
+    albums: List[Dict], to_check_album_types: List[str]
+) -> Tuple[bool, List[Dict], List[str]]:
     required_year = str(datetime.datetime.now().year)
     new_list = []  # type: List[dict]
     for album in albums:
-        if required_year not in album["release_date"]:
-            return False, new_list
-        new_list.append(album)
-    return True, new_list
+        if album["album_type"] in to_check_album_types:
+            to_check_album_types.remove(album["album_type"])
+
+        if required_year in album["release_date"]:
+            new_list.append(album)
+        else:
+            if not to_check_album_types:
+                return False, new_list, to_check_album_types
+
+    return True, new_list, to_check_album_types
 
 
 async def fetch_all(sp: Spotify, data: dict, is_album: bool = False) -> List[Dict]:
@@ -49,18 +57,30 @@ async def fetch_all(sp: Spotify, data: dict, is_album: bool = False) -> List[Dic
     contents = []  # type: List[dict]
 
     if is_album:
-        should, contents = should_fetch_more_albums(data["items"])
+        # ok, so this new `to_check_album_types` is a hack to fix-up a problem
+        # the issues constits in the fact the as we fetch albums
+        # we retrieve several `album_types`, like `album`, `single`, `appears_on`
+        # and they are returned back in descendant order by `release_date`, the catch
+        # is that they are group, meaning that you'll then them ordered that way but
+        # first the `albums`, then the `single` and `appears_on`. This made the script
+        # to miss some `sinlge` and `appears_on` type of albums
+        to_check_album_types = ["album", "single", "appears_on"]
+        should, contents, to_check_album_types = should_fetch_more_albums(
+            data["items"], to_check_album_types
+        )
         if not should:
             return contents
 
     while True:
         if is_album:
-            should, albums = should_fetch_more_albums(data["items"])
+            should, albums, to_check_album_types = should_fetch_more_albums(
+                data["items"], to_check_album_types
+            )
             if not should:
                 contents.extend(albums)
                 break
-
-        contents.extend(data["items"])
+        else:
+            contents.extend(data["items"])
         if not data["next"]:
             break
         data = await sp.client.next(data)  # noqa: B305

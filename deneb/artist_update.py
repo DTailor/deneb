@@ -87,7 +87,9 @@ async def update_album_marketplace(
 
     for marketname in to_add:
         market, _ = await Market.get_or_create(name=marketname)
-        await album.markets.add(market)
+        has_market = await album.markets.filter(id=market.id)
+        if not has_market:
+            await album.markets.add(market)
 
 
 async def handle_album_sync(album: dict, artist: Artist) -> Tuple[bool, Album]:
