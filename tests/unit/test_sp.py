@@ -144,7 +144,9 @@ class TestSpotifyStats:
     async def test_describe_added_tracks_and_albums(self, playlist, album, track):
         album_tracks = AlbumTracks(parent=album, tracks=[track, track, track])
         stats = SpotifyStats(
-            "test-id", playlist, {"tracks": [album_tracks], "albums": [album_tracks], "singles": []}
+            "test-id",
+            playlist,
+            {"tracks": [album_tracks], "albums": [album_tracks], "singles": []},
         )
 
         expected = [
@@ -179,6 +181,8 @@ class TestSpotifyStats:
             "No adds, you should follow more artists",
         ]
 
-        ss = SpotifyStats("test-id", playlist, {"albums": [], "tracks": [], "singles": []})
+        ss = SpotifyStats(
+            "test-id", playlist, {"albums": [], "tracks": [], "singles": []}
+        )
 
         assert ss.describe() in valid_responses

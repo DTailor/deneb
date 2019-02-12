@@ -2,8 +2,8 @@ import os
 
 from fabric import Connection, task
 
-SSH_USER = os.environ['SSH_USER']
-SSH_HOST = os.environ['SSH_HOST']
+SSH_USER = os.environ["SSH_USER"]
+SSH_HOST = os.environ["SSH_HOST"]
 
 
 @task
