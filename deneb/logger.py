@@ -20,5 +20,9 @@ def get_logger(name: str) -> Any:
         maxBytes=10 * 1024 * 1024,
         backupCount=5,
     )
-    sentry_sdk.init(os.environ["SENTRY_URL"])
+
+    sentry_url = os.environ.get("SENTRY_URL")
+    if sentry_url:
+        sentry_sdk.init(sentry_url)
+
     return logger
