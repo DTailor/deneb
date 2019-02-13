@@ -2,14 +2,12 @@ import asyncio
 import os
 
 import click
-from dotenv import load_dotenv
 from deneb.db import init_db, close_db
 from deneb.logger import get_logger
 from deneb.spotify.users import update_users_artists
 from deneb.spotify.weekly_releases import update_users_playlists
 from deneb.structs import SpotifyKeys, FBAlert
 
-load_dotenv()
 
 _LOGGER = get_logger(__name__)
 

@@ -4,14 +4,12 @@ import datetime
 import json
 import os
 
-from dotenv import load_dotenv
 from tortoise import fields
 from tortoise.models import Model
 
 from deneb.logger import get_logger
 from deneb.tortoise_pool import PoolTortoise
 
-load_dotenv()
 
 _LOGGER = get_logger(__name__)
 
