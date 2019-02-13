@@ -13,7 +13,7 @@ jobs:
             sudo pip install pipenv
             sudo pip install pipenv pip --upgrade
             pipenv install --dev
-      - run: pipenv run flake8 deneb
+      - run: pipenv run pylama deneb
       - run: pipenv run pytest --junitxml test-results/results.xml
       - run: mkdir test-reports
       - store_test_results:
