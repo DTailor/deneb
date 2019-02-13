@@ -14,9 +14,10 @@ jobs:
             sudo pip install pipenv pip --upgrade
             pipenv install --dev
       - run: pipenv run pylama deneb
-      - run: pytest
-        command: pipenv run pytest --junitxml test-results/results.xml
-        when: always
+      - run:
+          name: pytest
+          command: pipenv run pytest --junitxml test-results/results.xml
+          when: always
       - store_test_results:
           path: test-results
       - store_artifacts:
