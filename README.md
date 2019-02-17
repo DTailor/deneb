@@ -11,7 +11,7 @@
 ## Set up
 
 - `pipenv --python <path-to-3.7>`
-- `pipenv install`
+- `pipenv install --dev`
 - `cp .env_example .env`
 - fill in data for `.env`
   - `spotify`
