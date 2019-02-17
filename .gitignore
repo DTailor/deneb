@@ -162,3 +162,14 @@ GitHub.sublime-settings
 
 # Project Files
 scripts/spotify_keys.sh
+
+/.cache-*
+
+/.project
+
+/src/.cache-*
+
+/logfile.log
+.mypy_cache
+.vscode
+.cache-*

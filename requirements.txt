@@ -1,5 +1,0 @@
-ipython
-ipdb
-isort
-pylint
-spotipy
