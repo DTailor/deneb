@@ -15,7 +15,7 @@ jobs:
             pipenv install --dev
       - run:
           name: pytest
-          command: pipenv run pytest --junitxml test-results/results.xml --pylama
+          command: pipenv run pytest --junitxml test-results/results.xml
       - store_test_results:
           path: test-results
       - store_artifacts:
