@@ -65,6 +65,21 @@ class AsyncSpotify(Spotify):
         plid = self._get_id("playlist", playlist_id)
         return await self._get("users/%s/playlists/%s" % (user, plid), fields=fields)
 
+    async def user_playlist_add_tracks(self, user, playlist_id, tracks, position=None):
+        """Adds tracks to a playlist"""
+        plid = self._get_id("playlist", playlist_id)
+        ftracks = [self._get_uri("track", tid) for tid in tracks]
+        return self._post(
+            "users/%s/playlists/%s/tracks" % (user, plid),
+            payload=ftracks,
+            position=position,
+        )
+
+    async def user_playlist_create(self, user, name, public=True):
+        """Creates a playlist for a user"""
+        data = {"name": name, "public": public}
+        return self._post("users/%s/playlists" % (user,), payload=data)
+
     async def __async_internal_call(self, method, url, payload, params):
         # remove all none valued keys
         # aiohttp fails to encode those
