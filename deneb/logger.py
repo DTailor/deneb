@@ -9,15 +9,15 @@ import sentry_sdk
 
 def get_logger(name: str) -> Any:
     """Init logger"""
-    _formatter = logging.Formatter(
-        "%(asctime)s %(name)-12s %(levelname)-8s %(message)s"
+    _formatter = logzero.LogFormatter(
+        fmt="%(color)s[%(levelname)s %(asctime)s %(name)s:%(lineno)d]%(end_color)s %(message)s"
     )
     logger = logzero.setup_logger(
         name=name,
         logfile="logfile.log",
         level=logging.DEBUG,
         formatter=_formatter,
-        maxBytes=10 * 1024 * 1024,
+        maxBytes=1e6,
         backupCount=5,
     )
 
