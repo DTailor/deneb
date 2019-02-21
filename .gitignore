@@ -169,7 +169,7 @@ scripts/spotify_keys.sh
 
 /src/.cache-*
 
-./logfile*
+logfile*
 .mypy_cache
 .vscode
 .cache-*
