@@ -28,6 +28,8 @@ def runner(func, args):
     try:
         loop.run_until_complete(init_db())
         loop.run_until_complete(func(*args))
+    except Exception:
+        _LOGGER.error(f"task {func} interrupted; args: {args[1:]}")
     finally:
         loop.run_until_complete(close_db())
         loop.close()
@@ -62,11 +64,8 @@ def full_run(ctx, user, force, notify, dry_run):
 @click.option("--user")
 @click.command()
 def update_followed(user, force):
-    click.echo("------------ RUN UPDATE USER ARTISTS")
-    try:
-        runner(update_users_artists, (SPOTIFY_KEYS, user, force))
-    except Exception:
-        _LOGGER.exception(f"uhhh ohhhhhhhhhhhhh task failed")
+    _LOGGER.info("running: update user followed artists and artist albums")
+    runner(update_users_artists, (SPOTIFY_KEYS, user, force))
 
 
 @click.option("--notify", is_flag=True)
@@ -74,12 +73,9 @@ def update_followed(user, force):
 @click.option("--user")
 @click.command()
 def update_playlists(user, notify, dry_run):
-    click.echo("------------ RUN UPDATE USER PLAYLISTS")
+    _LOGGER.info("running: update users spotify weekly playlists")
     fb_alert = get_fb_alert(notify)
-    try:
-        runner(update_users_playlists, (SPOTIFY_KEYS, fb_alert, user, dry_run))
-    except Exception:
-        _LOGGER.exception(f"uhhh ohhhhhhhhhhhhh task failed")
+    runner(update_users_playlists, (SPOTIFY_KEYS, fb_alert, user, dry_run))
 
 
 cli.add_command(update_followed)

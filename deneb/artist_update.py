@@ -93,7 +93,7 @@ async def update_album_marketplace(
                 await album.markets.add(market)
             except Exception as exc:
                 _LOGGER.exception(
-                    f"duplicate marker err {exc}, {album} {market} has_market: {has_market}"
+                    f"duplicate market err {exc}, {album} {market} has_market: {has_market}"
                 )
 
 
@@ -155,8 +155,6 @@ async def get_new_releases(
 
     args_items = [(sp, a) for a in artists]
 
-    _LOGGER.info(f"updating {len(artists)} artists")
-
     tstart = time.time()
     filter_func = partial(_album_filter, force=force_update)
     task_results = await run_tasks(
@@ -171,6 +169,5 @@ async def get_new_releases(
         if new_additions:
             albums_nr += len(new_additions)
             updated_nr += 1
-            _LOGGER.info(f"fetched {len(new_additions)} albums for {artist}")
 
     return albums_nr, updated_nr

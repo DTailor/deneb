@@ -102,12 +102,7 @@ class User(Model):  # type: ignore
     state_id = fields.CharField(max_length=255)
 
     def __str__(self) -> str:
-        base = f"spotify:user:{self.username}>"
-        if self.display_name:
-            base = f"<{self.display_name} {base}"
-        else:
-            base = f"<{base}"
-        return base
+        return f"<spotify:user:{self.username}>"
 
     def __repr__(self) -> str:
         return self.__str__()

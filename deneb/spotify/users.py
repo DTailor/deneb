@@ -20,20 +20,18 @@ async def _update_user_artists(
     async with spotify_client(credentials, user) as sp:
         new_follows, lost_follows = await fetch_user_followed_artists(user, sp)
 
-        new_follows_str = ", ".join(str(a) for a in new_follows)
-        lost_follows_str = ", ".join(str(a) for a in lost_follows)
-
         followed_artists = await user.artists.filter()
 
         _LOGGER.info(
-            f"{user} : follows +({len(new_follows)}): {new_follows_str}"
-            f" -({len(lost_follows)}): {lost_follows_str}"
+            f"{user} : follows +{len(new_follows)}"
+            f" -{len(lost_follows)}"
             f"; now updating artists ({len(followed_artists)})"
-        )  # flake8: noqa
+        )
         albums_nr, updated_nr = await get_new_releases(
             sp, followed_artists, force_update
         )
-        _LOGGER.info(f"fetched {albums_nr} albums for {updated_nr} artists")
+        if updated_nr:
+            _LOGGER.info(f"fetched {albums_nr} albums for {updated_nr} artists")
 
 
 def _user_task_filter(args):
