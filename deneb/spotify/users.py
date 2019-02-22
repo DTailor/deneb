@@ -1,6 +1,6 @@
 """Entry point to deneb spotify watcher"""
 
-from typing import List, Optional
+from typing import List, Optional, Tuple
 
 from deneb.artist_update import get_new_releases
 from deneb.config import Config
@@ -17,6 +17,7 @@ _LOGGER = get_logger(__name__)
 async def _update_user_artists(
     credentials: SpotifyKeys, user: User, force_update: bool
 ):
+    """task to update user followed artists and artist albums"""
     async with spotify_client(credentials, user) as sp:
         new_follows, lost_follows = await fetch_user_followed_artists(user, sp)
 
@@ -34,13 +35,15 @@ async def _update_user_artists(
             _LOGGER.info(f"fetched {albums_nr} albums for {updated_nr} artists")
 
 
-def _user_task_filter(args):
+def _user_task_filter(args: Tuple[SpotifyKeys, User, bool]) -> bool:
+    """filter for task runner to check if task should be run"""
     if args[1].spotify_token:
         return True
     return False
 
 
 async def _get_to_update_users(username: Optional[str] = None) -> List[User]:
+    """if `--username` option used, fetch that user else fetch all users"""
     if username:
         users = await User.filter(username=username)
     else:
@@ -51,6 +54,7 @@ async def _get_to_update_users(username: Optional[str] = None) -> List[User]:
 async def update_users_artists(
     credentials: SpotifyKeys, user_id: Optional[str] = None, force_update: bool = False
 ):
+    """entry point for updating user artists and artist albums"""
     users = await _get_to_update_users(user_id)
     args_items = [(credentials, user, force_update) for user in users]
     await run_tasks(
