@@ -110,11 +110,6 @@ async def handle_album_sync(album: dict, artist: Artist) -> Tuple[bool, Album]:
     return created, db_album
 
 
-def _is_various_artists(album: dict) -> bool:
-    artists = [a["name"] for a in album["artists"]]
-    return "Various Artists" in artists
-
-
 async def update_artist_albums(
     sp: Spotify, artist: Artist, dry_run: bool = False
 ) -> Tuple[Artist, List[Album]]:
@@ -123,7 +118,7 @@ async def update_artist_albums(
     processed_albums = []
 
     for album in albums:
-        if _is_various_artists(album) and album["album_type"] == "compilation":
+        if album["album_type"] == "compilation":
             # these types of albums are just a collection of already knows songs
             # places in a new compilation album; gonna skipe those for a while
             # until more control of the flow
