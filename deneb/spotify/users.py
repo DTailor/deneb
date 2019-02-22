@@ -24,11 +24,10 @@ async def _update_user_artists(
         followed_artists = await user.artists.filter()
 
         _LOGGER.info(
-            f"{user} : follows +{len(new_follows)}"
-            f" -{len(lost_follows)}"
+            f"{user} : follows +{len(new_follows)} -{len(lost_follows)}"
             f"; now updating artists ({len(followed_artists)})"
         )
-        albums_nr, updated_nr = await get_new_releases(
+        albums_nr, updated_nr, skipped_nr = await get_new_releases(
             sp, followed_artists, force_update
         )
         if updated_nr:
