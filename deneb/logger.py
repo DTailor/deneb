@@ -10,7 +10,7 @@ import sentry_sdk
 def get_logger(name: str) -> Any:
     """Init logger"""
     _formatter = logzero.LogFormatter(
-        fmt="%(asctime)-15s %(name)s:%(lineno)d [%(levelname)s] %(message)s"
+        fmt="%(asctime)-15s %(name)-31s:%(lineno)-3d [%(levelname)s] %(message)s"
     )
     logger = logzero.setup_logger(
         name=name,
