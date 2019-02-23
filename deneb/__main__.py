@@ -29,7 +29,7 @@ def runner(func, args):
         loop.run_until_complete(init_db())
         loop.run_until_complete(func(*args))
     except Exception:
-        _LOGGER.error(f"task {func} interrupted; args: {args[1:]}")
+        _LOGGER.exception(f"task {func} interrupted; args: {args[1:]};")
     finally:
         loop.run_until_complete(close_db())
         loop.close()
