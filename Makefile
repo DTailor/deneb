@@ -19,3 +19,6 @@ clean:
 	rm logfile*
 	rm -rf .pytest_cache
 	rm -rf test-results/
+
+deploy:
+	pipenv run fab deploy
