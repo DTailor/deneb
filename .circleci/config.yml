@@ -9,13 +9,10 @@ jobs:
       - restore_cache:
           key: deps9-{{ .Branch }}-{{ checksum "Pipfile.lock" }}
       - run:
-          command: |
-            sudo pip install pipenv
-            sudo pip install pipenv pip --upgrade
-            pipenv install --dev
+          command: make init-env
       - run:
           name: pytest
-          command: pipenv run pytest --junitxml test-results/results.xml
+          command: make test
       - store_test_results:
           path: test-results
       - store_artifacts:
