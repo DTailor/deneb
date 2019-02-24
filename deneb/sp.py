@@ -43,19 +43,6 @@ class AsyncSpotify(Spotify):
         conn = aiohttp.TCPConnector(limit=10)
         self.session = aiohttp.ClientSession(connector=conn)
 
-    async def _get(self, url, args=None, payload=None, **kwargs):
-        result = await self._async_get(url, args=None, payload=None, **kwargs)
-        return result
-
-    async def _post(self, url, args=None, payload=None, **kwargs):
-        result = await self._async_post(url, args, payload, **kwargs)
-        return result
-
-    async def _async_post(self, url, args=None, payload=None, **kwargs):
-        if args:
-            kwargs.update(args)
-        return await self.__async_internal_call('POST', url, payload, kwargs)
-
     async def current_user(self):
         """ Get detailed profile information about the current user.
             An alias for the 'current_user' method.
@@ -73,6 +60,55 @@ class AsyncSpotify(Spotify):
             return await self._get("users/%s/starred" % (user), fields=fields)
         plid = self._get_id("playlist", playlist_id)
         return await self._get("users/%s/playlists/%s" % (user, plid), fields=fields)
+
+    async def _get(self, url, args=None, payload=None, **kwargs):
+        result = await self._async_get(url, args=None, payload=None, **kwargs)
+        return result
+
+    async def _post(self, url, args=None, payload=None, **kwargs):
+        result = await self._async_post(url, args, payload, **kwargs)
+        return result
+
+    async def _async_post(self, url, args=None, payload=None, **kwargs):
+        if args:
+            kwargs.update(args)
+        return await self.__async_internal_call("POST", url, payload, kwargs)
+
+    async def _async_get(self, url, args=None, payload=None, **kwargs):
+        if args:
+            kwargs.update(args)
+        retries = self.max_get_retries
+        delay = 2
+        while retries > 0:
+            try:
+                return await self.__async_internal_call("GET", url, payload, kwargs)
+            except SpotifyException as e:
+                retries -= 1
+                status = e.http_status
+
+                if status == 401:
+                    # unauthorized call; will be handled by refresh token
+                    raise
+
+                # 429 means we hit a rate limit, backoff
+                if status == 429 or (status >= 500 and status < 600):
+                    if retries < 0:
+                        raise
+                    else:
+                        sleep_seconds = int(e.headers.get("Retry-After", delay)) + 1
+                        await asyncio.sleep(sleep_seconds)
+                        delay += 1
+                else:
+                    _LOGGER.exception(f"bad request {url}: {e}")
+                    raise
+            except (json.JSONDecodeError, asyncio.TimeoutError):
+                retries -= 1
+                if retries >= 0:
+                    sleep_seconds = delay + 1
+                    await asyncio.sleep(sleep_seconds)
+                    delay += 1
+                else:
+                    raise
 
     async def __async_internal_call(self, method, url, payload, params):
         # remove all none valued keys
@@ -116,42 +152,6 @@ class AsyncSpotify(Spotify):
             else:
                 return None
 
-    async def _async_get(self, url, args=None, payload=None, **kwargs):
-        if args:
-            kwargs.update(args)
-        retries = self.max_get_retries
-        delay = 2
-        while retries > 0:
-            try:
-                return await self.__async_internal_call("GET", url, payload, kwargs)
-            except SpotifyException as e:
-                retries -= 1
-                status = e.http_status
-
-                if status == 401:
-                    # unauthorized call; will be handled by refresh token
-                    raise
-
-                # 429 means we hit a rate limit, backoff
-                if status == 429 or (status >= 500 and status < 600):
-                    if retries < 0:
-                        raise
-                    else:
-                        sleep_seconds = int(e.headers.get("Retry-After", delay)) + 1
-                        await asyncio.sleep(sleep_seconds)
-                        delay += 1
-                else:
-                    _LOGGER.exception(f"bad request {url}: {e}")
-                    raise
-            except (json.JSONDecodeError, asyncio.TimeoutError):
-                retries -= 1
-                if retries >= 0:
-                    sleep_seconds = delay + 1
-                    await asyncio.sleep(sleep_seconds)
-                    delay += 1
-                else:
-                    raise
-
 
 async def get_client(credentials: SpotifyKeys, token_info: dict) -> Spotter:
     """returns a spotter obj with spotipy client"""
@@ -169,9 +169,7 @@ async def get_client(credentials: SpotifyKeys, token_info: dict) -> Spotter:
 
     try:
         current_user = await client.current_user()
-    except Exception as exc:
-        _LOGGER.info(f"got {exc} of type {type(exc)}")
-
+    except SpotifyException:
         # need new client, close old client session
         await client.session.close()
         token_info = sp_oauth.refresh_access_token(token_info["refresh_token"])
