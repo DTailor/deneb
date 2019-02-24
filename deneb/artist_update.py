@@ -93,7 +93,7 @@ async def update_album_marketplace(
                 await album.markets.add(market)
             except Exception as exc:
                 _LOGGER.exception(
-                    f"duplicate marker err {exc}, {album} {market} has_market: {has_market}"
+                    f"duplicate market err {exc}, {album} {market} has_market: {has_market}"
                 )
 
 
@@ -116,7 +116,14 @@ async def update_artist_albums(
     """update artist albums by adding them to the db"""
     albums = await fetch_albums(sp, artist)
     processed_albums = []
+
     for album in albums:
+        if album["album_type"] == "compilation":
+            # these types of albums are just a collection of already knows songs
+            # places in a new compilation album; gonna skipe those for a while
+            # until more control of the flow
+            continue
+
         if not is_in_artists_list(artist, album):
             # Some releases are not directly related to the artist himself.
             # It happens that if an artist has some feature songs on an album
@@ -155,8 +162,6 @@ async def get_new_releases(
 
     args_items = [(sp, a) for a in artists]
 
-    _LOGGER.info(f"updating {len(artists)} artists")
-
     tstart = time.time()
     filter_func = partial(_album_filter, force=force_update)
     task_results = await run_tasks(
@@ -171,6 +176,5 @@ async def get_new_releases(
         if new_additions:
             albums_nr += len(new_additions)
             updated_nr += 1
-            _LOGGER.info(f"fetched {len(new_additions)} albums for {artist}")
 
     return albums_nr, updated_nr

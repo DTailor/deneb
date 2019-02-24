@@ -3,6 +3,7 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 from aiomock import AIOMock
+from spotipy import SpotifyException
 
 from deneb.sp import SpotifyStats, Spotter, get_client, spotify_client
 from deneb.structs import AlbumTracks, SpotifyKeys
@@ -71,7 +72,7 @@ class TestGetClient:
         with patch("deneb.sp.AsyncSpotify") as mocked_spotify:
             mocked_sp = AIOMock()
             mocked_sp.current_user.async_side_effect = [
-                Exception(),
+                SpotifyException(http_status=401, code=401, msg="Unauthorized"),
                 {"id": "test-user"},
             ]
             mocked_sp.session.close = _mocked_call()

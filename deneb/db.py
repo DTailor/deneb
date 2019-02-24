@@ -4,14 +4,12 @@ import datetime
 import json
 import os
 
-from dotenv import load_dotenv
 from tortoise import fields
 from tortoise.models import Model
 
 from deneb.logger import get_logger
 from deneb.tortoise_pool import PoolTortoise
 
-load_dotenv()
 
 _LOGGER = get_logger(__name__)
 
@@ -104,12 +102,7 @@ class User(Model):  # type: ignore
     state_id = fields.CharField(max_length=255)
 
     def __str__(self) -> str:
-        base = f"spotify:user:{self.username}>"
-        if self.display_name:
-            base = f"<{self.display_name} {base}"
-        else:
-            base = f"<{base}"
-        return base
+        return f"<spotify:user:{self.username}>"
 
     def __repr__(self) -> str:
         return self.__str__()

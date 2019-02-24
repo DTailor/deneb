@@ -9,16 +9,20 @@ import sentry_sdk
 
 def get_logger(name: str) -> Any:
     """Init logger"""
-    _formatter = logging.Formatter(
-        "%(asctime)s %(name)-12s %(levelname)-8s %(message)s"
+    _formatter = logzero.LogFormatter(
+        fmt="%(asctime)-15s %(name)-31s:%(lineno)-3d [%(levelname)s] %(message)s"
     )
     logger = logzero.setup_logger(
         name=name,
         logfile="logfile.log",
         level=logging.DEBUG,
         formatter=_formatter,
-        maxBytes=10 * 1024 * 1024,
+        maxBytes=1e6,
         backupCount=5,
     )
-    sentry_sdk.init(os.environ["SENTRY_URL"])
+
+    sentry_url = os.environ.get("SENTRY_URL")
+    if sentry_url:
+        sentry_sdk.init(sentry_url)
+
     return logger

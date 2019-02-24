@@ -54,28 +54,37 @@ async def get_tracks(sp: Spotter, playlist: dict) -> List[dict]:
     return await fetch_all(sp, tracks["tracks"])
 
 
-async def get_album_tracks(sp: Spotter, album: Album) -> AlbumTracks:
+async def _make_album_tracks(sp: Spotter, album: Album) -> AlbumTracks:
     tracks = []  # type: List[dict]
     album_data = await sp.client.album(album.uri)
     tracks = await fetch_all(sp, album_data["tracks"])
     return AlbumTracks(album_data, tracks)
 
 
-def verify_already_present(
+def _clean_update_playlist_already_present(
     album: AlbumTracks, already_present_tracks: set
 ) -> Tuple[AlbumTracks, set]:
     """helper method to clean up already present items from playlist and update it"""
-    album.tracks = [a for a in album.tracks if a["id"] not in already_present_tracks]
+    album.tracks = [a for a in album.tracks if a["name"] not in already_present_tracks]
     # update list with new ids
-    already_present_tracks.update({a["id"] for a in album.tracks})
+    already_present_tracks.update({a["name"] for a in album.tracks})
     return album, already_present_tracks
+
+
+async def _get_album_tracks(sp: Spotter, item: Album, is_album: bool) -> AlbumTracks:
+    if is_album:
+        album = await _make_album_tracks(sp, item)
+    else:
+        track = await sp.client.track(item.uri)
+        album = AlbumTracks(track["album"], [track])
+    return album
 
 
 async def generate_tracks_to_add(
     sp: Spotter, db_tracks: List[Album], pl_tracks: List[dict]
 ) -> Tuple[List[AlbumTracks], List[AlbumTracks], List[AlbumTracks]]:
     """return list of tracks to be added"""
-    already_present_tracks = {a["track"]["id"] for a in pl_tracks}
+    already_present_tracks = {a["track"]["name"] for a in pl_tracks}
 
     # there are three types of releases to keep an eye on
     # 1. singles - these are from an upcoming album. This includes in them
@@ -95,17 +104,11 @@ async def generate_tracks_to_add(
     main_albums = []  # type: List[AlbumTracks]
     featuring_albums = {}  # type: Dict[str, AlbumTracks]
 
+    post_process_singles = []  # type: List[AlbumTracks]
+
     for item in db_tracks:
         is_album = item.type == "album"
-        if is_album:
-            album = await get_album_tracks(sp, item)
-        else:
-            track = await sp.client.track(item.uri)
-            album = AlbumTracks(track["album"], [track])
-
-        if album.parent["album_type"] == "compilation":
-            # they are messed up, later let user configure if he wants them
-            continue
+        album = await _get_album_tracks(sp, item, is_album)
 
         # we want albums with less than 3 tracks to be listed as tracks
         # because often they contain just remixes with 1 song or so.
@@ -113,7 +116,7 @@ async def generate_tracks_to_add(
         # for albums which indeed have 3 different songs
 
         if is_album and len(album.tracks) > 2:
-            album, already_present_tracks = verify_already_present(
+            album, already_present_tracks = _clean_update_playlist_already_present(
                 album, already_present_tracks
             )
             if album.tracks:
@@ -121,11 +124,7 @@ async def generate_tracks_to_add(
             continue
 
         if album.parent["album_type"] == "single":
-            album, already_present_tracks = verify_already_present(
-                album, already_present_tracks
-            )
-            if album.tracks:
-                singles.append(album)
+            post_process_singles.append(album)
             continue
 
         for track in album.tracks:
@@ -135,13 +134,19 @@ async def generate_tracks_to_add(
             # in an album with less than 3 tracks
             if album.parent["id"] not in featuring_albums:
                 featuring_albums[album.parent["id"]] = album
-                already_present_tracks.update({a["id"] for a in album.tracks})
+                already_present_tracks.update({a["name"] for a in album.tracks})
             else:
                 featuring_albums[album.parent["id"]].tracks.append(track)
-                already_present_tracks.add(track["id"])
+                already_present_tracks.add(track["name"])
 
-    orphan_albums = list(featuring_albums.values())
-    return singles, main_albums, orphan_albums
+    for album in post_process_singles:
+        album, already_present_tracks = _clean_update_playlist_already_present(
+            album, already_present_tracks
+        )
+        if album.tracks:
+            singles.append(album)
+
+    return singles, main_albums, list(featuring_albums.values())
 
 
 async def update_spotify_playlist(
