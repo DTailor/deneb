@@ -16,9 +16,11 @@ init-env:
 	pipenv install --dev
 
 clean:
-	rm logfile*
+	rm -rf logfile*
+	rm -rf .mypy_cache
 	rm -rf .pytest_cache
 	rm -rf test-results/
+	find . -name "*.pyc" -exec rm -f {} \;
 
 deploy:
 	pipenv run fab deploy
