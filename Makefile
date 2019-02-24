@@ -8,7 +8,7 @@ install-dev:
 	pipenv install --dev
 
 upgrade:
-	pipenv update --outdated
+	pipenv update
 
 init-env:
 	sudo pip install pipenv
