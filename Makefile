@@ -13,7 +13,7 @@ upgrade:
 init-env:
 	sudo pip install pipenv
 	sudo pip install pipenv pip --upgrade
-	pipenv install --dev
+	make install-dev
 
 clean:
 	rm -rf logfile*

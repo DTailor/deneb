@@ -11,7 +11,7 @@
 ## Set up
 
 - `pipenv --python <path-to-3.7>`
-- `pipenv install --dev`
+- `make install-dev`
 - `cp .env_example .env`
 - fill in data for `.env`
   - `spotify`
@@ -35,7 +35,7 @@
 
 ## Deploy
 
-- `pipenv run fab deploy` - deploy on server
+- `make deploy` - deploy on server
 - `pipenv run fab full-run` - run whole script on server with predefined parameters; see bellow
   - `--notify=False` - don't send any fb messages
   - `--force=False` - dont update artist if not the case
@@ -59,6 +59,12 @@ There's a cli tool available to use the tool easier.
     - `--notify` - send fb users what tracks were added to playlist
     - `--dry-run` - dont'a add tracks to spotify playlist
     - `--user <spotify_id>` - full run for specific spotify id
+
+## Testing
+
+## Local
+
+`make test`
 
 ### CI
 
