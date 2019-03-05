@@ -126,16 +126,25 @@ async def generate_tracks_to_add(
             album, already_present_tracks = _clean_update_playlist_already_present(
                 album, already_present_tracks
             )
-            if album.tracks:
-                main_albums.append(album)
-            continue
+            main_albums.append(album)
         elif album.parent["album_type"] == "single":
-            post_process_singles.append(album)
-            continue
+            if not _is_various_artists_album(album.parent):
+                post_process_singles.append(album)
+            else:
+                _LOGGER.warning(
+                    f"discard {album.parent['album_type']} "
+                    f"{album.parent['artists'][0]['name']} - {album.parent['name']} "
+                    f"[{album.parent['uri']}]"
+                )
         else:
             if not _is_various_artists_album(album.parent):
                 post_process_features.append(album)
-            continue
+            else:
+                _LOGGER.warning(
+                    f"discard {album.parent['album_type']} "
+                    f"{album.parent['artists'][0]['name']} - {album.parent['name']} "
+                    f"[{album.parent['uri']}]"
+                )
 
     for album in post_process_singles:
         album, already_present_tracks = _clean_update_playlist_already_present(
@@ -184,9 +193,11 @@ async def update_spotify_playlist(
 
 def remove_unwanted_tracks(tracks: List[List[Dict]]) -> List[Dict]:
     # remove low popularity tracks
-    tracks = [item for sublist in tracks for item in sublist]                   # type: ignore
-    popular_tracks = [a for a in tracks if a["popularity"] > 40]                # type: ignore
-    return sorted(popular_tracks, key=lambda k: k['popularity'], reverse=True)  # type: ignore
+    tracks = [item for sublist in tracks for item in sublist]  # type: ignore
+    popular_tracks = [a for a in tracks if a["popularity"] > 40]  # type: ignore
+    return sorted(  # type: ignore
+        popular_tracks, key=lambda k: k["popularity"], reverse=True
+    )
 
 
 async def update_user_playlist(
