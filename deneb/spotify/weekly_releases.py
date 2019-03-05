@@ -80,6 +80,12 @@ async def _get_album_tracks(sp: Spotter, item: Album, is_album: bool) -> AlbumTr
     return album
 
 
+def _is_various_artists_album(album: dict) -> bool:
+    if len(album["artists"]) and album["artists"][0]["name"] == "Various Artists":
+        return True
+    return False
+
+
 async def generate_tracks_to_add(
     sp: Spotter, db_albums: List[Album], pl_tracks: List[dict]
 ) -> Tuple[List[AlbumTracks], List[AlbumTracks], List[AlbumTracks]]:
@@ -127,7 +133,8 @@ async def generate_tracks_to_add(
             post_process_singles.append(album)
             continue
         else:
-            post_process_features.append(album)
+            if not _is_various_artists_album(album.parent):
+                post_process_features.append(album)
             continue
 
     for album in post_process_singles:
