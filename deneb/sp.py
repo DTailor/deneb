@@ -213,33 +213,24 @@ class SpotifyStats:
             "Sad day, no new music",
             "No adds, you should follow more artists",
         ]
-        if self.has_new_releases():
-            return_msg = f"Playlist: {self.playlist['name']}\n\n"
+        if not self.has_new_releases():
+            return random.choice(didnt_add_responses)
 
-            if self.added_singles:
-                return_msg = f"{return_msg}-== Singles ==-\n"
-                for album in self.added_singles:
+        return_msg = f"Playlist: {self.playlist['name']}\n\n"
+
+        for category, items in (
+            ("Singles", self.added_singles),
+            ("Albums", self.added_albums),
+            ("Featuring tracks from other albums", self.added_tracks)
+        ):
+            if items:
+                return_msg = f"{return_msg}-== {category} ==-\n"
+                for album in items:
                     tmp_msg = f"{self.humanize_track(album.parent)}"
                     return_msg = f"{return_msg}{tmp_msg}\n"
                 return_msg = f"{return_msg}\n"
 
-            if self.added_albums:
-                return_msg = f"{return_msg}-== Albums ==-\n"
-                for album in self.added_albums:
-                    tmp_msg = f"{self.humanize_track(album.parent)}"
-                    return_msg = f"{return_msg}{tmp_msg}\n"
-                return_msg = f"{return_msg}\n"
-
-            if self.added_tracks:
-                return_msg = f"{return_msg}-==Tracks from albums ==-\n"
-                for album in self.added_tracks:
-                    tmp_msg = f"{self.humanize_track(album.parent)}"
-                    return_msg = f"{return_msg}{tmp_msg}\n"
-                return_msg = f"{return_msg}\n"
-
-            return_msg = (
-                f"{return_msg}Link: {self.playlist['external_urls']['spotify']}"
-            )
-            return return_msg
-
-        return random.choice(didnt_add_responses)
+        return_msg = (
+            f"{return_msg}Link: {self.playlist['external_urls']['spotify']}"
+        )
+        return return_msg
