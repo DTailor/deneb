@@ -219,27 +219,23 @@ class SpotifyStats:
             if self.added_singles:
                 return_msg = f"{return_msg}-== Singles ==-\n"
                 for album in self.added_singles:
-                    tmp_msg = f"{self.humanize_track(album.parent)}\n"
-                    for track in album.tracks:
-                        tmp_msg = f"{tmp_msg}   {track['name']}\n"
+                    tmp_msg = f"{self.humanize_track(album.parent)}"
                     return_msg = f"{return_msg}{tmp_msg}\n"
+                return_msg = f"{return_msg}\n"
 
             if self.added_albums:
                 return_msg = f"{return_msg}-== Albums ==-\n"
                 for album in self.added_albums:
-                    tmp_msg = f"{self.humanize_track(album.parent)}\n"
-                    for track in album.tracks:
-                        tmp_msg = f"{tmp_msg}   {track['name']}\n"
+                    tmp_msg = f"{self.humanize_track(album.parent)}"
                     return_msg = f"{return_msg}{tmp_msg}\n"
+                return_msg = f"{return_msg}\n"
 
             if self.added_tracks:
                 return_msg = f"{return_msg}-==Tracks from albums ==-\n"
                 for album in self.added_tracks:
-                    tmp_msg = f"{self.humanize_track(album.parent)}\n"
-
-                    for track in album.tracks:
-                        tmp_msg = f"{tmp_msg}   {self.humanize_track(track)}\n"
+                    tmp_msg = f"{self.humanize_track(album.parent)}"
                     return_msg = f"{return_msg}{tmp_msg}\n"
+                return_msg = f"{return_msg}\n"
 
             return_msg = (
                 f"{return_msg}Link: {self.playlist['external_urls']['spotify']}"
