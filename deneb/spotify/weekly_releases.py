@@ -61,13 +61,17 @@ async def _make_album_tracks(sp: Spotter, album: Album) -> AlbumTracks:
     return AlbumTracks(album_data, tracks)
 
 
+def __update_already_present(already_present_tracks: set, album: AlbumTracks):
+    already_present_tracks.update({a["name"] for a in album.tracks})
+
+
 def _clean_update_playlist_already_present(
     album: AlbumTracks, already_present_tracks: set
 ) -> Tuple[AlbumTracks, set]:
     """helper method to clean up already present items from playlist and update it"""
     album.tracks = [a for a in album.tracks if a["name"] not in already_present_tracks]
     # update list with new ids
-    already_present_tracks.update({a["name"] for a in album.tracks})
+    __update_already_present(already_present_tracks, album)
     return album, already_present_tracks
 
 
@@ -155,16 +159,16 @@ async def generate_tracks_to_add(
 
     for album in post_process_features:
         for track in album.tracks:
-            if track["name"] in already_present_tracks or album in main_albums:
+            if track["name"] in already_present_tracks:
                 continue
 
             # in an album with less than 3 tracks
             if album.parent["id"] not in featuring_albums:
                 featuring_albums[album.parent["id"]] = album
-                already_present_tracks.update({a["name"] for a in album.tracks})
             else:
                 featuring_albums[album.parent["id"]].tracks.append(track)
-                already_present_tracks.add(track["name"])
+
+        __update_already_present(already_present_tracks, album)
 
     return singles, main_albums, list(featuring_albums.values())
 
