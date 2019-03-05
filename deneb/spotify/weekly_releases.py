@@ -81,7 +81,7 @@ async def _get_album_tracks(sp: Spotter, item: Album, is_album: bool) -> AlbumTr
 
 
 async def generate_tracks_to_add(
-    sp: Spotter, db_tracks: List[Album], pl_tracks: List[dict]
+    sp: Spotter, db_albums: List[Album], pl_tracks: List[dict]
 ) -> Tuple[List[AlbumTracks], List[AlbumTracks], List[AlbumTracks]]:
     """return list of tracks to be added"""
     already_present_tracks = {a["track"]["name"] for a in pl_tracks}
@@ -105,10 +105,11 @@ async def generate_tracks_to_add(
     featuring_albums = {}  # type: Dict[str, AlbumTracks]
 
     post_process_singles = []  # type: List[AlbumTracks]
+    post_process_features = []  # type: List[AlbumTracks]
 
-    for item in db_tracks:
-        is_album = item.type == "album"
-        album = await _get_album_tracks(sp, item, is_album)
+    for db_album in db_albums:
+        is_album = db_album.type == "album"
+        album = await _get_album_tracks(sp, db_album, is_album)
 
         # we want albums with less than 3 tracks to be listed as tracks
         # because often they contain just remixes with 1 song or so.
@@ -122,13 +123,23 @@ async def generate_tracks_to_add(
             if album.tracks:
                 main_albums.append(album)
             continue
-
-        if album.parent["album_type"] == "single":
+        elif album.parent["album_type"] == "single":
             post_process_singles.append(album)
             continue
+        else:
+            post_process_features.append(album)
+            continue
 
+    for album in post_process_singles:
+        album, already_present_tracks = _clean_update_playlist_already_present(
+            album, already_present_tracks
+        )
+        if album.tracks:
+            singles.append(album)
+
+    for album in post_process_features:
         for track in album.tracks:
-            if track["id"] in already_present_tracks or album in main_albums:
+            if track["name"] in already_present_tracks or album in main_albums:
                 continue
 
             # in an album with less than 3 tracks
@@ -138,13 +149,6 @@ async def generate_tracks_to_add(
             else:
                 featuring_albums[album.parent["id"]].tracks.append(track)
                 already_present_tracks.add(track["name"])
-
-    for album in post_process_singles:
-        album, already_present_tracks = _clean_update_playlist_already_present(
-            album, already_present_tracks
-        )
-        if album.tracks:
-            singles.append(album)
 
     return singles, main_albums, list(featuring_albums.values())
 
