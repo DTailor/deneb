@@ -182,6 +182,13 @@ async def update_spotify_playlist(
             _LOGGER.exception(f"add to playlist '{album_ids}' failed with: {exc}")
 
 
+def remove_unwanted_tracks(tracks: List[List[Dict]]) -> List[Dict]:
+    # remove low popularity tracks
+    tracks = [item for sublist in tracks for item in sublist]                   # type: ignore
+    popular_tracks = [a for a in tracks if a["popularity"] > 40]                # type: ignore
+    return sorted(popular_tracks, key=lambda k: k['popularity'], reverse=True)  # type: ignore
+
+
 async def update_user_playlist(
     user: User, sp: Spotter, dry_run: Optional[bool] = False
 ) -> SpotifyStats:
@@ -207,7 +214,7 @@ async def update_user_playlist(
 
     tracks_from_singles = [a.tracks for a in singles]
     tracks_from_albums = [a.tracks for a in albums]
-    tracks_without_albums = [a.tracks for a in tracks]
+    tracks_without_albums = remove_unwanted_tracks([a.tracks for a in tracks])
 
     stats = SpotifyStats(
         user.fb_id, playlist, {"singles": singles, "albums": albums, "tracks": tracks}
@@ -215,7 +222,7 @@ async def update_user_playlist(
 
     if not dry_run:
         to_add_tracks = chain(
-            *tracks_from_singles, *tracks_from_albums, *tracks_without_albums
+            *tracks_from_singles, *tracks_from_albums, tracks_without_albums
         )
 
         is_friday = lambda: today.weekday() == 4  # noqa: E731
@@ -225,7 +232,6 @@ async def update_user_playlist(
         insert_top = True if is_friday() else False
 
         await update_spotify_playlist(to_add_tracks, playlist["uri"], sp, insert_top)
-
     return stats
 
 
