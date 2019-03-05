@@ -139,3 +139,4 @@ scripts/spotify_keys.sh
 logfile*
 .mypy_cache
 .vscode
+results.xml
