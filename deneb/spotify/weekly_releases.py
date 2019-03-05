@@ -243,6 +243,10 @@ async def update_user_playlist(
         insert_top = True if is_friday() else False
 
         await update_spotify_playlist(to_add_tracks, playlist["uri"], sp, insert_top)
+
+    _LOGGER.info(
+        f"updated playlist: <{playlist_name}> for {user} | {stats.describe(brief=True)}"
+    )
     return stats
 
 
