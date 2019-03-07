@@ -62,26 +62,21 @@ class AsyncSpotify(Spotify):
         return await self._get("users/%s/playlists/%s" % (user, plid), fields=fields)
 
     async def _get(self, url, args=None, payload=None, **kwargs):
-        result = await self._async_get(url, args=None, payload=None, **kwargs)
+        result = await self._async_request("GET", url, args=None, payload=None, **kwargs)
         return result
 
     async def _post(self, url, args=None, payload=None, **kwargs):
-        result = await self._async_post(url, args, payload, **kwargs)
+        result = await self._async_request("POST", url, args, payload, **kwargs)
         return result
 
-    async def _async_post(self, url, args=None, payload=None, **kwargs):
-        if args:
-            kwargs.update(args)
-        return await self.__async_internal_call("POST", url, payload, kwargs)
-
-    async def _async_get(self, url, args=None, payload=None, **kwargs):
+    async def _async_request(self, method, url, args=None, payload=None, **kwargs):
         if args:
             kwargs.update(args)
         retries = self.max_get_retries
         delay = 2
         while retries > 0:
             try:
-                return await self.__async_internal_call("GET", url, payload, kwargs)
+                return await self.__async_internal_call(method, url, payload, kwargs)
             except SpotifyException as e:
                 retries -= 1
                 status = e.http_status
