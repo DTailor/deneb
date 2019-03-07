@@ -130,7 +130,8 @@ async def generate_tracks_to_add(
             album, already_present_tracks = _clean_update_playlist_already_present(
                 album, already_present_tracks
             )
-            main_albums.append(album)
+            if album.tracks:
+                main_albums.append(album)
         elif album.parent["album_type"] == "single":
             if not _is_various_artists_album(album.parent):
                 post_process_singles.append(album)
