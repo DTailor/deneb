@@ -108,9 +108,6 @@ class TestSpotifyStats:
             "",
             "-== Albums ==-",
             "Test Artist - Test Album",
-            "   Test Track",
-            "   Test Track",
-            "   Test Track",
             "",
             "Link: https://open.spotify.com/playlist/test_playlist",
         ]
@@ -129,9 +126,8 @@ class TestSpotifyStats:
         expected = [
             "Playlist: Test Playlist",
             "",
-            "-==Tracks from albums ==-",
+            "-== Featuring tracks from other albums ==-",
             "Test Artist - Test Album",
-            "   Test Artist - Test Track",
             "",
             "Link: https://open.spotify.com/playlist/test_playlist",
         ]
@@ -155,15 +151,9 @@ class TestSpotifyStats:
             "",
             "-== Albums ==-",
             "Test Artist - Test Album",
-            "   Test Track",
-            "   Test Track",
-            "   Test Track",
             "",
-            "-==Tracks from albums ==-",
+            "-== Featuring tracks from other albums ==-",
             "Test Artist - Test Album",
-            "   Test Artist - Test Track",
-            "   Test Artist - Test Track",
-            "   Test Artist - Test Track",
             "",
             "Link: https://open.spotify.com/playlist/test_playlist",
         ]
