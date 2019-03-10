@@ -49,7 +49,7 @@ def cli():
 def full_run(ctx, user, force, notify, dry_run):
     orig_params = ctx.params.copy()
 
-    ctx.params = {"user": orig_params["user"], "force": orig_params.get("force", False)}
+    ctx.params = {"user": orig_params["user"], "force": orig_params.get("force", False), "dry_run": orig_params.get("dry_run", False)}
     update_followed.invoke(ctx)
 
     ctx.params = {
@@ -61,11 +61,12 @@ def full_run(ctx, user, force, notify, dry_run):
 
 
 @click.option("--force", is_flag=True)
+@click.option("--dry-run", is_flag=True)
 @click.option("--user")
 @click.command()
-def update_followed(user, force):
+def update_followed(user, force, dry_run):
     _LOGGER.info("running: update user followed artists and artist albums")
-    runner(update_users_artists, (SPOTIFY_KEYS, user, force))
+    runner(update_users_artists, (SPOTIFY_KEYS, user, force, dry_run))
 
 
 @click.option("--notify", is_flag=True)

@@ -15,11 +15,11 @@ _LOGGER = get_logger(__name__)
 
 
 async def _update_user_artists(
-    credentials: SpotifyKeys, user: User, force_update: bool
+    credentials: SpotifyKeys, user: User, force_update: bool, dry_run: bool
 ):
     """task to update user followed artists and artist albums"""
     async with spotify_client(credentials, user) as sp:
-        new_follows, lost_follows = await fetch_user_followed_artists(user, sp)
+        new_follows, lost_follows = await fetch_user_followed_artists(user, sp, dry_run)
 
         followed_artists = await user.artists.filter()
 
@@ -51,11 +51,14 @@ async def _get_to_update_users(username: Optional[str] = None) -> List[User]:
 
 
 async def update_users_artists(
-    credentials: SpotifyKeys, user_id: Optional[str] = None, force_update: bool = False
+    credentials: SpotifyKeys,
+    user_id: Optional[str] = None,
+    force_update: bool = False,
+    dry_run: bool = False,
 ):
     """entry point for updating user artists and artist albums"""
     users = await _get_to_update_users(user_id)
-    args_items = [(credentials, user, force_update) for user in users]
+    args_items = [(credentials, user, force_update, dry_run) for user in users]
     await run_tasks(
         Config.USERS_TASKS_AMOUNT, args_items, _update_user_artists, _user_task_filter
     )

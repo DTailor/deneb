@@ -54,7 +54,7 @@ async def check_follows(sp, artists):
     return lost_follows
 
 
-async def fetch_user_followed_artists(user, sp):
+async def fetch_user_followed_artists(user, sp, dry_run):
     """fetch artists followed by user"""
     followed_artists = await fetch_artists(sp)
     user_db_artists = await user.artists.filter()
@@ -72,7 +72,7 @@ async def fetch_user_followed_artists(user, sp):
             )
         new_follows_db.append(db_artist)
 
-    if new_follows_db:
+    if new_follows_db and not dry_run:
         await user.artists.add(*new_follows_db)
 
     # following_ids - followed_artists = lost follows
@@ -82,7 +82,7 @@ async def fetch_user_followed_artists(user, sp):
     # spotify might not return the artist
     lost_follows_db_clean = await check_follows(sp, lost_follows_db)
 
-    if lost_follows_db_clean:
+    if lost_follows_db_clean and not dry_run:
         await user.artists.remove(*lost_follows_db_clean)
 
     return new_follows_db, lost_follows_db_clean
