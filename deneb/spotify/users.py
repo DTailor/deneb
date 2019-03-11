@@ -28,7 +28,7 @@ async def _update_user_artists(
             f"; now updating artists ({len(followed_artists)})"
         )
         albums_nr, updated_nr = await get_new_releases(
-            sp, followed_artists, force_update
+            sp, followed_artists, force_update, dry_run
         )
         if updated_nr:
             _LOGGER.info(f"fetched {albums_nr} albums for {updated_nr} artists")

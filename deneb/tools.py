@@ -52,35 +52,42 @@ def should_fetch_more_albums(
     return True, new_list, to_check_album_types
 
 
-async def fetch_all(sp: Spotify, data: dict, is_album: bool = False) -> List[Dict]:
-    """iterates till gets all the albums"""
-    contents = []  # type: List[dict]
+async def fetch_all_albums(sp: Spotify, data: dict) -> List[Dict]:
+    # ok, so this new `to_check_album_types` is a hack to fix-up a problem
+    # the issues constits in the fact the as we fetch albums
+    # we retrieve several `album_types`, like `album`, `single`, `appears_on`
+    # and they are returned back in descendant order by `release_date`, the catch
+    # is that they are group, meaning that you'll then them ordered that way but
+    # first the `albums`, then the `single` and `appears_on`. This made the script
+    # to miss some `sinlge` and `appears_on` type of albums
 
-    if is_album:
-        # ok, so this new `to_check_album_types` is a hack to fix-up a problem
-        # the issues constits in the fact the as we fetch albums
-        # we retrieve several `album_types`, like `album`, `single`, `appears_on`
-        # and they are returned back in descendant order by `release_date`, the catch
-        # is that they are group, meaning that you'll then them ordered that way but
-        # first the `albums`, then the `single` and `appears_on`. This made the script
-        # to miss some `sinlge` and `appears_on` type of albums
-        to_check_album_types = ["album", "single", "appears_on"]
-        should, contents, to_check_album_types = should_fetch_more_albums(
+    to_check_album_types = ["album", "single", "appears_on"]
+    should, contents, to_check_album_types = should_fetch_more_albums(
+        data["items"], to_check_album_types
+    )
+
+    while True:
+        should, albums, to_check_album_types = should_fetch_more_albums(
             data["items"], to_check_album_types
         )
         if not should:
-            return contents
-
-    while True:
-        if is_album:
-            should, albums, to_check_album_types = should_fetch_more_albums(
-                data["items"], to_check_album_types
-            )
-            if not should:
-                contents.extend(albums)
-                break
+            contents.extend(albums)
+            break
         else:
             contents.extend(data["items"])
+        if not data["next"]:
+            break
+        data = await sp.client.next(data)  # noqa: B305
+
+    return contents
+
+
+async def fetch_all(sp: Spotify, data: dict) -> List[Dict]:
+    """iterates till gets all the items"""
+    contents = []  # type: List[dict]
+
+    while True:
+        contents.extend(data["items"])
         if not data["next"]:
             break
         data = await sp.client.next(data)  # noqa: B305

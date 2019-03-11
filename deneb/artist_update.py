@@ -7,7 +7,7 @@ from spotipy import Spotify
 
 from deneb.db import Album, Artist, Market
 from deneb.logger import get_logger
-from deneb.tools import fetch_all, generate_release_date, is_present, run_tasks
+from deneb.tools import fetch_all, generate_release_date, is_present, run_tasks, fetch_all_albums
 from deneb.config import Config
 
 _LOGGER = get_logger(__name__)
@@ -19,7 +19,7 @@ async def fetch_albums(sp: Spotify, artist: Artist, retry: bool = False) -> List
         data = await sp.client.artist_albums(
             artist.spotify_id, limit=50, album_type="album,single,appears_on"
         )
-        albums = await fetch_all(sp, data, is_album=True)
+        albums = await fetch_all_albums(sp, data)
     except Exception as exc:
         if not retry:
             print(type(exc), exc, artist)
