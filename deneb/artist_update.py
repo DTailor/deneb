@@ -22,7 +22,6 @@ async def fetch_albums(sp: Spotify, artist: Artist, retry: bool = False) -> List
         albums = await fetch_all_albums(sp, data)
     except Exception as exc:
         if not retry:
-            print(type(exc), exc, artist)
             raise
         albums = await fetch_albums(sp, artist, retry=True)
     return albums
