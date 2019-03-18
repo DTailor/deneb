@@ -5,10 +5,12 @@ from typing import Iterable, List, Tuple
 
 from spotipy import Spotify
 
-from deneb.db import Album, Artist, Market
-from deneb.logger import get_logger
-from deneb.tools import fetch_all, generate_release_date, is_present, run_tasks, fetch_all_albums
 from deneb.config import Config
+from deneb.db import Album, Artist, PoolTortoise
+from deneb.logger import get_logger
+from deneb.tools import (
+    fetch_all, fetch_all_albums, generate_release_date, is_present, run_tasks
+)
 
 _LOGGER = get_logger(__name__)
 
@@ -84,15 +86,27 @@ async def update_album_marketplace(
     if to_remove_markets:
         await album.markets.remove(*to_remove_markets)
 
-    for marketname in to_add:
-        market, _ = await Market.get_or_create(name=marketname)
-        has_market = await album.markets.filter(id=market.id)
-        if not has_market:
-            try:
-                await album.markets.add(market)
-            except Exception as exc:
-                _LOGGER.exception(
-                    f"duplicate market err {exc}, {album} {market} has_market: {has_market}"
+    # hack to upsert markets -> speedup
+    if to_add:
+        pool = PoolTortoise.get_connection("default")
+        async with pool.acquire_connection() as conn:
+            async with conn.transaction():
+                markets_ids = await conn.fetch(
+                    f"""
+                    SELECT id
+                    FROM market
+                    Where name in ({str(to_add)[1:-1]})
+                    """
+                )
+                values = [f"({album.id}, {market['id']})" for market in markets_ids]
+
+                await conn.execute(
+                    f"""
+                    INSERT INTO album_markets(album_id, market_id)
+                    VALUES
+                    {', '.join(values)}
+                    ON CONFLICT DO NOTHING;
+                    """
                 )
 
 
@@ -103,9 +117,10 @@ async def handle_album_sync(album: dict, artist: Artist) -> Tuple[bool, Album]:
         await db_album.artists.add(artist)
 
     # update it's marketplaces, for availability
-    await update_album_marketplace(db_album, album["available_markets"])
-
-    await db_album.update_timestamp()
+    # TODO: disabled because not using this stuff;
+    # think of where should marketplace be used and if not, removed;
+    # not that big of an issue at this point with unavailable songs in playlists;
+    # await update_album_marketplace(db_album, album["available_markets"])
     return created, db_album
 
 
@@ -142,7 +157,6 @@ async def update_artist_albums(
     await artist.update_timestamp()
 
     new_inserts = [a for created, a in task_results if created]
-
     return artist, new_inserts
 
 

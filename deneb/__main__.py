@@ -49,7 +49,11 @@ def cli():
 def full_run(ctx, user, force, notify, dry_run):
     orig_params = ctx.params.copy()
 
-    ctx.params = {"user": orig_params["user"], "force": orig_params.get("force", False), "dry_run": orig_params.get("dry_run", False)}
+    ctx.params = {
+        "user": orig_params["user"],
+        "force": orig_params.get("force", False),
+        "dry_run": orig_params.get("dry_run", False),
+    }
     update_followed.invoke(ctx)
 
     ctx.params = {
