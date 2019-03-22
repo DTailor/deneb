@@ -2,9 +2,14 @@
 
 ## db
 
-- `createdb deneb`
-- `psql`
-- `create database deneb;`
+- install postgres
+- go to `sudo vim /etc/postgresql/x.y/main/pg_hba.conf`
+  - `local   all         postgres                          trust`
+  - `sudo service postgres restart`
+  - `sudo -u postgres psql`
+  - `ALTER USER postgres PASSWORD '<password>';`
+- `sudo -u postgres createdb deneb`
+- `sudo -u postgres psql`
 - `CREATE USER voyager with PASSWORD '<password>';`
 - `grant ALL ON DATABASE deneb TO voyager ;`
 
@@ -61,6 +66,16 @@ There's a cli tool available to use the tool easier.
     - `--user <spotify_id>` - full run for specific spotify id
 
 ## Testing
+
+## Develop
+
+### Database
+
+```bash
+docker pull postgres
+mkdir -p $HOME/docker/volumes/postgres
+docker run --rm   --name pg-docker -e POSTGRES_PASSWORD=$DB_PASSWORD -e POSTGRES_USER=$DB_USER -d -p 5432:5432 -v $HOME/docker/volumes/postgres:/var/lib/postgresql/data  postgres
+```
 
 ## Local
 
