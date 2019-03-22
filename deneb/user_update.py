@@ -1,16 +1,18 @@
 """Module to handle user related updates"""
 from itertools import zip_longest
+from typing import Dict, List, Tuple
 
-from deneb.db import Artist
+from deneb.db import Artist, User
 from deneb.logger import get_logger
+from deneb.sp import Spotter
 from deneb.tools import grouper
 
 _LOGGER = get_logger(__name__)
 
 
-async def fetch_artists(sp):
+async def fetch_artists(sp: Spotter) -> List[Dict]:
     """fetch user followed artists"""
-    artists = []
+    artists = []  # type: List[Dict]
     artists_data = await sp.client.current_user_followed_artists(limit=50)
 
     while True:
@@ -23,13 +25,17 @@ async def fetch_artists(sp):
     return clean_artists
 
 
-def extract_new_follows_objects(followed_artists, following_ids):
+def extract_new_follows_objects(
+    followed_artists: List[Dict], following_ids: List[str]
+) -> List[Dict]:
     """returns artists not present in following_ids"""
     new_follows = [a for a in followed_artists if a["id"] not in following_ids]
     return new_follows
 
 
-def extract_lost_follows_artists(followed_artists, current_following):
+def extract_lost_follows_artists(
+    followed_artists: List[Dict], current_following: List[Artist]
+) -> List[Artist]:
     """returns artists not present in following_ids"""
     current_following_ids = [a["id"] for a in followed_artists]
     db_follows_ids = [a.spotify_id for a in current_following]
@@ -38,7 +44,7 @@ def extract_lost_follows_artists(followed_artists, current_following):
     return lost_follows
 
 
-async def check_follows(sp, artists):
+async def check_follows(sp: Spotter, artists: List[Artist]) -> List[Artist]:
     """check with spotify api if artists are followed"""
     lost_follows = []
     for batch in grouper(50, artists):
@@ -54,7 +60,9 @@ async def check_follows(sp, artists):
     return lost_follows
 
 
-async def fetch_user_followed_artists(user, sp, dry_run):
+async def fetch_user_followed_artists(
+    user: User, sp: Spotter, dry_run: bool
+) -> Tuple[List[Artist], List[Artist]]:
     """fetch artists followed by user"""
     followed_artists = await fetch_artists(sp)
     user_db_artists = await user.artists.filter()
