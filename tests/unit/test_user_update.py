@@ -5,9 +5,12 @@ from deneb.user_update import (
     extract_lost_follows_artists,
     extract_new_follows_objects,
     fetch_artists,
+    check_follows,
 )
 from tests.unit.fixtures.mocks import sp_following
 import pytest
+from aiomock import AIOMock
+from deneb.db import Artist
 
 
 class TestFetchArtist:
@@ -44,3 +47,30 @@ class TestExtractLostFollowsArtists:
         lost = extract_lost_follows_artists(followed_artists, current_following)
         assert len(lost) == 1
         assert lost[0].spotify_id == "leave"
+
+
+class TestCheckFollows:
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize(
+        "contains_follow",
+        [
+            [True, True, True],
+            [True, True, False],
+            [False, True, False],
+            [True, False, True],
+        ],
+    )
+    async def test_lost_artists(self, contains_follow):
+        sp = AIOMock()
+        # mock the response from "me/following/contains"
+        sp.client._get.async_return_value = contains_follow
+        artists = [
+            Artist(name="test-artist1", spotify_id="test-id1"),
+            Artist(name="test-artist2", spotify_id="test-id2"),
+            Artist(name="test-artist3", spotify_id="test-id3"),
+        ]
+
+        lost_follows = await check_follows(sp, artists)
+
+        # if contains, list must be empty else the artist
+        assert len([a for a in contains_follow if a == False]) == len(lost_follows)
