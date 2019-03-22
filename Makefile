@@ -1,5 +1,7 @@
 test:
 	pipenv run pytest --junitxml test-results/results.xml
+	pipenv run coverage report
+	pipenv run coverage html
 
 install:
 	pipenv install
