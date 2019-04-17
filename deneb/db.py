@@ -128,6 +128,4 @@ class User(Model):  # type: ignore
         if not followed_ids:
             _LOGGER.info(f"user {self} has no followers")
             return []
-        return await Album.filter(
-            release__gte=date, artists__id__in=followed_ids, markets__id=self.market_id
-        )
+        return await Album.filter(release__gte=date, artists__id__in=followed_ids)
