@@ -6,6 +6,7 @@ from deneb.db import Artist, User
 from deneb.logger import get_logger
 from deneb.sp import Spotter
 from deneb.tools import grouper
+import sentry_sdk
 
 _LOGGER = get_logger(__name__)
 
@@ -73,7 +74,13 @@ async def fetch_user_followed_artists(
     # convert artists to db objects
     new_follows_db = []
     for artist in new_follows:
-        db_artist = await Artist.filter(spotify_id=artist["id"]).first()
+        db_artists = await Artist.filter(spotify_id=artist["id"])
+
+        if len(db_artists) > 1:
+            # it's not supposed to happen but eh
+            sentry_sdk.capture_message(f"{artist} has {len(db_artists)} entries")
+
+        db_artist = db_artists[0] if db_artists else None
         if not db_artist:
             db_artist = await Artist.create(
                 name=artist["name"], spotify_id=artist["id"]
