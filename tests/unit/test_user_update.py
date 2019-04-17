@@ -9,6 +9,7 @@ from deneb.user_update import (
     check_follows, extract_lost_follows_artists, extract_new_follows_objects,
     fetch_artists, fetch_user_followed_artists
 )
+from tests.unit.common import _mocked_call
 from tests.unit.fixtures.mocks import get_artist, sp_following
 
 
@@ -85,13 +86,62 @@ class TestFetchUserFollowedArtists:
         with mock.patch(
             "deneb.user_update.fetch_artists", new=AIOMock()
         ) as mock_fetch_artists:
-            with mock.patch(
-                "deneb.user_update.extract_new_follows_objects"
-            ) as mock_extract_new_follows_objects:
-                mock_fetch_artists.async_return_value = []
-                mock_extract_new_follows_objects.return_value = []
+            mock_fetch_artists.async_return_value = []
+            new, lost = await fetch_user_followed_artists(user, sp, False)
+            mock_fetch_artists.assert_called_once_with(sp)
+
+    @pytest.mark.asyncio
+    async def test_one_add_follows(self):
+        user = AIOMock()
+        user.artists.filter = _mocked_call([])
+        user.artists.add = _mocked_call()
+        sp = AIOMock()
+
+        artist = get_artist()
+        with mock.patch(
+            "deneb.user_update.fetch_artists", new=AIOMock()
+        ) as mock_fetch_artists:
+            with mock.patch("deneb.user_update.Artist", new=AIOMock()) as mock_artist:
+                # mock data received from spotify
+                mock_fetch_artists.async_return_value = [artist]
+
+                # mock model querying
+                db_artist = AIOMock()
+                mock_artist.filter = _mocked_call([])
+                mock_artist.create = _mocked_call([db_artist])
 
                 new, lost = await fetch_user_followed_artists(user, sp, False)
 
                 mock_fetch_artists.assert_called_once_with(sp)
-                mock_extract_new_follows_objects.assert_called_once_with([], [])
+                assert user.artists.filter.call_count == 2
+                mock_artist.filter.assert_called_once_with(spotify_id=artist["id"])
+                mock_artist.create.assert_called_once_with(
+                    name=artist["name"], spotify_id=artist["id"]
+                )
+                user.artists.add.assert_called_once_with([db_artist])
+
+    @pytest.mark.asyncio
+    async def test_one_lost_follows(self):
+        db_artist = AIOMock()
+        user = AIOMock()
+        user.artists.filter = _mocked_call([db_artist])
+        user.artists.remove = _mocked_call()
+        sp = AIOMock()
+
+        with mock.patch(
+            "deneb.user_update.fetch_artists", new=AIOMock()
+        ) as mock_fetch_artists:
+            with mock.patch("deneb.user_update.Artist", new=AIOMock()) as mock_artist:
+                with mock.patch(
+                    "deneb.user_update.check_follows", new=AIOMock()
+                ) as mock_check_follows:
+                    # mock data received from spotify
+                    mock_check_follows.async_return_value = [db_artist]
+                    mock_fetch_artists.async_return_value = []
+
+                    new, lost = await fetch_user_followed_artists(user, sp, False)
+
+                    mock_fetch_artists.assert_called_once_with(sp)
+                    assert user.artists.filter.call_count == 2
+                    mock_check_follows.assert_called_once_with(sp, [db_artist])
+                    user.artists.remove.assert_called_once_with(db_artist)

@@ -7,14 +7,8 @@ from spotipy import SpotifyException
 
 from deneb.sp import SpotifyStats, Spotter, get_client, spotify_client
 from deneb.structs import AlbumTracks, SpotifyKeys
+from tests.unit.common import _mocked_call
 from tests.unit.fixtures.mocks import album, playlist, track
-
-
-def _mocked_call(return_value=None):
-    return_value = return_value or AIOMock()
-    func = AIOMock()
-    func.async_return_value = return_value
-    return func
 
 
 class TestSpotifyClient:
