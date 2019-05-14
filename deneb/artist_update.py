@@ -54,7 +54,7 @@ async def get_or_create_album(album: dict, dry_run: bool = False) -> Tuple[bool,
     """return db instance and create if new, with dry-run"""
     created = False
     try:
-        db_albums = await Album.get(spotify_id=album["id"])
+        db_album = await Album.get(spotify_id=album["id"])
     except Exception:
         release_date = generate_release_date(
             album["release_date"], album["release_date_precision"]
