@@ -60,20 +60,20 @@ def upgrade():
 
     op.create_table(
         "user_followed_artists",
-        sa.Column("user_id", sa.Integer, sa.ForeignKey("user.id")),
-        sa.Column("artist_id", sa.Integer, sa.ForeignKey("artist.id")),
+        sa.Column("user_id", sa.Integer, sa.ForeignKey("user.id", ondelete="CASCADE")),
+        sa.Column("artist_id", sa.Integer, sa.ForeignKey("artist.id", ondelete="CASCADE")),
     )
 
     op.create_table(
         "artist_albums",
-        sa.Column("album_id", sa.Integer, sa.ForeignKey("album.id")),
-        sa.Column("artist_id", sa.Integer, sa.ForeignKey("artist.id")),
+        sa.Column("album_id", sa.Integer, sa.ForeignKey("album.id", ondelete="CASCADE")),
+        sa.Column("artist_id", sa.Integer, sa.ForeignKey("artist.id", ondelete="CASCADE")),
     )
 
     op.create_table(
         "album_markets",
-        sa.Column("album_id", sa.Integer, sa.ForeignKey("album.id")),
-        sa.Column("market_id", sa.Integer, sa.ForeignKey("market.id")),
+        sa.Column("album_id", sa.Integer, sa.ForeignKey("album.id", ondelete="CASCADE")),
+        sa.Column("market_id", sa.Integer, sa.ForeignKey("market.id", ondelete="CASCADE")),
     )
 
 
