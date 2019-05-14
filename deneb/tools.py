@@ -73,6 +73,8 @@ async def fetch_all_albums(sp: Spotify, data: dict) -> List[Dict]:
             break
         data = await sp.client.next(data)  # noqa: B305
 
+    # there are some duplicates, remove them
+    contents = list({v['id']:v for v in contents}.values())
     return contents
 
 
