@@ -53,13 +53,9 @@ async def get_featuring_songs(sp: Spotify, artist: Artist, album: dict) -> List[
 async def get_or_create_album(album: dict, dry_run: bool = False) -> Tuple[bool, Album]:
     """return db instance and create if new, with dry-run"""
     created = False
-    db_albums = await Album.filter(spotify_id=album["id"])
-
-    if db_albums:
-        db_album = db_albums[0]
-        if len(db_albums) > 1:
-            sentry_sdk.capture_message(f"{db_album} has {len(db_albums)} entries")
-    else:
+    try:
+        db_albums = await Album.get(spotify_id=album["id"])
+    except Exception:
         release_date = generate_release_date(
             album["release_date"], album["release_date_precision"]
         )
