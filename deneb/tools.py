@@ -38,18 +38,18 @@ def should_fetch_more_albums(
     albums: List[Dict], to_check_album_types: List[str]
 ) -> Tuple[bool, List[Dict], List[str]]:
     required_year = str(datetime.datetime.now().year)
-    new_list = []  # type: List[dict]
+    validated_albums = []  # type: List[dict]
     for album in albums:
         if album["album_type"] in to_check_album_types:
             to_check_album_types.remove(album["album_type"])
 
         if required_year in album["release_date"]:
-            new_list.append(album)
+            validated_albums.append(album)
         else:
             if not to_check_album_types:
-                return False, new_list, to_check_album_types
+                return False, validated_albums, to_check_album_types
 
-    return True, new_list, to_check_album_types
+    return True, validated_albums, to_check_album_types
 
 
 async def fetch_all_albums(sp: Spotify, data: dict) -> List[Dict]:
@@ -62,20 +62,14 @@ async def fetch_all_albums(sp: Spotify, data: dict) -> List[Dict]:
     # to miss some `sinlge` and `appears_on` type of albums
 
     to_check_album_types = ["album", "single", "appears_on"]
-    should, contents, to_check_album_types = should_fetch_more_albums(
-        data["items"], to_check_album_types
-    )
+    contents = []
 
     while True:
         should, albums, to_check_album_types = should_fetch_more_albums(
             data["items"], to_check_album_types
         )
-        if not should:
-            contents.extend(albums)
-            break
-        else:
-            contents.extend(data["items"])
-        if not data["next"]:
+        contents.extend(albums)
+        if not should or not data["next"]:
             break
         data = await sp.client.next(data)  # noqa: B305
 
