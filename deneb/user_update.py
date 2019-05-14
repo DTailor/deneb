@@ -74,14 +74,9 @@ async def fetch_user_followed_artists(
     # convert artists to db objects
     new_follows_db = []
     for artist in new_follows:
-        db_artists = await Artist.filter(spotify_id=artist["id"])
-
-        if len(db_artists) > 1:
-            # it's not supposed to happen but eh
-            sentry_sdk.capture_message(f"{artist} has {len(db_artists)} entries")
-
-        db_artist = db_artists[0] if db_artists else None
-        if not db_artist:
+        try:
+            db_artist = await Artist.get(spotify_id=artist["id"])
+        except Exception:
             db_artist = await Artist.create(
                 name=artist["name"], spotify_id=artist["id"]
             )
