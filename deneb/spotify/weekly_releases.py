@@ -15,7 +15,9 @@ from deneb.logger import get_logger
 from deneb.sp import SpotifyStats, Spotter, spotify_client
 from deneb.spotify.users import _get_to_update_users, _user_task_filter
 from deneb.structs import AlbumTracks, FBAlert, SpotifyKeys
-from deneb.tools import clean, fetch_all, grouper, is_present, run_tasks
+from deneb.tools import (
+    clean, convert_to_date, fetch_all, grouper, is_present, run_tasks
+)
 
 _LOGGER = get_logger(__name__)
 
@@ -92,6 +94,17 @@ def _is_various_artists_album(album: dict) -> bool:
     return False
 
 
+def _clean_unavailable_albums(
+    albums: List[AlbumTracks], market: str
+) -> List[AlbumTracks]:
+    """remove albums which are unavaiable by market by the user"""
+    available_albums = []
+    for album in albums:
+        if market in album.parent["available_markets"]:
+            available_albums.append(album)
+    return available_albums
+
+
 async def generate_tracks_to_add(
     sp: Spotter, db_albums: List[Album], pl_tracks: List[dict]
 ) -> Tuple[List[AlbumTracks], List[AlbumTracks], List[AlbumTracks]]:
@@ -113,7 +126,7 @@ async def generate_tracks_to_add(
     #              from which album is what by having the key.
     singles = []  # type: List[AlbumTracks]
     main_albums = []  # type: List[AlbumTracks]
-    featuring_albums = {}  # type: Dict[str, AlbumTracks]
+    raw_featuring_albums = {}  # type: Dict[str, AlbumTracks]
 
     post_process_singles = []  # type: List[AlbumTracks]
     post_process_features = []  # type: List[AlbumTracks]
@@ -169,14 +182,19 @@ async def generate_tracks_to_add(
                 continue
 
             # in an album with less than 3 tracks
-            if album.parent["id"] not in featuring_albums:
-                featuring_albums[album.parent["id"]] = album
+            if album.parent["id"] not in raw_featuring_albums:
+                raw_featuring_albums[album.parent["id"]] = album
             else:
-                featuring_albums[album.parent["id"]].tracks.append(track)
+                raw_featuring_albums[album.parent["id"]].tracks.append(track)
 
         __update_already_present(already_present_tracks, album)
 
-    return singles, main_albums, list(featuring_albums.values())
+    singles = _clean_unavailable_albums(singles, sp.userdata["country"])
+    main_albums = _clean_unavailable_albums(main_albums, sp.userdata["country"])
+    featuring_albums = _clean_unavailable_albums(
+        list(raw_featuring_albums.values()), sp.userdata["country"]
+    )
+    return singles, main_albums, featuring_albums
 
 
 async def update_spotify_playlist(
@@ -216,7 +234,7 @@ async def update_user_playlist(
     debug: Optional[bool] = True,
 ) -> SpotifyStats:
     today = dt.now()
-    monday = today - timedelta(days=today.weekday())
+    monday = convert_to_date(today - timedelta(days=today.weekday()))
     week_tracks_db = await user.released_from_weekday(monday)
     playlist_name = generate_playlist_name()
 

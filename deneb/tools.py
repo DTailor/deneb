@@ -28,10 +28,17 @@ def is_present(value: str, items: List[dict], search_by: str) -> dict:
     return found
 
 
-def generate_release_date(date: str, precision: str) -> datetime.datetime:
+def convert_to_date(date_item: datetime.datetime) -> datetime.date:
+    """Issues with Postgres, only accepts datetime.date instances for DateField"""
+    return datetime.date(year=date_item.year, month=date_item.month, day=date_item.day)
+
+
+def generate_release_date(date: str, precision: str) -> datetime.date:
     """Fallback to day precision depending on the offered one"""
     suffix = {"year": "-01-01", "month": "-01", "day": ""}
-    return datetime.datetime.strptime(f"{date}{suffix[precision]}", "%Y-%m-%d")
+    return convert_to_date(
+        datetime.datetime.strptime(f"{date}{suffix[precision]}", "%Y-%m-%d")
+    )
 
 
 def should_fetch_more_albums(
@@ -74,7 +81,7 @@ async def fetch_all_albums(sp: Spotify, data: dict) -> List[Dict]:
         data = await sp.client.next(data)  # noqa: B305
 
     # there are some duplicates, remove them
-    contents = list({v['id']:v for v in contents}.values())
+    contents = list({v["id"]: v for v in contents}.values())
     return contents
 
 
