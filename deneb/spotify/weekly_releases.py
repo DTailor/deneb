@@ -6,6 +6,8 @@ from itertools import chain
 from math import ceil
 from typing import Dict, Iterator, List, Optional, Tuple  # noqa:F401
 
+from spotipy.client import Spotify, SpotifyException
+
 from deneb.chatbot.message import send_message
 from deneb.config import Config
 from deneb.db import Album, User
@@ -109,7 +111,6 @@ async def generate_tracks_to_add(
     #              under different album all pointing to the same one (maybe do this
     #              at an earlier step?) and need to be only under ONE. This way we know
     #              from which album is what by having the key.
-
     singles = []  # type: List[AlbumTracks]
     main_albums = []  # type: List[AlbumTracks]
     featuring_albums = {}  # type: Dict[str, AlbumTracks]
@@ -119,7 +120,11 @@ async def generate_tracks_to_add(
 
     for db_album in db_albums:
         is_album = db_album.type == "album"
-        album = await _get_album_tracks(sp, db_album, is_album)
+        try:
+            album = await _get_album_tracks(sp, db_album, is_album)
+        except SpotifyException:
+            _LOGGER.warning(f"failed to fetch {db_album} is_album:{is_album}")
+            continue
 
         # we want albums with less than 3 tracks to be listed as tracks
         # because often they contain just remixes with 1 song or so.
@@ -205,7 +210,10 @@ def remove_unwanted_tracks(tracks: List[Dict]) -> List[Dict]:
 
 
 async def update_user_playlist(
-    user: User, sp: Spotter, dry_run: Optional[bool] = False
+    user: User,
+    sp: Spotter,
+    dry_run: Optional[bool] = False,
+    debug: Optional[bool] = True,
 ) -> SpotifyStats:
     today = dt.now()
     monday = today - timedelta(days=today.weekday())
