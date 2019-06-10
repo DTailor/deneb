@@ -3,7 +3,6 @@ import time
 from functools import partial
 from typing import Iterable, List, Tuple
 
-import sentry_sdk
 from spotipy import Spotify
 
 from deneb.config import Config

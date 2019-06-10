@@ -6,7 +6,7 @@ from itertools import chain
 from math import ceil
 from typing import Dict, Iterator, List, Optional, Tuple  # noqa:F401
 
-from spotipy.client import Spotify, SpotifyException
+from spotipy.client import SpotifyException
 
 from deneb.chatbot.message import send_message
 from deneb.config import Config
@@ -105,7 +105,7 @@ def _clean_unavailable_albums(
     return available_albums
 
 
-async def generate_tracks_to_add(
+async def generate_tracks_to_add(  # noqa
     sp: Spotter, db_albums: List[Album], pl_tracks: List[dict]
 ) -> Tuple[List[AlbumTracks], List[AlbumTracks], List[AlbumTracks]]:
     """return list of tracks to be added"""

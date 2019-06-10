@@ -6,7 +6,6 @@ from deneb.db import Artist, User
 from deneb.logger import get_logger
 from deneb.sp import Spotter
 from deneb.tools import grouper
-import sentry_sdk
 
 _LOGGER = get_logger(__name__)
 
