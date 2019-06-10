@@ -20,7 +20,7 @@ def upgrade():
     op.create_table(
         "market",
         sa.Column("id", sa.Integer, primary_key=True),
-        sa.Column("name", sa.String(5)),
+        sa.Column("name", sa.String(5), unique=True),
     )
 
     op.create_table(
@@ -36,7 +36,7 @@ def upgrade():
     op.create_table(
         "artist",
         sa.Column("id", sa.Integer, primary_key=True),
-        sa.Column("spotify_id", sa.String(25)),
+        sa.Column("spotify_id", sa.String(25), unique=True),
         sa.Column("name", sa.String(255)),
         sa.Column(
             "created_at", sa.TIMESTAMP(timezone=True), server_default=sa.func.now()
@@ -45,11 +45,12 @@ def upgrade():
             "updated_at", sa.TIMESTAMP(timezone=True), server_default=sa.func.now()
         ),
     )
+    op.create_index('artist_unique_spotify_id', 'artist', ['spotify_id'])
 
     op.create_table(
         "album",
         sa.Column("id", sa.Integer, primary_key=True),
-        sa.Column("spotify_id", sa.String(25)),
+        sa.Column("spotify_id", sa.String(25), unique=True),
         sa.Column("name", sa.String(255)),
         sa.Column("type", sa.String(10)),
         sa.Column("release", sa.Date()),
@@ -57,6 +58,7 @@ def upgrade():
             "created_at", sa.TIMESTAMP(timezone=True), server_default=sa.func.now()
         ),
     )
+    op.create_index('album_unique_spotify_id', 'album', ['spotify_id'])
 
     op.create_table(
         "user_followed_artists",
