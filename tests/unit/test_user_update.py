@@ -114,7 +114,7 @@ class TestFetchUserFollowedArtists:
 
                 mock_fetch_artists.assert_called_once_with(sp)
                 assert user.artists.filter.call_count == 2
-                mock_artist.filter.assert_called_once_with(spotify_id=artist["id"])
+                mock_artist.get.assert_called_once_with(spotify_id=artist["id"])
                 mock_artist.create.assert_called_once_with(
                     name=artist["name"], spotify_id=artist["id"]
                 )
