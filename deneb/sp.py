@@ -110,7 +110,7 @@ class AsyncSpotify(Spotify):  # pragma: no cover
     async def __async_internal_call(self, method, url, payload, params):
         # remove all none valued keys
         # aiohttp fails to encode those
-        params = {key: val for key, val in params.items() if val}
+        params = {key: val for key, val in params.items() if val is not None}
         args = {"params": params}
 
         if not url.startswith("http"):
