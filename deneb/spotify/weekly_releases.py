@@ -1,5 +1,6 @@
 """Create spotify playlist with weekly new releases"""
 import calendar
+from asyncio import sleep
 from datetime import datetime as dt
 from datetime import timedelta
 from itertools import chain
@@ -16,7 +17,12 @@ from deneb.sp import SpotifyStats, Spotter, spotify_client
 from deneb.spotify.users import _get_to_update_users, _user_task_filter
 from deneb.structs import AlbumTracks, FBAlert, SpotifyKeys
 from deneb.tools import (
-    clean, convert_to_date, fetch_all, grouper, is_present, run_tasks
+    clean,
+    convert_to_date,
+    fetch_all,
+    grouper,
+    is_present,
+    run_tasks,
 )
 
 _LOGGER = get_logger(__name__)
@@ -200,6 +206,7 @@ async def update_spotify_playlist(
         try:
             await sp.client.user_playlist_add_tracks(*args)
             index += len(album_ids) - 1
+            await sleep(0.2)
         except Exception as exc:
             _LOGGER.exception(f"add to playlist '{album_ids}' failed with: {exc}")
 
