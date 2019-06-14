@@ -94,17 +94,6 @@ def _is_various_artists_album(album: dict) -> bool:
     return False
 
 
-def _clean_unavailable_albums(
-    albums: List[AlbumTracks], market: str
-) -> List[AlbumTracks]:
-    """remove albums which are unavaiable by market by the user"""
-    available_albums = []
-    for album in albums:
-        if market in album.parent["available_markets"]:
-            available_albums.append(album)
-    return available_albums
-
-
 async def generate_tracks_to_add(  # noqa
     sp: Spotter, db_albums: List[Album], pl_tracks: List[dict]
 ) -> Tuple[List[AlbumTracks], List[AlbumTracks], List[AlbumTracks]]:
@@ -126,7 +115,7 @@ async def generate_tracks_to_add(  # noqa
     #              from which album is what by having the key.
     singles = []  # type: List[AlbumTracks]
     main_albums = []  # type: List[AlbumTracks]
-    raw_featuring_albums = {}  # type: Dict[str, AlbumTracks]
+    featuring_albums = {}  # type: Dict[str, AlbumTracks]
 
     post_process_singles = []  # type: List[AlbumTracks]
     post_process_features = []  # type: List[AlbumTracks]
@@ -139,11 +128,12 @@ async def generate_tracks_to_add(  # noqa
             _LOGGER.warning(f"failed to fetch {db_album} is_album:{is_album}")
             continue
 
+        if sp.userdata["country"] not in album.parent["available_markets"]:
+            continue
         # we want albums with less than 3 tracks to be listed as tracks
         # because often they contain just remixes with 1 song or so.
         # figure out later how to spot this things and have a smarter handling
         # for albums which indeed have 3 different songs
-
         if is_album and len(album.tracks) > 2:
             album, already_present_tracks = _clean_update_playlist_already_present(
                 album, already_present_tracks
@@ -182,19 +172,14 @@ async def generate_tracks_to_add(  # noqa
                 continue
 
             # in an album with less than 3 tracks
-            if album.parent["id"] not in raw_featuring_albums:
-                raw_featuring_albums[album.parent["id"]] = album
+            if album.parent["id"] not in featuring_albums:
+                featuring_albums[album.parent["id"]] = album
             else:
-                raw_featuring_albums[album.parent["id"]].tracks.append(track)
+                featuring_albums[album.parent["id"]].tracks.append(track)
 
         __update_already_present(already_present_tracks, album)
 
-    singles = _clean_unavailable_albums(singles, sp.userdata["country"])
-    main_albums = _clean_unavailable_albums(main_albums, sp.userdata["country"])
-    featuring_albums = _clean_unavailable_albums(
-        list(raw_featuring_albums.values()), sp.userdata["country"]
-    )
-    return singles, main_albums, featuring_albums
+    return singles, main_albums, list(featuring_albums.values())
 
 
 async def update_spotify_playlist(
