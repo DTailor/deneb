@@ -12,6 +12,7 @@ tortoise-orm = "*"
 asyncpg = "*"
 aiohttp = "*"
 arrow = "*"
+pytz = "*"
 
 [dev-packages]
 ipdb = "*"
