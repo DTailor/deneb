@@ -7,6 +7,7 @@ from itertools import chain
 from math import ceil
 from typing import Dict, Iterator, List, Optional, Tuple  # noqa:F401
 
+import sentry_sdk
 from spotipy.client import SpotifyException
 
 from deneb.chatbot.message import send_message
@@ -270,10 +271,14 @@ async def update_user_playlist(
 async def _handle_update_user_playlist(
     credentials: SpotifyKeys, user: User, dry_run: bool, fb_alert: FBAlert
 ):
-    async with spotify_client(credentials, user) as sp:
-        stats = await update_user_playlist(user, sp, dry_run)
-        if fb_alert.notify and stats.has_new_releases():
-            await send_message(user.fb_id, fb_alert, stats.describe())
+    try:
+        async with spotify_client(credentials, user) as sp:
+            stats = await update_user_playlist(user, sp, dry_run)
+            if fb_alert.notify and stats.has_new_releases():
+                await send_message(user.fb_id, fb_alert, stats.describe())
+    except SpotifyException as exc:
+        _LOGGER.warning(f"spotify fail: {exc} {user}")
+        sentry_sdk.capture_message(f"spotify fail: {exc} {user}", level="ERROR")
 
 
 async def update_users_playlists(

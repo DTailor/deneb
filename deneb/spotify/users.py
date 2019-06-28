@@ -2,6 +2,9 @@
 
 from typing import List, Optional, Tuple
 
+import sentry_sdk
+from spotipy.client import SpotifyException
+
 from deneb.artist_update import get_new_releases
 from deneb.config import Config
 from deneb.db import Market, User
@@ -18,20 +21,26 @@ async def _update_user_artists(
     credentials: SpotifyKeys, user: User, force_update: bool, dry_run: bool
 ):
     """task to update user followed artists and artist albums"""
-    async with spotify_client(credentials, user) as sp:
-        new_follows, lost_follows = await fetch_user_followed_artists(user, sp, dry_run)
+    try:
+        async with spotify_client(credentials, user) as sp:
+            new_follows, lost_follows = await fetch_user_followed_artists(
+                user, sp, dry_run
+            )
 
-        followed_artists = await user.artists.filter()
+            followed_artists = await user.artists.filter()
 
-        _LOGGER.info(
-            f"{user} : follows +{len(new_follows)} -{len(lost_follows)}"
-            f"; now updating artists ({len(followed_artists)})"
-        )
-        albums_nr, updated_nr = await get_new_releases(
-            sp, followed_artists, force_update
-        )
-        if updated_nr:
-            _LOGGER.info(f"fetched {albums_nr} albums for {updated_nr} artists")
+            _LOGGER.info(
+                f"{user} : follows +{len(new_follows)} -{len(lost_follows)}"
+                f"; now updating artists ({len(followed_artists)})"
+            )
+            albums_nr, updated_nr = await get_new_releases(
+                sp, followed_artists, force_update
+            )
+            if updated_nr:
+                _LOGGER.info(f"fetched {albums_nr} albums for {updated_nr} artists")
+    except SpotifyException as exc:
+        _LOGGER.warning(f"spotify fail: {exc} {user}")
+        sentry_sdk.capture_message(f"spotify fail: {exc} {user}", level="ERROR")
 
 
 def _user_task_filter(args: Tuple[SpotifyKeys, User, bool]) -> bool:
