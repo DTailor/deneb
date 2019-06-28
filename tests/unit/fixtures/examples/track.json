@@ -5,7 +5,7 @@
                 "spotify": "https://open.spotify.com/artist/test_artist"
             },
             "href": "https://api.spotify.com/v1/artists/test_artist",
-            "id": "test_artist",
+            "id": "ARTIST_ID",
             "name": "Test Artist",
             "type": "artist",
             "uri": "spotify:artist:test_artist"
@@ -95,14 +95,14 @@
     "duration_ms": 370213,
     "explicit": false,
     "external_urls": {
-        "spotify": "https://open.spotify.com/track/track_id"
+        "spotify": "https://open.spotify.com/track/TRACK_ID"
     },
-    "href": "https://api.spotify.com/v1/tracks/track_id",
-    "id": "track_id",
+    "href": "https://api.spotify.com/v1/tracks/TRACK_ID",
+    "id": "TRACK_ID",
     "is_local": false,
     "name": "Test Track",
     "preview_url": "https://p.scdn.co/mp3-preview/0e1e6d72eb84bd1d69783658958908e516507c8a?cid=19c62c31b8f74649b8bc88329b4bb785",
     "track_number": 1,
     "type": "track",
-    "uri": "spotify:track:track_id"
+    "uri": "spotify:track:TRACK_ID"
 }

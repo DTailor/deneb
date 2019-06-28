@@ -1,10 +1,14 @@
 """Create spotify playlist with weekly new releases"""
 import calendar
+from asyncio import sleep
 from datetime import datetime as dt
 from datetime import timedelta
 from itertools import chain
 from math import ceil
 from typing import Dict, Iterator, List, Optional, Tuple  # noqa:F401
+
+import sentry_sdk
+from spotipy.client import SpotifyException
 
 from deneb.chatbot.message import send_message
 from deneb.config import Config
@@ -13,9 +17,9 @@ from deneb.logger import get_logger
 from deneb.sp import SpotifyStats, Spotter, spotify_client
 from deneb.spotify.users import _get_to_update_users, _user_task_filter
 from deneb.structs import AlbumTracks, FBAlert, SpotifyKeys
-from deneb.tools import clean, fetch_all, grouper, is_present, run_tasks
-import sentry_sdk
-
+from deneb.tools import (
+    clean, convert_to_date, fetch_all, grouper, is_present, run_tasks
+)
 
 _LOGGER = get_logger(__name__)
 
@@ -92,7 +96,7 @@ def _is_various_artists_album(album: dict) -> bool:
     return False
 
 
-async def generate_tracks_to_add(
+async def generate_tracks_to_add(  # noqa
     sp: Spotter, db_albums: List[Album], pl_tracks: List[dict]
 ) -> Tuple[List[AlbumTracks], List[AlbumTracks], List[AlbumTracks]]:
     """return list of tracks to be added"""
@@ -111,7 +115,6 @@ async def generate_tracks_to_add(
     #              under different album all pointing to the same one (maybe do this
     #              at an earlier step?) and need to be only under ONE. This way we know
     #              from which album is what by having the key.
-
     singles = []  # type: List[AlbumTracks]
     main_albums = []  # type: List[AlbumTracks]
     featuring_albums = {}  # type: Dict[str, AlbumTracks]
@@ -121,13 +124,18 @@ async def generate_tracks_to_add(
 
     for db_album in db_albums:
         is_album = db_album.type == "album"
-        album = await _get_album_tracks(sp, db_album, is_album)
+        try:
+            album = await _get_album_tracks(sp, db_album, is_album)
+        except SpotifyException:
+            _LOGGER.warning(f"failed to fetch {db_album} is_album:{is_album}")
+            continue
 
+        if sp.userdata["country"] not in album.parent["available_markets"]:
+            continue
         # we want albums with less than 3 tracks to be listed as tracks
         # because often they contain just remixes with 1 song or so.
         # figure out later how to spot this things and have a smarter handling
         # for albums which indeed have 3 different songs
-
         if is_album and len(album.tracks) > 2:
             album, already_present_tracks = _clean_update_playlist_already_present(
                 album, already_present_tracks
@@ -194,6 +202,7 @@ async def update_spotify_playlist(
         try:
             await sp.client.user_playlist_add_tracks(*args)
             index += len(album_ids) - 1
+            await sleep(0.2)
         except Exception as exc:
             _LOGGER.exception(f"add to playlist '{album_ids}' failed with: {exc}")
 
@@ -207,10 +216,13 @@ def remove_unwanted_tracks(tracks: List[Dict]) -> List[Dict]:
 
 
 async def update_user_playlist(
-    user: User, sp: Spotter, dry_run: Optional[bool] = False
+    user: User,
+    sp: Spotter,
+    dry_run: Optional[bool] = False,
+    debug: Optional[bool] = True,
 ) -> SpotifyStats:
     today = dt.now()
-    monday = today - timedelta(days=today.weekday())
+    monday = convert_to_date(today - timedelta(days=today.weekday()))
     week_tracks_db = await user.released_from_weekday(monday)
     playlist_name = generate_playlist_name()
 
@@ -264,17 +276,19 @@ async def _handle_update_user_playlist(
             stats = await update_user_playlist(user, sp, dry_run)
             if fb_alert.notify and stats.has_new_releases():
                 await send_message(user.fb_id, fb_alert, stats.describe())
-    except Exception as exc:
-        sentry_sdk.capture_message(f"{user} {exc}", level="ERROR")
+    except SpotifyException as exc:
+        _LOGGER.warning(f"spotify fail: {exc} {user}")
+        sentry_sdk.capture_message(f"spotify fail: {exc} {user}", level="ERROR")
 
 
 async def update_users_playlists(
     credentials: SpotifyKeys,
     fb_alert: FBAlert,
-    user_id: Optional[str],
-    dry_run: Optional[bool],
+    user_id: str = None,
+    dry_run: bool = False,
+    all_markets: bool = False,
 ):
-    users = await _get_to_update_users(user_id)
+    users = await _get_to_update_users(user_id, all_markets=all_markets)
     args_items = [(credentials, user, dry_run, fb_alert) for user in users]
     await run_tasks(
         Config.USERS_TASKS_AMOUNT,

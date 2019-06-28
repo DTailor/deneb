@@ -4,11 +4,14 @@ from functools import partial
 from typing import Iterable, List, Tuple
 
 from spotipy import Spotify
+import sentry_sdk
 
-from deneb.db import Album, Artist, Market
-from deneb.logger import get_logger
-from deneb.tools import fetch_all, generate_release_date, is_present, run_tasks
 from deneb.config import Config
+from deneb.db import Album, Artist, PoolTortoise
+from deneb.logger import get_logger
+from deneb.tools import (
+    fetch_all, fetch_all_albums, generate_release_date, is_present, run_tasks
+)
 
 _LOGGER = get_logger(__name__)
 
@@ -19,10 +22,10 @@ async def fetch_albums(sp: Spotify, artist: Artist, retry: bool = False) -> List
         data = await sp.client.artist_albums(
             artist.spotify_id, limit=50, album_type="album,single,appears_on"
         )
-        albums = await fetch_all(sp, data, is_album=True)
+        albums = await fetch_all_albums(sp, data)
     except Exception as exc:
+        sentry_sdk.capture_message(f"fetch_albums exception: {type(exc)}")
         if not retry:
-            print(type(exc), exc, artist)
             raise
         albums = await fetch_albums(sp, artist, retry=True)
     return albums
@@ -34,7 +37,7 @@ def is_in_artists_list(artist: Artist, item: dict) -> bool:
 
 
 async def get_featuring_songs(sp: Spotify, artist: Artist, album: dict) -> List[dict]:
-    """get feature tracks from an album with the artist"""
+    """get feature tracks from an album for an artist"""
     tracks = await sp.client.album_tracks(album_id=album["id"], limit=50)
     tracks = await fetch_all(sp, tracks)
     feature_tracks = []
@@ -85,15 +88,27 @@ async def update_album_marketplace(
     if to_remove_markets:
         await album.markets.remove(*to_remove_markets)
 
-    for marketname in to_add:
-        market, _ = await Market.get_or_create(name=marketname)
-        has_market = await album.markets.filter(id=market.id)
-        if not has_market:
-            try:
-                await album.markets.add(market)
-            except Exception as exc:
-                _LOGGER.exception(
-                    f"duplicate market err {exc}, {album} {market} has_market: {has_market}"
+    # hack to upsert markets -> speedup
+    if to_add:
+        pool = PoolTortoise.get_connection("default")
+        async with pool.acquire_connection() as conn:
+            async with conn.transaction():
+                markets_ids = await conn.fetch(
+                    f"""
+                    SELECT id
+                    FROM market
+                    Where name in ({str(to_add)[1:-1]})
+                    """
+                )
+                values = [f"({album.id}, {market['id']})" for market in markets_ids]
+
+                await conn.execute(
+                    f"""
+                    INSERT INTO album_markets(album_id, market_id)
+                    VALUES
+                    {', '.join(values)}
+                    ON CONFLICT DO NOTHING;
+                    """
                 )
 
 
@@ -104,9 +119,10 @@ async def handle_album_sync(album: dict, artist: Artist) -> Tuple[bool, Album]:
         await db_album.artists.add(artist)
 
     # update it's marketplaces, for availability
-    await update_album_marketplace(db_album, album["available_markets"])
-
-    await db_album.update_timestamp()
+    # TODO: disabled because not using this stuff;
+    # think of where should marketplace be used and if not, removed;
+    # not that big of an issue at this point with unavailable songs in playlists;
+    # await update_album_marketplace(db_album, album["available_markets"])
     return created, db_album
 
 
@@ -143,7 +159,6 @@ async def update_artist_albums(
     await artist.update_timestamp()
 
     new_inserts = [a for created, a in task_results if created]
-
     return artist, new_inserts
 
 

@@ -100,7 +100,7 @@
     },
     "genres": [],
     "href": "https://api.spotify.com/v1/albums/album_id",
-    "id": "album_id",
+    "id": "TEST_ID",
     "images": [
         {
             "height": 640,
@@ -121,7 +121,7 @@
     "label": "test label",
     "name": "Test Album",
     "popularity": 25,
-    "release_date": "2018-12-25",
+    "release_date": "DATE_FIELD",
     "release_date_precision": "day",
     "total_tracks": 25,
     "type": "album",

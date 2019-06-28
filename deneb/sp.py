@@ -37,7 +37,7 @@ class Spotter:
         self.userdata = userdata
 
 
-class AsyncSpotify(Spotify):
+class AsyncSpotify(Spotify):  # pragma: no cover
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         conn = aiohttp.TCPConnector(limit=10)
@@ -62,7 +62,9 @@ class AsyncSpotify(Spotify):
         return await self._get("users/%s/playlists/%s" % (user, plid), fields=fields)
 
     async def _get(self, url, args=None, payload=None, **kwargs):
-        result = await self._async_request("GET", url, args=None, payload=None, **kwargs)
+        result = await self._async_request(
+            "GET", url, args=None, payload=None, **kwargs
+        )
         return result
 
     async def _post(self, url, args=None, payload=None, **kwargs):
@@ -108,7 +110,7 @@ class AsyncSpotify(Spotify):
     async def __async_internal_call(self, method, url, payload, params):
         # remove all none valued keys
         # aiohttp fails to encode those
-        params = {key: val for key, val in params.items() if val}
+        params = {key: val for key, val in params.items() if val is not None}
         args = {"params": params}
 
         if not url.startswith("http"):
@@ -216,7 +218,7 @@ class SpotifyStats:
         for category, items in (
             ("Singles", self.added_singles),
             ("Albums", self.added_albums),
-            ("Featuring tracks from other albums", self.added_tracks)
+            ("Featuring tracks from other albums", self.added_tracks),
         ):
             if items:
                 return_msg = f"{return_msg}-== {category} ==-\n"
@@ -225,7 +227,5 @@ class SpotifyStats:
                     return_msg = f"{return_msg}{tmp_msg}\n"
                 return_msg = f"{return_msg}\n"
 
-        return_msg = (
-            f"{return_msg}Link: {self.playlist['external_urls']['spotify']}"
-        )
+        return_msg = f"{return_msg}Link: {self.playlist['external_urls']['spotify']}"
         return return_msg

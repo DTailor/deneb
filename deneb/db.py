@@ -42,11 +42,11 @@ class Album(Model):  # type: ignore
     type = fields.CharField(max_length=255)
     spotify_id = fields.CharField(max_length=255)
     release = fields.DateField()
-    timestamp = fields.DatetimeField(default=datetime.datetime.now)
+    created_at = fields.DatetimeField(default=datetime.datetime.now)
     artists = fields.ManyToManyField(
-        "models.Artist", through="album_artist_through", related_name="albums"
+        "models.Artist", through="artist_albums", related_name="albums"
     )
-    markets = fields.ManyToManyField("models.Market", through="album_market_through")
+    markets = fields.ManyToManyField("models.Market", through="album_markets")
 
     @property
     def uri(self):
@@ -58,15 +58,13 @@ class Album(Model):  # type: ignore
     def __repr__(self):
         return self.__str__()
 
-    async def update_timestamp(self):
-        await Album.filter(id=self.id).update(timestamp=datetime.datetime.now())
-
 
 class Artist(Model):  # type: ignore
     id = fields.IntField(pk=True)
     name = fields.CharField(max_length=255)
     spotify_id = fields.CharField(max_length=255)
-    timestamp = fields.DatetimeField(default=datetime.datetime.now)
+    created_at = fields.DatetimeField(default=datetime.datetime.now)
+    updated_at = fields.DatetimeField(default=datetime.datetime.now)
 
     def __str__(self):
         return f"{self.name}"
@@ -88,7 +86,7 @@ class Artist(Model):  # type: ignore
         return False
 
     async def update_timestamp(self):
-        await Artist.filter(id=self.id).update(timestamp=datetime.datetime.now())
+        await Artist.filter(id=self.id).update(updated_at=datetime.datetime.now())
 
 
 class User(Model):  # type: ignore
@@ -97,9 +95,8 @@ class User(Model):  # type: ignore
     fb_id = fields.CharField(max_length=255)
     display_name = fields.CharField(max_length=255, default="")
     market = fields.ForeignKeyField("models.Market", null=True)
-    artists = fields.ManyToManyField("models.Artist", through="user_artist_through")
+    artists = fields.ManyToManyField("models.Artist", through="user_followed_artists")
     spotify_token = fields.CharField(max_length=255, null=True)
-    state_id = fields.CharField(max_length=255)
 
     def __str__(self) -> str:
         return f"<spotify:user:{self.username}>"
@@ -131,6 +128,4 @@ class User(Model):  # type: ignore
         if not followed_ids:
             _LOGGER.info(f"user {self} has no followers")
             return []
-        return await Album.filter(
-            release__gte=date, artists__id__in=followed_ids, markets__id=self.market_id
-        )
+        return await Album.filter(release__gte=date, artists__id__in=followed_ids)

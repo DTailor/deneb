@@ -4,7 +4,10 @@ import datetime
 from itertools import zip_longest
 from typing import Any, Callable, Dict, List, Optional, Tuple
 
+import pytz
 from spotipy import Spotify
+
+from deneb.db import Market
 
 
 def grouper(n, iterable, padvalue=None):
@@ -28,59 +31,69 @@ def is_present(value: str, items: List[dict], search_by: str) -> dict:
     return found
 
 
-def generate_release_date(date: str, precision: str) -> datetime.datetime:
+def convert_to_date(date_item: datetime.datetime) -> datetime.date:
+    """Issues with Postgres, only accepts datetime.date instances for DateField"""
+    return datetime.date(year=date_item.year, month=date_item.month, day=date_item.day)
+
+
+def generate_release_date(date: str, precision: str) -> datetime.date:
     """Fallback to day precision depending on the offered one"""
     suffix = {"year": "-01-01", "month": "-01", "day": ""}
-    return datetime.datetime.strptime(f"{date}{suffix[precision]}", "%Y-%m-%d")
+    return convert_to_date(
+        datetime.datetime.strptime(f"{date}{suffix[precision]}", "%Y-%m-%d")
+    )
 
 
 def should_fetch_more_albums(
     albums: List[Dict], to_check_album_types: List[str]
 ) -> Tuple[bool, List[Dict], List[str]]:
     required_year = str(datetime.datetime.now().year)
-    new_list = []  # type: List[dict]
+    validated_albums = []  # type: List[dict]
     for album in albums:
         if album["album_type"] in to_check_album_types:
             to_check_album_types.remove(album["album_type"])
 
         if required_year in album["release_date"]:
-            new_list.append(album)
+            validated_albums.append(album)
         else:
             if not to_check_album_types:
-                return False, new_list, to_check_album_types
+                return False, validated_albums, to_check_album_types
 
-    return True, new_list, to_check_album_types
+    return True, validated_albums, to_check_album_types
 
 
-async def fetch_all(sp: Spotify, data: dict, is_album: bool = False) -> List[Dict]:
-    """iterates till gets all the albums"""
-    contents = []  # type: List[dict]
+async def fetch_all_albums(sp: Spotify, data: dict) -> List[Dict]:
+    # ok, so this new `to_check_album_types` is a hack to fix-up a problem
+    # the issues constits in the fact the as we fetch albums
+    # we retrieve several `album_types`, like `album`, `single`, `appears_on`
+    # and they are returned back in descendant order by `release_date`, the catch
+    # is that they are group, meaning that you'll then them ordered that way but
+    # first the `albums`, then the `single` and `appears_on`. This made the script
+    # to miss some `sinlge` and `appears_on` type of albums
 
-    if is_album:
-        # ok, so this new `to_check_album_types` is a hack to fix-up a problem
-        # the issues constits in the fact the as we fetch albums
-        # we retrieve several `album_types`, like `album`, `single`, `appears_on`
-        # and they are returned back in descendant order by `release_date`, the catch
-        # is that they are group, meaning that you'll then them ordered that way but
-        # first the `albums`, then the `single` and `appears_on`. This made the script
-        # to miss some `sinlge` and `appears_on` type of albums
-        to_check_album_types = ["album", "single", "appears_on"]
-        should, contents, to_check_album_types = should_fetch_more_albums(
-            data["items"], to_check_album_types
-        )
-        if not should:
-            return contents
+    to_check_album_types = ["album", "single", "appears_on"]
+    contents = []
 
     while True:
-        if is_album:
-            should, albums, to_check_album_types = should_fetch_more_albums(
-                data["items"], to_check_album_types
-            )
-            if not should:
-                contents.extend(albums)
-                break
-        else:
-            contents.extend(data["items"])
+        should, albums, to_check_album_types = should_fetch_more_albums(
+            data["items"], to_check_album_types
+        )
+        contents.extend(albums)
+        if not should or not data["next"]:
+            break
+        data = await sp.client.next(data)  # noqa: B305
+
+    # there are some duplicates, remove them
+    contents = list({v["id"]: v for v in contents}.values())
+    return contents
+
+
+async def fetch_all(sp: Spotify, data: dict) -> List[Dict]:
+    """iterates till gets all the items"""
+    contents = []  # type: List[dict]
+
+    while True:
+        contents.extend(data["items"])
         if not data["next"]:
             break
         data = await sp.client.next(data)  # noqa: B305
@@ -134,3 +147,15 @@ async def run_tasks(
             jobs.extend(_create_jobs(afunc, args_items_batch))
 
     return job_results
+
+
+def find_markets_in_hours(markets: List[Market], hours: List[int]) -> List[Market]:
+    """Will return markets where is active the specified hour"""
+    valid_markets = []
+    for market in markets:
+        country_timezones = pytz.country_timezones[market.name]
+        timezone = pytz.timezone(country_timezones[0])
+        local_time = datetime.datetime.now().astimezone(timezone)
+        if local_time.hour in hours:
+            valid_markets.append(market)
+    return valid_markets

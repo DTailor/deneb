@@ -12,6 +12,7 @@ tortoise-orm = "*"
 asyncpg = "*"
 aiohttp = "*"
 arrow = "*"
+pytz = "*"
 
 [dev-packages]
 ipdb = "*"
@@ -27,6 +28,8 @@ aiomock = "*"
 coverage = "*"
 pylama = "*"
 black = "*"
+alembic = "*"
+psycopg2-binary = "*"
 
 [requires]
 python_version = "3.7"
