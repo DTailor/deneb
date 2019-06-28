@@ -17,12 +17,7 @@ from deneb.sp import SpotifyStats, Spotter, spotify_client
 from deneb.spotify.users import _get_to_update_users, _user_task_filter
 from deneb.structs import AlbumTracks, FBAlert, SpotifyKeys
 from deneb.tools import (
-    clean,
-    convert_to_date,
-    fetch_all,
-    grouper,
-    is_present,
-    run_tasks,
+    clean, convert_to_date, fetch_all, grouper, is_present, run_tasks
 )
 
 _LOGGER = get_logger(__name__)
@@ -284,10 +279,11 @@ async def _handle_update_user_playlist(
 async def update_users_playlists(
     credentials: SpotifyKeys,
     fb_alert: FBAlert,
-    user_id: Optional[str],
-    dry_run: Optional[bool],
+    user_id: str = None,
+    dry_run: bool = False,
+    all_markets: bool = False,
 ):
-    users = await _get_to_update_users(user_id)
+    users = await _get_to_update_users(user_id, all_markets=all_markets)
     args_items = [(credentials, user, dry_run, fb_alert) for user in users]
     await run_tasks(
         Config.USERS_TASKS_AMOUNT,

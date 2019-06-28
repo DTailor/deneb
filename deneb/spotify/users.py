@@ -4,11 +4,11 @@ from typing import List, Optional, Tuple
 
 from deneb.artist_update import get_new_releases
 from deneb.config import Config
-from deneb.db import User
+from deneb.db import Market, User
 from deneb.logger import get_logger
 from deneb.sp import spotify_client
 from deneb.structs import SpotifyKeys
-from deneb.tools import run_tasks
+from deneb.tools import find_markets_in_hours, run_tasks
 from deneb.user_update import fetch_user_followed_artists
 
 _LOGGER = get_logger(__name__)
@@ -41,13 +41,20 @@ def _user_task_filter(args: Tuple[SpotifyKeys, User, bool]) -> bool:
     return False
 
 
-async def _get_to_update_users(username: Optional[str] = None) -> List[User]:
+async def _get_to_update_users(
+    username: Optional[str] = None, all_markets: Optional[bool] = False
+) -> List[User]:
     """if `--username` option used, fetch that user else fetch all users"""
-    if username:
-        users = await User.filter(username=username)
-    else:
-        users = await User.all()
-    return users
+    args = dict()
+    if username is not None:
+        args["username"] = username
+
+    if not all_markets:
+        markets = await Market.all()
+        active_markets = find_markets_in_hours(markets, [0, 12])
+        args["market_id__in"] = [a.id for a in active_markets]
+
+    return await User.filter(**args)
 
 
 async def update_users_artists(
@@ -55,9 +62,10 @@ async def update_users_artists(
     user_id: Optional[str] = None,
     force_update: bool = False,
     dry_run: bool = False,
+    all_markets: bool = False,
 ):
     """entry point for updating user artists and artist albums"""
-    users = await _get_to_update_users(user_id)
+    users = await _get_to_update_users(user_id, all_markets=all_markets)
     args_items = [(credentials, user, force_update, dry_run) for user in users]
     await run_tasks(
         Config.USERS_TASKS_AMOUNT, args_items, _update_user_artists, _user_task_filter

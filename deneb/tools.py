@@ -4,7 +4,10 @@ import datetime
 from itertools import zip_longest
 from typing import Any, Callable, Dict, List, Optional, Tuple
 
+import pytz
 from spotipy import Spotify
+
+from deneb.db import Market
 
 
 def grouper(n, iterable, padvalue=None):
@@ -144,3 +147,15 @@ async def run_tasks(
             jobs.extend(_create_jobs(afunc, args_items_batch))
 
     return job_results
+
+
+def find_markets_in_hours(markets: List[Market], hours: List[int]) -> List[Market]:
+    """Will return markets where is active the specified hour"""
+    valid_markets = []
+    for market in markets:
+        country_timezones = pytz.country_timezones[market.name]
+        timezone = pytz.timezone(country_timezones[0])
+        local_time = datetime.datetime.now().astimezone(timezone)
+        if local_time.hour in hours:
+            valid_markets.append(market)
+    return valid_markets

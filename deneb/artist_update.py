@@ -35,7 +35,7 @@ def is_in_artists_list(artist: Artist, item: dict) -> bool:
 
 
 async def get_featuring_songs(sp: Spotify, artist: Artist, album: dict) -> List[dict]:
-    """get feature tracks from an album with the artist"""
+    """get feature tracks from an album for an artist"""
     tracks = await sp.client.album_tracks(album_id=album["id"], limit=50)
     tracks = await fetch_all(sp, tracks)
     feature_tracks = []
