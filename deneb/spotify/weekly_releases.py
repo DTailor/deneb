@@ -14,6 +14,8 @@ from deneb.sp import SpotifyStats, Spotter, spotify_client
 from deneb.spotify.users import _get_to_update_users, _user_task_filter
 from deneb.structs import AlbumTracks, FBAlert, SpotifyKeys
 from deneb.tools import clean, fetch_all, grouper, is_present, run_tasks
+import sentry_sdk
+
 
 _LOGGER = get_logger(__name__)
 
@@ -257,10 +259,13 @@ async def update_user_playlist(
 async def _handle_update_user_playlist(
     credentials: SpotifyKeys, user: User, dry_run: bool, fb_alert: FBAlert
 ):
-    async with spotify_client(credentials, user) as sp:
-        stats = await update_user_playlist(user, sp, dry_run)
-        if fb_alert.notify and stats.has_new_releases():
-            await send_message(user.fb_id, fb_alert, stats.describe())
+    try:
+        async with spotify_client(credentials, user) as sp:
+            stats = await update_user_playlist(user, sp, dry_run)
+            if fb_alert.notify and stats.has_new_releases():
+                await send_message(user.fb_id, fb_alert, stats.describe())
+    except Exception as exc:
+        sentry_sdk.capture_message(f"{user} {exc}", level="ERROR")
 
 
 async def update_users_playlists(
