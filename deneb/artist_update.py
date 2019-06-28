@@ -4,6 +4,7 @@ from functools import partial
 from typing import Iterable, List, Tuple
 
 from spotipy import Spotify
+import sentry_sdk
 
 from deneb.config import Config
 from deneb.db import Album, Artist, PoolTortoise
@@ -23,6 +24,7 @@ async def fetch_albums(sp: Spotify, artist: Artist, retry: bool = False) -> List
         )
         albums = await fetch_all_albums(sp, data)
     except Exception as exc:
+        sentry_sdk.capture_message(f"fetch_albums exception: {type(exc)}")
         if not retry:
             raise
         albums = await fetch_albums(sp, artist, retry=True)
