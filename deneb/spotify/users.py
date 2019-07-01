@@ -61,14 +61,14 @@ async def _get_to_update_users(
     if not all_markets:
         markets = await Market.all()
         active_markets = find_markets_in_hours(markets, [0, 12])
+
+        if not active_markets:
+            # no point in fetching users if no markets are good
+            return []
+
         args["market_id__in"] = [a.id for a in active_markets]
 
-    users = []  # type: List[User]
-    try:
-        users = await User.filter(**args)
-    except Exception as exc:
-        sentry_sdk.capture_message(f"user select fail: {exc} {args}", level="ERROR")
-    return users
+    return await User.filter(**args)
 
 
 async def update_users_artists(
