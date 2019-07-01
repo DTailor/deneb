@@ -1,6 +1,6 @@
 """Module to store app config"""
 
-VERSION = '1.0'
+VERSION = '2019.07.01'
 
 
 class Config:
