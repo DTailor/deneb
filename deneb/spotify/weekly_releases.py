@@ -100,7 +100,8 @@ async def generate_tracks_to_add(  # noqa
     sp: Spotter, db_albums: List[Album], pl_tracks: List[dict]
 ) -> Tuple[List[AlbumTracks], List[AlbumTracks], List[AlbumTracks]]:
     """return list of tracks to be added"""
-    already_present_tracks = {a["track"]["name"] for a in pl_tracks}
+    # sometime spotify returns none for track, handles that
+    already_present_tracks = {a["track"]["name"] for a in pl_tracks if a["track"]}
 
     # there are three types of releases to keep an eye on
     # 1. singles - these are from an upcoming album. This includes in them

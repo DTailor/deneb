@@ -1,6 +1,6 @@
 """Entry point to deneb spotify watcher"""
 
-from typing import List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple  # noqa
 
 import sentry_sdk
 from spotipy.client import SpotifyException
@@ -54,7 +54,7 @@ async def _get_to_update_users(
     username: Optional[str] = None, all_markets: Optional[bool] = False
 ) -> List[User]:
     """if `--username` option used, fetch that user else fetch all users"""
-    args = dict()
+    args = dict()  # type: Dict[str, Any]
     if username is not None:
         args["username"] = username
 
@@ -63,7 +63,12 @@ async def _get_to_update_users(
         active_markets = find_markets_in_hours(markets, [0, 12])
         args["market_id__in"] = [a.id for a in active_markets]
 
-    return await User.filter(**args)
+    users = []  # type: List[User]
+    try:
+        users = await User.filter(**args)
+    except Exception as exc:
+        sentry_sdk.capture_message(f"user select fail: {exc} {args}", level="ERROR")
+    return users
 
 
 async def update_users_artists(
