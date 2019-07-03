@@ -1,3 +1,8 @@
+include .env
+
+VARS:=$(shell sed -ne 's/ *\#.*$$//; /./ s/=.*$$// p' .env )
+$(foreach v,$(VARS),$(eval $(shell echo export $(v)="$($(v))")))
+
 .PHONY : help
 help :
 	@echo "test - run tests"
