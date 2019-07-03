@@ -7,7 +7,7 @@ from typing import Any, Callable, Dict, List, Optional, Tuple
 import pytz
 from spotipy import Spotify
 
-from deneb.db import Market
+from deneb import db  # noqa
 
 
 def grouper(n, iterable, padvalue=None):
@@ -149,7 +149,9 @@ async def run_tasks(
     return job_results
 
 
-def find_markets_in_hours(markets: List[Market], hours: List[int]) -> List[Market]:
+def find_markets_in_hours(
+    markets: List["db.Market"], hours: List[int]
+) -> List["db.Market"]:
     """Will return markets where is active the specified hour"""
     valid_markets = []
     for market in markets:

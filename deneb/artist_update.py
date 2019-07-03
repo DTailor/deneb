@@ -3,15 +3,13 @@ import time
 from functools import partial
 from typing import Iterable, List, Tuple
 
-from spotipy import Spotify
 import sentry_sdk
+from spotipy import Spotify
 
 from deneb.config import Config
 from deneb.db import Album, Artist, PoolTortoise
 from deneb.logger import get_logger
-from deneb.tools import (
-    fetch_all, fetch_all_albums, generate_release_date, is_present, run_tasks
-)
+from deneb.tools import fetch_all, fetch_all_albums, is_present, run_tasks
 
 _LOGGER = get_logger(__name__)
 
@@ -49,25 +47,6 @@ async def get_featuring_songs(sp: Spotify, artist: Artist, album: dict) -> List[
             track["release_date_precision"] = album["release_date_precision"]
             feature_tracks.append(track)
     return feature_tracks
-
-
-async def get_or_create_album(album: dict, dry_run: bool = False) -> Tuple[bool, Album]:
-    """return db instance and create if new, with dry-run"""
-    created = False
-    try:
-        db_album = await Album.get(spotify_id=album["id"])
-    except Exception:
-        release_date = generate_release_date(
-            album["release_date"], album["release_date_precision"]
-        )
-        db_album = await Album.create(
-            name=album["name"],
-            release=release_date,
-            type=album["type"],
-            spotify_id=album["id"],
-        )
-        created = True
-    return created, db_album
 
 
 async def update_album_marketplace(
@@ -113,7 +92,7 @@ async def update_album_marketplace(
 
 
 async def handle_album_sync(album: dict, artist: Artist) -> Tuple[bool, Album]:
-    created, db_album = await get_or_create_album(album)
+    db_album, created = await Album.get_or_create(album)
     has_artist = await db_album.artists.filter(id=artist.id)
     if not has_artist:
         await db_album.artists.add(artist)
