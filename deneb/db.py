@@ -43,7 +43,7 @@ class Album(Model):  # type: ignore
     type = fields.CharField(max_length=255)
     spotify_id = fields.CharField(max_length=255)
     release = fields.DateField()
-    created_at = fields.DatetimeField(default=datetime.datetime.now)
+    created_at = fields.DatetimeField(auto_now_add=True)
     artists = fields.ManyToManyField(
         "models.Artist", through="artist_albums", related_name="albums"
     )
@@ -97,8 +97,8 @@ class Artist(Model):  # type: ignore
     id = fields.IntField(pk=True)
     name = fields.CharField(max_length=255)
     spotify_id = fields.CharField(max_length=255)
-    created_at = fields.DatetimeField(default=datetime.datetime.now)
-    updated_at = fields.DatetimeField(default=datetime.datetime.now)
+    created_at = fields.DatetimeField(auto_now_add=True)
+    updated_at = fields.DatetimeField(auto_now_add=True)
 
     def __str__(self):
         return f"{self.name}"
