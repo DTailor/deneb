@@ -147,20 +147,12 @@ async def generate_tracks_to_add(  # noqa
             if not _is_various_artists_album(album.parent):
                 post_process_singles.append(album)
             else:
-                _LOGGER.warning(
-                    f"discard {album.parent['album_type']} "
-                    f"{album.parent['artists'][0]['name']} - {album.parent['name']} "
-                    f"[{album.parent['uri']}]"
-                )
+                continue
         else:
             if not _is_various_artists_album(album.parent):
                 post_process_features.append(album)
             else:
-                _LOGGER.warning(
-                    f"discard {album.parent['album_type']} "
-                    f"{album.parent['artists'][0]['name']} - {album.parent['name']} "
-                    f"[{album.parent['uri']}]"
-                )
+                continue
 
     for album in post_process_singles:
         album, already_present_tracks = _clean_update_playlist_already_present(
