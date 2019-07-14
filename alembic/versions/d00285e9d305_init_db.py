@@ -31,6 +31,7 @@ def upgrade():
         sa.Column("market_id", sa.Integer, sa.ForeignKey("market.id")),
         sa.Column("spotify_token", sa.String(1000)),
         sa.Column("display_name", sa.String(255)),
+        sa.Column("state_id", sa.String(255)),
     )
 
     op.create_table(
