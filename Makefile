@@ -9,7 +9,7 @@ help :
 	@echo "install - pipenv install"
 	@echo "install-dev - pipenv install with dev packages."
 	@echo "update - update pip packages."
-	@echo "init-env - init and install py environment."
+	@echo "init-venv - init and install py environment."
 	@echo "clean - remove all temporary files (safe)."
 	@echo "deploy - deploy code on production."
 
@@ -27,7 +27,7 @@ install-dev:
 update:
 	pipenv update
 
-init-env:
+init-venv:
 	sudo pip install pipenv
 	sudo pip install pipenv pip --upgrade
 	make install-dev

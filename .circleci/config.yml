@@ -9,7 +9,7 @@ jobs:
       - restore_cache:
           key: deps9-{{ .Branch }}-{{ checksum "Pipfile.lock" }}
       - run:
-          command: make init-env
+          command: make init-venv
       - run:
           name: pytest
           command: make test
