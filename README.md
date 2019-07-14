@@ -62,8 +62,7 @@
 #### Assumes you're in a git repository
 
 ```bash
-sentry-cli releases new -p deneb "2019.07.01"
-sentry-cli releases set-commits --auto "2019.07.01"
+make VERSION=version sentry
 ```
 
 ## Cli tool

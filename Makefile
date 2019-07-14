@@ -36,3 +36,8 @@ clean:
 
 deploy:
 	pipenv run fab deploy ${VERSION}
+
+sentry:
+	sentry-cli releases new -p deneb "${VERSION}"
+	sentry-cli releases set-commits --auto "${VERSION}"
+	sentry-cli releases deploys "${VERSION}" new -e production
