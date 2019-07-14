@@ -108,3 +108,13 @@ docker run --rm   --name pg-docker -e POSTGRES_PASSWORD=$DB_PASSWORD -e POSTGRES
 ### CI
 
 - [circleci](https://circleci.com/bb/DTailor/deneb)
+
+### Release Notes
+
+#### v1.1.1
+
+- Dropped calver for semver (feels awkward)
+- Removed discarded albums log entry
+- Update pip modules
+- Now deploy with `make VERSION=version deploy`
+- Fix models `updated_at` and `created_at` params (use `auto_now_add`)
