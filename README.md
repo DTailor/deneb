@@ -66,13 +66,16 @@ There's a cli tool available to use the tool easier.
     - `--notify` - send fb users what tracks were added to playlist
     - `--dry-run` - dont'a add tracks to spotify playlist
     - `--user <spotify_id>` - full run for specific spotify id
+    - `--all-markets` - will query all markets instead of 12/24 hour ones
   - `update-followed`
     - `--force` - validate to check artist anyway
     - `--user <spotify_id>` - full run for specific spotify id
+    - `--all-markets` - will query all markets instead of 12/24 hour ones
   - `update-playlists`
     - `--notify` - send fb users what tracks were added to playlist
     - `--dry-run` - dont'a add tracks to spotify playlist
     - `--user <spotify_id>` - full run for specific spotify id
+    - `--all-markets` - will query all markets instead of 12/24 hour ones
 
 ## Testing
 
