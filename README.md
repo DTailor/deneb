@@ -45,6 +45,15 @@
   - `--notify=False` - don't send any fb messages
   - `--force=False` - dont update artist if not the case
 
+### Sentry Release
+
+#### Assumes you're in a git repository
+
+```bash
+sentry-cli releases new -p deneb "2019.07.01"
+sentry-cli releases set-commits --auto "2019.07.01"
+```
+
 ## Cli tool
 
 There's a cli tool available to use the tool easier.
