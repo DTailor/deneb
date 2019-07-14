@@ -14,7 +14,7 @@ def deploy(c, version):
         captain.run("git fetch -ap")
         captain.run("git fetch --tags")
         captain.run(f"git checkout {version}")
-        captain.run("git pull")
+        captain.run(f"git pull origin {version}")
         captain.run("pipenv sync")
         captain.run("pipenv clean")
 
