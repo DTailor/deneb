@@ -40,7 +40,19 @@
 
 ## Deploy
 
-- `make deploy` - deploy on server
+### Update config.py version
+
+- Change version in code
+- Commit change with message `bump to {version}`
+
+### Create git tag
+
+- `git tag -a {version} -m "release {version}"`
+- `git push --tags`
+
+### Release code
+
+- `make VERSION={version} deploy` - deploy on server
 - `pipenv run fab full-run` - run whole script on server with predefined parameters; see bellow
   - `--notify=False` - don't send any fb messages
   - `--force=False` - dont update artist if not the case
