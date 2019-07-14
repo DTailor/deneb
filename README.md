@@ -100,6 +100,14 @@ mkdir -p $HOME/docker/volumes/postgres
 docker run --rm   --name pg-docker -e POSTGRES_PASSWORD=$DB_PASSWORD -e POSTGRES_USER=$DB_USER -d -p 5432:5432 -v $HOME/docker/volumes/postgres:/var/lib/postgresql/data  postgres
 ```
 
+#### Migrations
+
+Are done by using alembic:
+
+- `pipenv run alembic upgrade head` - migrate to last state
+- `alembic revision -m "Revision Message"` - create a new db revision
+- `pipenv run alembic downgrade base` - destroy all (AHTUNG!)
+
 ## Local
 
 `make test`
