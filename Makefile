@@ -35,4 +35,4 @@ clean:
 	find . -name "*.pyc" -exec rm -f {} \;
 
 deploy:
-	pipenv run fab deploy
+	pipenv run fab deploy ${VERSION}

@@ -7,12 +7,13 @@ SSH_HOST = os.environ["SSH_HOST"]
 
 
 @task
-def deploy(c):
+def deploy(c, version):
     captain = Connection(f"{SSH_USER}@{SSH_HOST}")
     with captain.cd("/apps/deneb/"):
         captain.run("git reset --hard HEAD")
         captain.run("git fetch -ap")
-        captain.run("git checkout develop")
+        captain.run("git fetch --tags")
+        captain.run(f"git checkout {version}")
         captain.run("git pull")
         captain.run("pipenv sync")
         captain.run("pipenv clean")
