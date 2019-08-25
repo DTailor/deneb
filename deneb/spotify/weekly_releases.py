@@ -202,9 +202,11 @@ async def update_spotify_playlist(
 
 def remove_unwanted_tracks(tracks: List[Dict]) -> List[Dict]:
     # remove low popularity tracks
-    popular_tracks = [a for a in tracks if a["popularity"] > 40]  # type: ignore
+    # using "41" as default popularity, there were track objects
+    # without this property received from spotify
+    popular_tracks = [a for a in tracks if a.get("popularity", 41) > 40]  # type: ignore
     return sorted(  # type: ignore
-        popular_tracks, key=lambda k: k["popularity"], reverse=True
+        popular_tracks, key=lambda k: k.get("popularity", 41), reverse=True
     )
 
 
