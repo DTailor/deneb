@@ -47,6 +47,7 @@ def _user_task_filter(args: Tuple[SpotifyKeys, User, bool]) -> bool:
     """filter for task runner to check if task should be run"""
     if args[1].spotify_token:
         return True
+    _LOGGER.info(f"discard task for {args[1]}; missing spotify_token")
     return False
 
 
@@ -57,18 +58,24 @@ async def _get_to_update_users(
     args = dict()  # type: Dict[str, Any]
     if username is not None:
         args["username"] = username
+    without_market_users = []  # type: List[User]
 
     if not all_markets:
         markets = await Market.all()
         active_markets = find_markets_in_hours(markets, [0, 12])
 
+        # TODO: use logic OR and get rid of this hack
+        without_market_users = await User.filter(market_id__isnull=True)
+
         if not active_markets:
             # no point in fetching users if no markets are good
-            return []
+            return without_market_users
 
         args["market_id__in"] = [a.id for a in active_markets]
 
-    return await User.filter(**args)
+    users = await User.filter(**args)
+
+    return list(users) + list(without_market_users)
 
 
 async def update_users_artists(
