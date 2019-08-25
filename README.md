@@ -40,6 +40,12 @@
 
 ## Deploy
 
+- Add `README` entry with version deployed & changelog
+- Update `deneb/config.py` app version
+- `git tag -a <version> -m "release <version>"`
+- `git push --tags`
+- `make VERSION=<version> deploy`
+
 ### Update config.py version
 
 - Change version in code
@@ -118,7 +124,7 @@ Are done by using alembic:
 
 ### Release Notes
 
-### v1.1.2
+### v1.1.2 (25 august 2019)
 
 - Handle first coming users (not having market made deneb skip their check)
 - Use `41` as default popularity for tracks if missing
