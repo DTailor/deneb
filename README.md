@@ -118,6 +118,15 @@ Are done by using alembic:
 
 ### Release Notes
 
+### v1.1.2
+
+- Handle first coming users (not having market made deneb skip their check)
+- Use `41` as default popularity for tracks if missing
+- Add sentry-tag via Makefile
+- Migrations doc update
+- Timestamps for user table
+- Pip update
+
 #### v1.1.1
 
 - Dropped calver for semver (feels awkward)
