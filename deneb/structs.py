@@ -1,7 +1,6 @@
 from collections import namedtuple
 from typing import Dict, List, Optional
 
-
 SpotifyKeys = namedtuple("SpotifyKeys", ["client_id", "client_secret", "client_uri"])
 FBAlert = namedtuple("FBAlert", ["key", "url", "notify"])
 

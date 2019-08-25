@@ -3,7 +3,6 @@ import aiohttp
 from deneb.logger import get_logger
 from deneb.structs import FBAlert
 
-
 _LOGGER = get_logger(__name__)
 
 
