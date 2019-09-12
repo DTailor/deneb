@@ -22,11 +22,6 @@ install-dev:
 update:
 	pipenv update
 
-init-venv:
-	sudo pip install pipenv
-	sudo pip install pipenv pip --upgrade
-	make install-dev
-
 clean:
 	rm -rf logfile*
 	rm -rf .mypy_cache
