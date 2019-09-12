@@ -124,6 +124,11 @@ Are done by using alembic:
 
 ### Release Notes
 
+### v1.1.3 (25 august 2019)
+
+- Add timestamps (created_at, updated_at) for "user"
+- Always insert on top of playlist (makes it harder reach fresh stuff by scrolls)
+
 ### v1.1.2 (25 august 2019)
 
 - Handle first coming users (not having market made deneb skip their check)
