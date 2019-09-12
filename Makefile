@@ -38,6 +38,6 @@ sentry:
 	sentry-cli releases deploys "${VERSION}" new -e production
 
 init-circle-venv:
-	sudo pip install pipenv
-	sudo pip install pipenv pip --upgrade
+	sudo pip install --upgrade pipenv
+	sudo pip install --upgrade pip
 	make install-dev
