@@ -131,7 +131,6 @@ class User(Model):  # type: ignore
     market = fields.ForeignKeyField("models.Market", null=True)
     artists = fields.ManyToManyField("models.Artist", through="user_followed_artists")
     spotify_token = fields.CharField(max_length=255, null=True)
-    created_at = fields.DatetimeField(auto_now_add=True)
 
     def __str__(self) -> str:
         return f"<spotify:user:{self.username}>"
