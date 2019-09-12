@@ -36,3 +36,8 @@ sentry:
 	sentry-cli releases new -p deneb "${VERSION}"
 	sentry-cli releases set-commits --auto "${VERSION}"
 	sentry-cli releases deploys "${VERSION}" new -e production
+
+init-circle-venv:
+	sudo pip install pipenv
+	sudo pip install pipenv pip --upgrade
+	make install-dev
