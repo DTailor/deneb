@@ -22,7 +22,8 @@ async def fetch_albums(sp: Spotify, artist: Artist, retry: bool = False) -> List
         )
         albums = await fetch_all_albums(sp, data)
     except Exception as exc:
-        sentry_sdk.capture_message(f"fetch_albums exception: {type(exc)}")
+        sentry_sdk.capture_exception()
+
         if not retry:
             raise
         albums = await fetch_albums(sp, artist, retry=True)
@@ -135,7 +136,10 @@ async def update_artist_albums(
         Config.ALBUMS_TASKS_AMOUNT, args_items, handle_album_sync
     )
 
-    await artist.update_timestamp()
+    try:
+        await artist.update_timestamp()
+    except Exception:
+        sentry_sdk.capture_exception()
 
     new_inserts = [a for created, a in task_results if created]
     return artist, new_inserts
