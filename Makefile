@@ -32,6 +32,9 @@ clean:
 deploy:
 	pipenv run fab deploy ${VERSION}
 
+migrate:
+	pipenv run fab migrate
+
 sentry:
 	sentry-cli releases new -p deneb "${VERSION}"
 	sentry-cli releases set-commits --auto "${VERSION}"
