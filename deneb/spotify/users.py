@@ -40,7 +40,7 @@ async def _update_user_artists(
                 _LOGGER.info(f"fetched {albums_nr} albums for {updated_nr} artists")
     except SpotifyException as exc:
         _LOGGER.warning(f"spotify fail: {exc} {user}")
-        sentry_sdk.capture_message(f"spotify fail: {exc} {user}", level="ERROR")
+        sentry_sdk.capture_exception()
 
 
 def _user_task_filter(args: Tuple[SpotifyKeys, User, bool]) -> bool:
