@@ -124,7 +124,15 @@ Are done by using alembic:
 
 ### Release Notes
 
-### v1.1.3 (25 august 2019)
+### v1.1.4 (13 september 2019)
+
+Fucks up on `v1.1.3` with updating the artist timestamp (updated_at); somehow by using `filter` with `update` caused updating `None` objects. Fallbacked to `.updated_at=` and `.save()`.
+
+- Change `artist.updated_at` update way.
+- Capture exceptions instead of messaged for `sentry`
+- Add `migrate` cmd to `Makefile` to run remote migrations
+
+### v1.1.3 (12 september 2019)
 
 - Add timestamps (created_at, updated_at) for "user"
 - Always insert on top of playlist (makes it harder reach fresh stuff by scrolls)

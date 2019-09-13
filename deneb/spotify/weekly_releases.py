@@ -267,7 +267,7 @@ async def _handle_update_user_playlist(
                 await send_message(user.fb_id, fb_alert, stats.describe())
     except SpotifyException as exc:
         _LOGGER.warning(f"spotify fail: {exc} {user}")
-        sentry_sdk.capture_message(f"spotify fail: {exc} {user}", level="ERROR")
+        sentry_sdk.capture_exception()
 
 
 async def update_users_playlists(

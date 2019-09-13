@@ -20,6 +20,13 @@ def deploy(c, version):
 
 
 @task
+def migrate(c):
+    captain = Connection(f"{SSH_USER}@{SSH_HOST}")
+    with captain.cd("/apps/deneb/"):
+        captain.run("pipenv run alembic upgrade head")
+
+
+@task
 def full_run(c):
     captain = Connection(f"{SSH_USER}@{SSH_HOST}")
     with captain.cd("/apps/deneb/"):
