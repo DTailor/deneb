@@ -120,7 +120,8 @@ class Artist(Model):  # type: ignore
         return False
 
     async def update_timestamp(self):
-        await Artist.filter(id=self.id).update(updated_at=datetime.datetime.now())
+        self.updated_at = datetime.datetime.now()
+        await self.save()
 
 
 class User(Model):  # type: ignore
