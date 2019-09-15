@@ -12,7 +12,7 @@ from deneb.logger import get_logger
 from deneb.sp import spotify_client
 from deneb.structs import SpotifyKeys
 from deneb.tools import find_markets_in_hours, run_tasks
-from deneb.user_update import fetch_user_followed_artists
+from deneb.workers.user_sync import sync_user_followed_artists
 
 _LOGGER = get_logger(__name__)
 
@@ -23,7 +23,7 @@ async def _update_user_artists(
     """task to update user followed artists and artist albums"""
     try:
         async with spotify_client(credentials, user) as sp:
-            new_follows, lost_follows = await fetch_user_followed_artists(
+            new_follows, lost_follows = await sync_user_followed_artists(
                 user, sp, dry_run
             )
 
@@ -78,7 +78,7 @@ async def _get_to_update_users(
     return list(users) + list(without_market_users)
 
 
-async def update_users_artists(
+async def sync_users_artists(
     credentials: SpotifyKeys,
     user_id: Optional[str] = None,
     force_update: bool = False,

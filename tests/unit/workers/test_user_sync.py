@@ -5,9 +5,9 @@ import pytest
 from aiomock import AIOMock
 
 from deneb.db import Artist
-from deneb.user_update import (
+from deneb.workers.user_sync import (
     check_follows, extract_lost_follows_artists, extract_new_follows_objects,
-    fetch_artists, fetch_user_followed_artists
+    fetch_artists, sync_user_followed_artists
 )
 from tests.unit.common import _mocked_call
 from tests.unit.fixtures.mocks import get_artist, sp_following
@@ -84,10 +84,10 @@ class TestFetchUserFollowedArtists:
         sp = AIOMock()
 
         with mock.patch(
-            "deneb.user_update.fetch_artists", new=AIOMock()
+            "deneb.workers.user_sync.fetch_artists", new=AIOMock()
         ) as mock_fetch_artists:
             mock_fetch_artists.async_return_value = []
-            new, lost = await fetch_user_followed_artists(user, sp, False)
+            new, lost = await sync_user_followed_artists(user, sp, False)
             mock_fetch_artists.assert_called_once_with(sp)
 
     @pytest.mark.asyncio
@@ -99,9 +99,9 @@ class TestFetchUserFollowedArtists:
 
         artist = get_artist()
         with mock.patch(
-            "deneb.user_update.fetch_artists", new=AIOMock()
+            "deneb.workers.user_sync.fetch_artists", new=AIOMock()
         ) as mock_fetch_artists:
-            with mock.patch("deneb.user_update.Artist", new=AIOMock()) as mock_artist:
+            with mock.patch("deneb.workers.user_sync.Artist", new=AIOMock()) as mock_artist:
                 # mock data received from spotify
                 mock_fetch_artists.async_return_value = [artist]
 
@@ -110,7 +110,7 @@ class TestFetchUserFollowedArtists:
                 mock_artist.filter = _mocked_call([])
                 mock_artist.create = _mocked_call([db_artist])
 
-                new, lost = await fetch_user_followed_artists(user, sp, False)
+                new, lost = await sync_user_followed_artists(user, sp, False)
 
                 mock_fetch_artists.assert_called_once_with(sp)
                 assert user.artists.filter.call_count == 2
@@ -129,17 +129,17 @@ class TestFetchUserFollowedArtists:
         sp = AIOMock()
 
         with mock.patch(
-            "deneb.user_update.fetch_artists", new=AIOMock()
+            "deneb.workers.user_sync.fetch_artists", new=AIOMock()
         ) as mock_fetch_artists:
-            with mock.patch("deneb.user_update.Artist", new=AIOMock()) as mock_artist:
+            with mock.patch("deneb.workers.user_sync.Artist", new=AIOMock()) as mock_artist:
                 with mock.patch(
-                    "deneb.user_update.check_follows", new=AIOMock()
+                    "deneb.workers.user_sync.check_follows", new=AIOMock()
                 ) as mock_check_follows:
                     # mock data received from spotify
                     mock_check_follows.async_return_value = [db_artist]
                     mock_fetch_artists.async_return_value = []
 
-                    new, lost = await fetch_user_followed_artists(user, sp, False)
+                    new, lost = await sync_user_followed_artists(user, sp, False)
 
                     mock_fetch_artists.assert_called_once_with(sp)
                     assert user.artists.filter.call_count == 2

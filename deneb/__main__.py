@@ -5,7 +5,7 @@ import click
 
 from deneb.db import close_db, init_db
 from deneb.logger import get_logger
-from deneb.spotify.users import update_users_artists
+from deneb.spotify.users import sync_users_artists
 from deneb.spotify.weekly_releases import update_users_playlists
 from deneb.structs import FBAlert, SpotifyKeys
 
@@ -74,7 +74,7 @@ def full_run(ctx, user, force, notify, dry_run, all_markets):
 @click.option("--all-markets", is_flag=True)
 def update_followed(user, force, dry_run, all_markets):
     _LOGGER.info("running: update user followed artists and artist albums")
-    runner(update_users_artists, (SPOTIFY_KEYS, user, force, dry_run, all_markets))
+    runner(sync_users_artists, (SPOTIFY_KEYS, user, force, dry_run, all_markets))
 
 
 @click.command()
