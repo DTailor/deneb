@@ -30,6 +30,7 @@ pylama = "*"
 black = "*"
 alembic = "*"
 psycopg2-binary = "*"
+jupyterlab = "*"
 
 [requires]
 python_version = "3.7"
