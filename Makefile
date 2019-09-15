@@ -29,6 +29,10 @@ clean:
 	rm -rf test-results/
 	find . -name "*.pyc" -exec rm -f {} \;
 
+git-tag:
+	git tag -a ${VERSION} -m "release ${VERSION}"`
+	git push --tags
+
 deploy:
 	pipenv run fab deploy ${VERSION}
 
@@ -39,6 +43,8 @@ sentry:
 	sentry-cli releases new -p deneb "${VERSION}"
 	sentry-cli releases set-commits --auto "${VERSION}"
 	sentry-cli releases deploys "${VERSION}" new -e production
+
+full-deploy: git-tag deploy migrate sentry
 
 init-circle-venv:
 	sudo pip install --upgrade pipenv
