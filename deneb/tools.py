@@ -20,15 +20,19 @@ def clean(iterable):
     return [a for a in iterable if a]
 
 
-def is_present(value: str, items: List[dict], search_by: str) -> dict:
+def search_dict_by_key(
+    value: str, items: List[dict], search_by: str
+) -> Tuple[bool, Dict]:
     """
     utility to check if value is present in a list of values from a dict by key
     """
     found = {}  # type: dict
+    is_found = False
     for item in items:
         if value == item[search_by]:
+            is_found = True
             found = item
-    return found
+    return is_found, found
 
 
 def convert_to_date(date_item: datetime.datetime) -> datetime.date:

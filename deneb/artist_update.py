@@ -9,7 +9,9 @@ from spotipy import Spotify
 from deneb.config import Config
 from deneb.db import Album, Artist, PoolTortoise
 from deneb.logger import get_logger
-from deneb.tools import fetch_all, fetch_all_albums, is_present, run_tasks
+from deneb.tools import (
+    fetch_all, fetch_all_albums, run_tasks, search_dict_by_key
+)
 
 _LOGGER = get_logger(__name__)
 
@@ -32,7 +34,10 @@ async def fetch_albums(sp: Spotify, artist: Artist, retry: bool = False) -> List
 
 def is_in_artists_list(artist: Artist, item: dict) -> bool:
     """True if appears in artists list, else False"""
-    return bool(is_present(artist.spotify_id, item["artists"], "id"))
+    is_present_in_list, _ = search_dict_by_key(
+        artist.spotify_id, item["artists"], "id"
+    )
+    return is_present_in_list
 
 
 async def get_featuring_songs(sp: Spotify, artist: Artist, album: dict) -> List[dict]:

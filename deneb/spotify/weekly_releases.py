@@ -19,7 +19,7 @@ from deneb.sp import SpotifyStats, Spotter, spotify_client
 from deneb.spotify.users import _get_to_update_users, _user_task_filter
 from deneb.structs import AlbumTracks, FBAlert, SpotifyKeys
 from deneb.tools import (
-    clean, convert_to_date, fetch_all, grouper, is_present, run_tasks
+    clean, convert_to_date, fetch_all, grouper, search_dict_by_key, run_tasks
 )
 
 _LOGGER = get_logger(__name__)
@@ -230,13 +230,10 @@ async def update_user_playlist(
     user_playlists = await fetch_user_playlists(sp)
     _LOGGER.info(f"updating playlist: <{playlist_name}> for {user}")
 
-    playlist = is_present(playlist_name, user_playlists, "name")
-    if not playlist:
-        playlist = await sp.client.user_playlist_create(
-            sp.userdata["id"], playlist_name, public=False
-        )
+    is_created, playlist = search_dict_by_key(playlist_name, user_playlists, "name")
 
-    playlist_tracks = await get_tracks(sp, playlist)
+    playlist_tracks = await get_tracks(sp, playlist) if is_created else []
+
     singles, albums, tracks = await generate_tracks_to_add(
         sp, week_tracks_db, playlist_tracks
     )
@@ -245,22 +242,30 @@ async def update_user_playlist(
     tracks_from_albums = [a.tracks for a in albums]
     tracks_without_albums = [a.tracks for a in tracks]
 
+    to_add_tracks = chain(
+        *tracks_from_singles, *tracks_from_albums, *tracks_without_albums
+    )
+
     stats = SpotifyStats(
         user.fb_id, playlist, {"singles": singles, "albums": albums, "tracks": tracks}
     )
 
     if not dry_run:
-        to_add_tracks = chain(
-            *tracks_from_singles, *tracks_from_albums, *tracks_without_albums
-        )
+        has_new_tracks = bool(len(list(to_add_tracks)))
+        if not is_created and has_new_tracks:
+            playlist = await sp.client.user_playlist_create(
+                sp.userdata["id"], playlist_name, public=False
+            )
 
-        await update_spotify_playlist(
-            to_add_tracks, playlist["uri"], sp, insert_top=True
-        )
+        if has_new_tracks:
+            await update_spotify_playlist(
+                to_add_tracks, playlist["uri"], sp, insert_top=True
+            )
 
     _LOGGER.info(
         f"updated playlist: <{playlist_name}> for {user} | {stats.describe(brief=True)}"
     )
+
     return stats
 
 
