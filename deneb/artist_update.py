@@ -137,7 +137,7 @@ async def update_artist_albums(
     )
 
     try:
-        await artist.update_timestamp()
+        await artist.update_synced_at()
     except Exception:
         sentry_sdk.capture_exception()
 

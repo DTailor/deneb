@@ -99,6 +99,7 @@ class Artist(Model):  # type: ignore
     spotify_id = fields.CharField(max_length=255)
     created_at = fields.DatetimeField(auto_now_add=True)
     updated_at = fields.DatetimeField(auto_now_add=True)
+    synced_at = fields.DatetimeField(auto_now_add=True)
 
     def __str__(self):
         return f"{self.name}"
@@ -119,8 +120,8 @@ class Artist(Model):  # type: ignore
             return True
         return False
 
-    async def update_timestamp(self):
-        self.updated_at = datetime.datetime.now()
+    async def update_synced_at(self):
+        self.synced_at = datetime.datetime.now()
         await self.save()
 
 
