@@ -40,6 +40,7 @@
 
 ## Deploy
 
+- `Make test`
 - Add `README` entry with version deployed & changelog
 - Update `deneb/config.py` app version
 - `git tag -a <version> -m "release <version>"`
@@ -123,6 +124,13 @@ Are done by using alembic:
 - [circleci](https://circleci.com/bb/DTailor/deneb)
 
 ### Release Notes
+
+### v1.1.5 (15 september 2019)
+
+Start work on separate branch for a minanor refactor to enable adding more types
+of "workers" (weekly new tracks from artists, and the new one for liked songs from a certain years which can be ran at the same time point).
+
+- Generate name based on last day of the week.
 
 ### v1.1.4 (13 september 2019)
 
