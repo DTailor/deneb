@@ -1,5 +1,6 @@
 """Create spotify playlist with weekly new releases"""
 import calendar
+import datetime
 from asyncio import sleep
 from datetime import datetime as dt
 from datetime import timedelta
@@ -26,6 +27,7 @@ _LOGGER = get_logger(__name__)
 
 def week_of_month(dt: dt) -> int:
     """ Returns the week of the month for the specified date.
+    https://stackoverflow.com/a/16804556
     """
 
     first_day = dt.replace(day=1)
@@ -39,6 +41,9 @@ def week_of_month(dt: dt) -> int:
 def generate_playlist_name() -> str:
     """return a string of format <Month> W<WEEK_NR> <Year>"""
     now = dt.now()
+    # get last day of current week so that there won't be 2 playlists
+    # in the same week as happened in-between months
+    now = now + datetime.timedelta(days=6 - now.weekday())
     month_name = calendar.month_name[now.month]
     week_nr = week_of_month(now)
     return f"{month_name} W{week_nr} {now.year}"
@@ -249,7 +254,9 @@ async def update_user_playlist(
             *tracks_from_singles, *tracks_from_albums, *tracks_without_albums
         )
 
-        await update_spotify_playlist(to_add_tracks, playlist["uri"], sp, insert_top=True)
+        await update_spotify_playlist(
+            to_add_tracks, playlist["uri"], sp, insert_top=True
+        )
 
     _LOGGER.info(
         f"updated playlist: <{playlist_name}> for {user} | {stats.describe(brief=True)}"
