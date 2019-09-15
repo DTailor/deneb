@@ -40,6 +40,7 @@
 
 ## Deploy
 
+- Update pipenv packages if the case
 - `Make test`
 - Add `README` entry with version deployed & changelog
 - Update `deneb/config.py` app version
