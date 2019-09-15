@@ -45,6 +45,12 @@
 - `git tag -a <version> -m "release <version>"`
 - `git push --tags`
 - `make VERSION=<version> deploy`
+- `make migrate`
+- `make VERSION=<version> sentry`
+
+or for the last 5 steps
+
+``make VERSION=<version> full-deploy``
 
 ### Update config.py version
 
