@@ -49,6 +49,17 @@ class AsyncSpotify(Spotify):  # pragma: no cover
         """
         return await self.me()
 
+    async def current_user_saved_tracks(self, limit=20, offset=0):
+        """ Gets a list of the tracks saved in the current authorized user's
+            "Your Music" library
+
+            Parameters:
+                - limit - the number of tracks to return
+                - offset - the index of the first track to return
+
+        """
+        return await self._get("me/tracks", limit=limit, offset=offset)
+
     async def user_playlist(self, user, playlist_id=None, fields=None):
         """ Gets playlist of a user
             Parameters:

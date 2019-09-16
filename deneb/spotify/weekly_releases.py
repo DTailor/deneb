@@ -19,7 +19,7 @@ from deneb.sp import SpotifyStats, Spotter, spotify_client
 from deneb.spotify.users import _get_to_update_users, _user_task_filter
 from deneb.structs import AlbumTracks, FBAlert, SpotifyKeys
 from deneb.tools import (
-    clean, convert_to_date, fetch_all, grouper, search_dict_by_key, run_tasks
+    clean, convert_to_date, fetch_all, grouper, run_tasks, search_dict_by_key
 )
 
 _LOGGER = get_logger(__name__)
