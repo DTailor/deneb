@@ -33,6 +33,9 @@ git-tag:
 	git tag -a ${VERSION} -m "release ${VERSION}"`
 	git push --tags
 
+deploy-test:
+	pipenv run fab deploy-test ${BRANCH}
+
 deploy:
 	pipenv run fab deploy ${VERSION}
 
