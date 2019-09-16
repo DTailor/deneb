@@ -34,9 +34,7 @@ async def fetch_albums(sp: Spotify, artist: Artist, retry: bool = False) -> List
 
 def is_in_artists_list(artist: Artist, item: dict) -> bool:
     """True if appears in artists list, else False"""
-    is_present_in_list, _ = search_dict_by_key(
-        artist.spotify_id, item["artists"], "id"
-    )
+    is_present_in_list, _ = search_dict_by_key(artist.spotify_id, item["artists"], "id")
     return is_present_in_list
 
 

@@ -5,13 +5,13 @@ from typing import Any, Dict, List, Optional, Tuple  # noqa
 import sentry_sdk
 from spotipy.client import SpotifyException
 
-from deneb.artist_update import get_new_releases
 from deneb.config import Config
 from deneb.db import Market, User
 from deneb.logger import get_logger
 from deneb.sp import spotify_client
 from deneb.structs import SpotifyKeys
 from deneb.tools import find_markets_in_hours, run_tasks
+from deneb.workers.artist_sync import get_new_releases
 from deneb.workers.user_sync import sync_user_followed_artists
 
 _LOGGER = get_logger(__name__)

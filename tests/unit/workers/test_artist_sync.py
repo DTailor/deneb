@@ -5,7 +5,7 @@ import pytest
 from aiomock import AIOMock
 
 from deneb.db import Artist
-from deneb.artist_update import fetch_albums, get_featuring_songs
+from deneb.workers.artist_sync import fetch_albums, get_featuring_songs
 from tests.unit.common import _mocked_call
 from tests.unit.fixtures.mocks import artist_db, get_album, get_track
 
