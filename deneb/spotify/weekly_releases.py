@@ -6,7 +6,7 @@ from datetime import datetime as dt
 from datetime import timedelta
 from itertools import chain
 from math import ceil
-from typing import Dict, Iterator, List, Optional, Tuple  # noqa:F401
+from typing import Dict, Iterable, List, Optional, Tuple  # noqa:F401
 
 import sentry_sdk
 from spotipy.client import SpotifyException
@@ -183,7 +183,7 @@ async def generate_tracks_to_add(  # noqa
 
 
 async def update_spotify_playlist(
-    tracks: Iterator, playlist_uri: str, sp: Spotter, insert_top: bool = False
+    tracks: Iterable, playlist_uri: str, sp: Spotter, insert_top: bool = False
 ):
     """Add the ids from track iterable to the playlist, insert_top bool does it
     on top of all the items, for fridays"""
