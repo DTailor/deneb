@@ -9,10 +9,10 @@ from deneb.chatbot.message import send_message
 from deneb.config import Config
 from deneb.db import User
 from deneb.logger import get_logger
-from deneb.sp import Spotter, spotify_client
+from deneb.sp import SpotifyStats, Spotter, spotify_client
 from deneb.spotify.common import (
     _get_to_update_users, _user_task_filter, fetch_all, fetch_user_playlists,
-    update_spotify_playlist
+    get_tracks, update_spotify_playlist
 )
 from deneb.structs import FBAlert, SpotifyKeys
 from deneb.tools import run_tasks, search_dict_by_key
@@ -25,9 +25,16 @@ def generate_playlist_name(year: str) -> str:
     return f"liked from {year}"
 
 
+def generate_tracks_to_add(
+    liked_tracks: List[dict], playlist_tracks: List[dict]
+) -> List[dict]:
+    already_present_ids = [a["track"]["id"] for a in playlist_tracks]
+    return [a for a in liked_tracks if a["id"] not in already_present_ids]
+
+
 async def _sync_with_spotify_playlist(
     user: User, sp: Spotter, year: str, tracks: List[dict], dry_run: bool
-):
+) -> SpotifyStats:
     playlist_name = generate_playlist_name(year)
 
     user_playlists = await fetch_user_playlists(sp)
@@ -35,21 +42,26 @@ async def _sync_with_spotify_playlist(
 
     is_created, playlist = search_dict_by_key(playlist_name, user_playlists, "name")
 
-    # playlist_tracks = await get_tracks(sp, playlist) if is_created else []
+    playlist_tracks = await get_tracks(sp, playlist) if is_created else []
 
-    # singles, albums, tracks = await generate_tracks_to_add(
-    #     sp, week_tracks_db, playlist_tracks
-    # )
-
+    to_add_tracks = generate_tracks_to_add(tracks, playlist_tracks)
+    stats = SpotifyStats(user.fb_id, playlist, {"tracks": to_add_tracks})
     if not dry_run:
-        has_new_tracks = bool(len(list(tracks)))
+        has_new_tracks = bool(len(list(to_add_tracks)))
         if not is_created and has_new_tracks:
             playlist = await sp.client.user_playlist_create(
                 sp.userdata["id"], playlist_name, public=False
             )
 
         if has_new_tracks:
-            await update_spotify_playlist(tracks, playlist["uri"], sp, insert_top=True)
+            await update_spotify_playlist(
+                to_add_tracks, playlist["uri"], sp, insert_top=True
+            )
+
+    _LOGGER.info(
+        f"updated playlist: <{playlist_name}> for {user} | {stats.describe(brief=True)}"
+    )
+    return stats
 
 
 async def _sync_saved_from_year_playlist(
@@ -72,16 +84,12 @@ async def _handle_saved_songs_by_year_playlist(
     try:
         async with spotify_client(credentials, user) as sp:
             tracks = await _sync_saved_from_year_playlist(user, sp, year, dry_run)
-            await _sync_with_spotify_playlist(user, sp, year, tracks, dry_run)
-            await send_message(
-                user.fb_id,
-                fb_alert,
-                f"added {len(tracks)} to `liked from {year}` playlist",
-            )
-            # if fb_alert.notify and stats.has_new_releases():
-            #     await send_message(user.fb_id, fb_alert, stats.describe())
+            stats = await _sync_with_spotify_playlist(user, sp, year, tracks, dry_run)
+
+            if fb_alert.notify and stats.has_new_releases():
+                await send_message(user.fb_id, fb_alert, stats.describe())
     except SpotifyException as exc:
-        _LOGGER.warning(f"spotify fail: {exc} {user}")
+        _LOGGER.exception(f"spotify fail: {exc} {user}")
         sentry_sdk.capture_exception()
     return
 
