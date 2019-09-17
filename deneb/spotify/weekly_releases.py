@@ -16,7 +16,7 @@ from deneb.db import Album, User
 from deneb.logger import get_logger
 from deneb.sp import SpotifyStats, Spotter, spotify_client
 from deneb.spotify.common import (
-    fetch_all, fetch_user_playlists, update_spotify_playlist
+    fetch_all, fetch_user_playlists, get_tracks, update_spotify_playlist
 )
 from deneb.spotify.users_following import (
     _get_to_update_users, _user_task_filter
@@ -49,14 +49,6 @@ def generate_playlist_name() -> str:
     month_name = calendar.month_name[now.month]
     week_nr = week_of_month(now)
     return f"{month_name} W{week_nr} {now.year}"
-
-
-async def get_tracks(sp: Spotter, playlist: dict) -> List[dict]:
-    """return playlist tracks"""
-    tracks = await sp.client.user_playlist(
-        sp.userdata["id"], playlist["id"], fields="tracks,next"
-    )
-    return await fetch_all(sp, tracks["tracks"])
 
 
 async def _make_album_tracks(sp: Spotter, album: Album) -> AlbumTracks:

@@ -194,9 +194,9 @@ class SpotifyStats:
     def __init__(self, fb_id: str, playlist: dict, added_items: Dict[str, List]):
         self.fb_id = fb_id
         self.playlist = playlist
-        self.added_singles = added_items["singles"]
-        self.added_albums = added_items["albums"]
-        self.added_tracks = added_items["tracks"]
+        self.added_singles = added_items.get("singles", [])
+        self.added_albums = added_items.get("albums", [])
+        self.added_tracks = added_items.get("tracks", [])
 
     @staticmethod
     def humanize_track(track: Dict) -> str:
@@ -229,7 +229,7 @@ class SpotifyStats:
         for category, items in (
             ("Singles", self.added_singles),
             ("Albums", self.added_albums),
-            ("Featuring tracks from other albums", self.added_tracks),
+            ("Tracks", self.added_tracks),
         ):
             if items:
                 return_msg = f"{return_msg}-== {category} ==-\n"

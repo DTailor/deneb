@@ -74,6 +74,14 @@ async def fetch_all(sp: Spotter, data: Dict) -> List[Dict]:
     return contents
 
 
+async def get_tracks(sp: Spotter, playlist: dict) -> List[dict]:
+    """return playlist tracks"""
+    tracks = await sp.client.user_playlist(
+        sp.userdata["id"], playlist["id"], fields="tracks,next"
+    )
+    return await fetch_all(sp, tracks["tracks"])
+
+
 async def fetch_user_playlists(sp: Spotter) -> List[Dict]:
     """Return user playlists"""
     playlists = []  # type: List[Dict]
