@@ -1,7 +1,8 @@
 """Module to handle artist related updates"""
+import datetime
 import time
 from functools import partial
-from typing import Iterable, List, Tuple
+from typing import Dict, Iterable, List, Tuple
 
 import sentry_sdk
 from spotipy import Spotify
@@ -9,11 +10,59 @@ from spotipy import Spotify
 from deneb.config import Config
 from deneb.db import Album, Artist, PoolTortoise
 from deneb.logger import get_logger
-from deneb.tools import (
-    fetch_all, fetch_all_albums, run_tasks, search_dict_by_key
-)
+from deneb.spotify.common import fetch_all
+from deneb.tools import run_tasks, search_dict_by_key
 
 _LOGGER = get_logger(__name__)
+
+
+def should_fetch_more_albums(
+    albums: List[Dict], to_check_album_types: List[str]
+) -> Tuple[bool, List[Dict], List[str]]:
+    """
+    filter artist albums from current year only and return if more fetching
+    required
+    #TODO: add year as a function argument
+    """
+    required_year = str(datetime.datetime.now().year)
+    validated_albums = []  # type: List[dict]
+    for album in albums:
+        if album["album_type"] in to_check_album_types:
+            to_check_album_types.remove(album["album_type"])
+
+        if required_year in album["release_date"]:
+            validated_albums.append(album)
+        else:
+            if not to_check_album_types:
+                return False, validated_albums, to_check_album_types
+
+    return True, validated_albums, to_check_album_types
+
+
+async def fetch_all_albums(sp: Spotify, data: dict) -> List[Dict]:
+    # ok, so this new `to_check_album_types` is a hack to fix-up a problem
+    # the issues constits in the fact the as we fetch albums
+    # we retrieve several `album_types`, like `album`, `single`, `appears_on`
+    # and they are returned back in descendant order by `release_date`, the catch
+    # is that they are group, meaning that you'll then them ordered that way but
+    # first the `albums`, then the `single` and `appears_on`. This made the script
+    # to miss some `sinlge` and `appears_on` type of albums
+
+    to_check_album_types = ["album", "single", "appears_on"]
+    contents = []
+
+    while True:
+        should, albums, to_check_album_types = should_fetch_more_albums(
+            data["items"], to_check_album_types
+        )
+        contents.extend(albums)
+        if not should or not data["next"]:
+            break
+        data = await sp.client.next(data)  # noqa: B305
+
+    # there are some duplicates, remove them
+    contents = list({v["id"]: v for v in contents}.values())
+    return contents
 
 
 async def fetch_albums(sp: Spotify, artist: Artist, retry: bool = False) -> List[dict]:
@@ -23,7 +72,7 @@ async def fetch_albums(sp: Spotify, artist: Artist, retry: bool = False) -> List
             artist.spotify_id, limit=50, album_type="album,single,appears_on"
         )
         albums = await fetch_all_albums(sp, data)
-    except Exception as exc:
+    except Exception:
         sentry_sdk.capture_exception()
 
         if not retry:

@@ -5,16 +5,17 @@ from typing import List
 import sentry_sdk
 from spotipy.client import SpotifyException
 
+from deneb.chatbot.message import send_message
 from deneb.config import Config
 from deneb.db import User
 from deneb.logger import get_logger
 from deneb.sp import Spotter, spotify_client
-from deneb.spotify.users import _get_to_update_users, _user_task_filter
-from deneb.spotify.weekly_releases import (
-    fetch_user_playlists, search_dict_by_key, update_spotify_playlist, send_message
+from deneb.spotify.common import (
+    _get_to_update_users, _user_task_filter, fetch_all, fetch_user_playlists,
+    update_spotify_playlist
 )
 from deneb.structs import FBAlert, SpotifyKeys
-from deneb.tools import fetch_all, run_tasks
+from deneb.tools import run_tasks, search_dict_by_key
 
 _LOGGER = get_logger(__name__)
 
@@ -72,7 +73,11 @@ async def _handle_saved_songs_by_year_playlist(
         async with spotify_client(credentials, user) as sp:
             tracks = await _sync_saved_from_year_playlist(user, sp, year, dry_run)
             await _sync_with_spotify_playlist(user, sp, year, tracks, dry_run)
-            await send_message(user.fb_id, fb_alert, f"added {len(tracks)} to `liked from {year}` playlist")
+            await send_message(
+                user.fb_id,
+                fb_alert,
+                f"added {len(tracks)} to `liked from {year}` playlist",
+            )
             # if fb_alert.notify and stats.has_new_releases():
             #     await send_message(user.fb_id, fb_alert, stats.describe())
     except SpotifyException as exc:

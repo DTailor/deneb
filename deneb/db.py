@@ -113,9 +113,9 @@ class Artist(Model):  # type: ignore
         returns True if last update time is bigger
         the the hours_delta, else False
         """
-        if not self.timestamp:
+        if not self.synced_at:
             return True
-        delta = datetime.datetime.now() - self.timestamp
+        delta = datetime.datetime.now() - self.synced_at
         if delta.total_seconds() / 3600 > hours_delta:
             return True
         return False

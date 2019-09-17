@@ -6,11 +6,12 @@ import sentry_sdk
 from spotipy.client import SpotifyException
 
 from deneb.config import Config
-from deneb.db import Market, User
+from deneb.db import User
 from deneb.logger import get_logger
 from deneb.sp import spotify_client
+from deneb.spotify.common import _get_to_update_users, _user_task_filter
 from deneb.structs import SpotifyKeys
-from deneb.tools import find_markets_in_hours, run_tasks
+from deneb.tools import run_tasks
 from deneb.workers.artist_sync import get_new_releases
 from deneb.workers.user_sync import sync_user_followed_artists
 
@@ -41,41 +42,6 @@ async def _update_user_artists(
     except SpotifyException as exc:
         _LOGGER.warning(f"spotify fail: {exc} {user}")
         sentry_sdk.capture_exception()
-
-
-def _user_task_filter(args: Tuple[SpotifyKeys, User, bool]) -> bool:
-    """filter for task runner to check if task should be run"""
-    if args[1].spotify_token:
-        return True
-    _LOGGER.info(f"discard task for {args[1]}; missing spotify_token")
-    return False
-
-
-async def _get_to_update_users(
-    username: Optional[str] = None, all_markets: Optional[bool] = False
-) -> List[User]:
-    """if `--username` option used, fetch that user else fetch all users"""
-    args = dict()  # type: Dict[str, Any]
-    if username is not None:
-        args["username"] = username
-    without_market_users = []  # type: List[User]
-
-    if not all_markets:
-        markets = await Market.all()
-        active_markets = find_markets_in_hours(markets, [0, 12])
-
-        # TODO: use logic OR and get rid of this hack
-        without_market_users = await User.filter(market_id__isnull=True)
-
-        if not active_markets:
-            # no point in fetching users if no markets are good
-            return without_market_users
-
-        args["market_id__in"] = [a.id for a in active_markets]
-
-    users = await User.filter(**args)
-
-    return list(users) + list(without_market_users)
 
 
 async def sync_users_artists(

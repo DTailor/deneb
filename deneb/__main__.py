@@ -5,7 +5,7 @@ import click
 
 from deneb.db import close_db, init_db
 from deneb.logger import get_logger
-from deneb.spotify.users import sync_users_artists
+from deneb.spotify.users_following import sync_users_artists
 from deneb.spotify.weekly_releases import update_users_playlists
 from deneb.spotify.yearly_liked import update_users_playlists_liked_by_year
 from deneb.structs import FBAlert, SpotifyKeys
@@ -49,7 +49,7 @@ def cli():
 @click.option("--all-markets", is_flag=True)
 @click.option("--year")
 @click.pass_context
-def full_run(ctx, user, force, notify, dry_run, all_markets):
+def full_run(ctx, user, force, notify, dry_run, all_markets, year):
     orig_params = ctx.params.copy()
 
     ctx.params = {
@@ -70,11 +70,11 @@ def full_run(ctx, user, force, notify, dry_run, all_markets):
 
     ctx.params = {
         "user": orig_params["user"],
-        "notify": orig_params.get("year", None),
+        "year": orig_params.get("year", None),
         "notify": orig_params.get("notify", False),
         "dry_run": orig_params.get("dry_run", False),
     }
-    update_playlists_yearly_liked(ctx)
+    update_playlists_yearly_liked.invoke(ctx)
 
 
 @click.command()

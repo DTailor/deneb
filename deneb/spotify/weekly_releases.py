@@ -1,7 +1,6 @@
 """Create spotify playlist with weekly new releases"""
 import calendar
 import datetime
-from asyncio import sleep
 from datetime import datetime as dt
 from datetime import timedelta
 from itertools import chain
@@ -16,11 +15,14 @@ from deneb.config import Config
 from deneb.db import Album, User
 from deneb.logger import get_logger
 from deneb.sp import SpotifyStats, Spotter, spotify_client
-from deneb.spotify.users import _get_to_update_users, _user_task_filter
-from deneb.structs import AlbumTracks, FBAlert, SpotifyKeys
-from deneb.tools import (
-    clean, convert_to_date, fetch_all, grouper, run_tasks, search_dict_by_key
+from deneb.spotify.common import (
+    fetch_all, fetch_user_playlists, update_spotify_playlist
 )
+from deneb.spotify.users_following import (
+    _get_to_update_users, _user_task_filter
+)
+from deneb.structs import AlbumTracks, FBAlert, SpotifyKeys
+from deneb.tools import convert_to_date, run_tasks, search_dict_by_key
 
 _LOGGER = get_logger(__name__)
 
@@ -47,14 +49,6 @@ def generate_playlist_name() -> str:
     month_name = calendar.month_name[now.month]
     week_nr = week_of_month(now)
     return f"{month_name} W{week_nr} {now.year}"
-
-
-async def fetch_user_playlists(sp: Spotter) -> List[dict]:
-    """Return user playlists"""
-    playlists = []  # type: List[dict]
-    data = await sp.client.user_playlists(sp.userdata["id"])
-    playlists = await fetch_all(sp, data)
-    return playlists
 
 
 async def get_tracks(sp: Spotter, playlist: dict) -> List[dict]:
@@ -180,29 +174,6 @@ async def generate_tracks_to_add(  # noqa
         __update_already_present(already_present_tracks, album)
 
     return singles, main_albums, list(featuring_albums.values())
-
-
-async def update_spotify_playlist(
-    tracks: Iterable, playlist_uri: str, sp: Spotter, insert_top: bool = False
-):
-    """Add the ids from track iterable to the playlist, insert_top bool does it
-    on top of all the items, for fridays"""
-
-    index = 0
-    for album_ids in grouper(100, tracks):
-        album_ids = clean(album_ids)
-        album_ids = [a["id"] for a in album_ids]
-        args = (sp.userdata["id"], playlist_uri, album_ids)
-
-        if insert_top:
-            args = args + (index,)  # type: ignore
-
-        try:
-            await sp.client.user_playlist_add_tracks(*args)
-            index += len(album_ids) - 1
-            await sleep(0.2)
-        except Exception as exc:
-            _LOGGER.exception(f"add to playlist '{album_ids}' failed with: {exc}")
 
 
 def remove_unwanted_tracks(tracks: List[Dict]) -> List[Dict]:
