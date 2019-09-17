@@ -86,21 +86,27 @@ There's a cli tool available to use the tool easier.
 ### Commands
 
 - `pipenv run python -m deneb`
-  - `full-run`
-    - `--force` - validate to check artist anyway
+  - `full-run` (runs all commands bellow)
+    - `--force` - ignore artist synced_at timestamp (for: `update-followed`)
+    - `--notify` - send fb users what tracks were added to playlist
+    - `--dry-run` - dont'a add tracks to spotify playlist (for: all)
+    - `--user <spotify_id>` - full run for specific spotify id (for: all)
+    - `--all-markets` - will query all markets instead of 12/24 hour ones (for: `update-followed`, `update-playlists`)
+    - `--year <year>` - collect liked tracks from specific year (for: `update-playlists-yearly-liked`)
+  - `update-followed` (collect user followed artists and albums (from current year) from spotify )
+    - `--force` - ignore artist synced_at timestamp
+    - `--user <spotify_id>` - full run for specific spotify id
+    - `--all-markets` - will query all markets instead of 12/24 hour ones
+  - `update-playlists`(update current week realeased tracks playlist from followed artists)
     - `--notify` - send fb users what tracks were added to playlist
     - `--dry-run` - dont'a add tracks to spotify playlist
     - `--user <spotify_id>` - full run for specific spotify id
     - `--all-markets` - will query all markets instead of 12/24 hour ones
-  - `update-followed`
-    - `--force` - validate to check artist anyway
-    - `--user <spotify_id>` - full run for specific spotify id
-    - `--all-markets` - will query all markets instead of 12/24 hour ones
-  - `update-playlists`
+  - `update-playlists-yearly-liked` (update liked songs from released specific year playlist)
     - `--notify` - send fb users what tracks were added to playlist
     - `--dry-run` - dont'a add tracks to spotify playlist
     - `--user <spotify_id>` - full run for specific spotify id
-    - `--all-markets` - will query all markets instead of 12/24 hour ones
+    - `--year <year>` - collect liked tracks from specific year
 
 ## Testing
 
@@ -131,6 +137,13 @@ Are done by using alembic:
 - [circleci](https://circleci.com/bb/DTailor/deneb)
 
 ### Release Notes
+
+### v1.2.0 (WIP)
+
+- New command `update-playlists-yearly-liked`
+- `Makefile` now has `git-tag`, `deploy-test` and `full-deploy`
+- `Artist.synced_at` field (last albums fetched timestamp)
+- Major refactors on functionality toolset. Moved method into more consistent modules.
 
 ### v1.1.5 (15 september 2019)
 
