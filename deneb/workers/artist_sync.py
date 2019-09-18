@@ -72,6 +72,7 @@ async def fetch_albums(sp: Spotify, artist: Artist, retry: bool = False) -> List
         )
         albums = await fetch_all_albums(sp, data)
     except Exception as exc:
+        _LOGGER.exception(f"{sp.userdata['id']} failed to fetch all {artist} albums")
         push_sentry_error(exc, sp.userdata["id"], sp.userdata["display_name"])
 
         if not retry:
@@ -190,6 +191,7 @@ async def update_artist_albums(
     try:
         await artist.update_synced_at()
     except Exception as exc:
+        _LOGGER.exception(f"{sp.userdata['id']} failed to update {artist} synced_at")
         push_sentry_error(exc, sp.userdata["id"], sp.userdata["display_name"])
 
     new_inserts = [a for created, a in task_results if created]

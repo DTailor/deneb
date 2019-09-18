@@ -30,6 +30,7 @@ async def spotify_client(credentials: SpotifyKeys, user: User):
         try:
             await user.async_data(sp)
         except ValueError as exc:
+            _LOGGER.exception(f"{sp.userdata['id']} on sync user with db")
             push_sentry_error(exc, sp.userdata["id"], sp.userdata["display_name"])
 
         await sp.client.session.close()
@@ -202,31 +203,41 @@ class SpotifyStats:
         self.added_albums = added_items.get("albums", [])
         self.added_tracks = added_items.get("tracks", [])
 
-    @staticmethod
-    def humanize_track(track: Dict) -> str:
+    def humanize_track(self, track: Dict) -> str:
         artists = ", ".join(a["name"] for a in track["artists"])
         return f"{artists} - {track['name']}"
 
-    def has_new_releases(self) -> int:
+    def has_new_tracks(self) -> int:
         everything = self.added_albums + self.added_tracks + self.added_singles
         return len(everything)
+
+    def format_tracklist(self, category: str, items: List) -> str:
+        if not items:
+            return ""
+
+        return_msg = f"-== {category} ==-\n"
+        for item in items:
+            tmp_msg = f"{self.humanize_track(item.parent)}"
+            return_msg = f"{return_msg}{tmp_msg}\n"
+
+        return f"{return_msg}\n"
 
     def describe(self, brief: bool = False) -> str:
         if brief:
             return (
                 f"s: {len(self.added_singles)} "
                 f"a: {len(self.added_albums)} "
-                f"f: {len(self.added_tracks)}"
+                f"t: {len(self.added_tracks)}"
             )
 
-        didnt_add_responses = [
-            "Uhh, sorry, no releases today for you.",
-            "Didn't find anything new today",
+        fallback_responses = [
+            "Uhh, sorry, no new tracks.",
+            "Nothing new",
             "Sad day, no new music",
             "No adds, you should follow more artists",
         ]
-        if not self.has_new_releases():
-            return random.choice(didnt_add_responses)
+        if not self.has_new_tracks():
+            return random.choice(fallback_responses)
 
         return_msg = f"Playlist: {self.playlist['name']}\n\n"
 
@@ -236,11 +247,25 @@ class SpotifyStats:
             ("Tracks", self.added_tracks),
         ):
             if items:
-                return_msg = f"{return_msg}-== {category} ==-\n"
-                for album in items:
-                    tmp_msg = f"{self.humanize_track(album.parent)}"
-                    return_msg = f"{return_msg}{tmp_msg}\n"
-                return_msg = f"{return_msg}\n"
+                tracklist = self.format_tracklist(category, items)
+                return_msg = f"{return_msg}{tracklist}"
 
         return_msg = f"{return_msg}Link: {self.playlist['external_urls']['spotify']}"
         return return_msg
+
+
+class SpotifyYearlyStats(SpotifyStats):
+    def humanize_track(self, track: Dict) -> str:
+        artists = ", ".join(a["name"] for a in track["artists"])
+        return f"{artists} - {track['name']}"
+
+    def format_tracklist(self, category: str, items: List) -> str:
+        if not items:
+            return ""
+
+        return_msg = f"-== {category} ==-\n"
+        for item in items:
+            tmp_msg = f"{self.humanize_track(item['album'])}"
+            return_msg = f"{return_msg}{tmp_msg}\n"
+
+        return f"{return_msg}\n"

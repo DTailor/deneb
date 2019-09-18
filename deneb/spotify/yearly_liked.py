@@ -8,7 +8,7 @@ from deneb.chatbot.message import send_message
 from deneb.config import Config
 from deneb.db import User
 from deneb.logger import get_logger, push_sentry_error
-from deneb.sp import SpotifyStats, Spotter, spotify_client
+from deneb.sp import SpotifyYearlyStats, Spotter, spotify_client
 from deneb.spotify.common import (
     _get_to_update_users, _user_task_filter, fetch_all, fetch_user_playlists,
     get_tracks, update_spotify_playlist
@@ -33,7 +33,7 @@ def generate_tracks_to_add(
 
 async def _sync_with_spotify_playlist(
     user: User, sp: Spotter, year: str, tracks: List[dict], dry_run: bool
-) -> SpotifyStats:
+) -> SpotifyYearlyStats:
     playlist_name = generate_playlist_name(year)
 
     user_playlists = await fetch_user_playlists(sp)
@@ -44,9 +44,8 @@ async def _sync_with_spotify_playlist(
     playlist_tracks = await get_tracks(sp, playlist) if is_created else []
 
     to_add_tracks = generate_tracks_to_add(tracks, playlist_tracks)
-    stats = SpotifyStats(user.fb_id, playlist, {"tracks": to_add_tracks})
     if not dry_run:
-        has_new_tracks = bool(len(list(to_add_tracks)))
+        has_new_tracks = bool(to_add_tracks)
         if not is_created and has_new_tracks:
             playlist = await sp.client.user_playlist_create(
                 sp.userdata["id"], playlist_name, public=False
@@ -56,6 +55,11 @@ async def _sync_with_spotify_playlist(
             await update_spotify_playlist(
                 to_add_tracks, playlist["uri"], sp, insert_top=True
             )
+
+    if not playlist:
+        playlist = {"name": playlist_name}
+
+    stats = SpotifyYearlyStats(user.fb_id, playlist, {"tracks": to_add_tracks})
 
     _LOGGER.info(
         f"updated playlist: <{playlist_name}> for {user} | {stats.describe(brief=True)}"
@@ -85,10 +89,10 @@ async def _handle_saved_songs_by_year_playlist(
             tracks = await _sync_saved_from_year_playlist(user, sp, year, dry_run)
             stats = await _sync_with_spotify_playlist(user, sp, year, tracks, dry_run)
 
-            if fb_alert.notify and stats.has_new_releases():
+            if fb_alert.notify and stats.has_new_tracks():
                 await send_message(user.fb_id, fb_alert, stats.describe())
     except SpotifyException as exc:
-        _LOGGER.exception(f"spotify fail: {exc} {user}")
+        _LOGGER.exception(f"{user} failed to save liked songs by year")
         push_sentry_error(exc, user.username, user.display_name)
     return
 

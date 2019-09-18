@@ -39,7 +39,7 @@ async def _update_user_artists(
             if updated_nr:
                 _LOGGER.info(f"fetched {albums_nr} albums for {updated_nr} artists")
     except SpotifyException as exc:
-        _LOGGER.warning(f"spotify fail: {exc} {user}")
+        _LOGGER.exception(f"{user} failed to update artists")
         push_sentry_error(exc, sp.userdata["id"], sp.userdata["display_name"])
 
 

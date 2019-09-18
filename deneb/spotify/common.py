@@ -109,8 +109,7 @@ async def update_spotify_playlist(
             index += len(album_ids) - 1
             await sleep(0.2)
         except Exception as exc:
-            push_sentry_error(exc, sp.userdata["id"], sp.userdata["display_name"])
-
             _LOGGER.exception(
-                f"failed add to playlist {playlist_uri}, ids: '{album_ids}'"
+                f"{sp.userdata['id']} fail on POST playlist items {album_ids}"
             )
+            push_sentry_error(exc, sp.userdata["id"], sp.userdata["display_name"])

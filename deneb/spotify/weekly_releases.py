@@ -208,22 +208,37 @@ async def update_user_playlist(
         *tracks_from_singles, *tracks_from_albums, *tracks_without_albums
     )
 
-    stats = SpotifyStats(
-        user.fb_id, playlist, {"singles": singles, "albums": albums, "tracks": tracks}
-    )
-
     if not dry_run:
-        has_new_tracks = bool(len(list(to_add_tracks)))
+        has_new_tracks = bool(
+            len(
+                list(
+                    chain.from_iterable(
+                        [
+                            *tracks_from_singles,
+                            *tracks_from_albums,
+                            *tracks_without_albums,
+                        ]
+                    )
+                )
+            )
+        )
         if not is_created and has_new_tracks:
             playlist = await sp.client.user_playlist_create(
                 sp.userdata["id"], playlist_name, public=False
             )
+            _LOGGER.info(f"created `{playlist_name}` for {sp.userdata['id']}")
 
         if has_new_tracks:
             await update_spotify_playlist(
                 to_add_tracks, playlist["uri"], sp, insert_top=True
             )
 
+    if not playlist:
+        playlist = {"name": playlist_name}
+
+    stats = SpotifyStats(
+        user.fb_id, playlist, {"singles": singles, "albums": albums, "tracks": tracks}
+    )
     _LOGGER.info(
         f"updated playlist: <{playlist_name}> for {user} | {stats.describe(brief=True)}"
     )
@@ -237,12 +252,11 @@ async def _handle_update_user_playlist(
     try:
         async with spotify_client(credentials, user) as sp:
             stats = await update_user_playlist(user, sp, dry_run)
-            if fb_alert.notify and stats.has_new_releases():
+            if fb_alert.notify and stats.has_new_tracks():
                 await send_message(user.fb_id, fb_alert, stats.describe())
     except SpotifyException as exc:
-        _LOGGER.warning(f"spotify fail: {exc} {user}")
+        _LOGGER.warning(f"{user} failed to update playlist")
         push_sentry_error(exc, user.username, user.display_name)
-
 
 
 async def update_users_playlists(
