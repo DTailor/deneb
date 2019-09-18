@@ -4,12 +4,11 @@ import time
 from functools import partial
 from typing import Dict, Iterable, List, Tuple
 
-import sentry_sdk
 from spotipy import Spotify
 
 from deneb.config import Config
 from deneb.db import Album, Artist, PoolTortoise
-from deneb.logger import get_logger
+from deneb.logger import get_logger, push_sentry_error
 from deneb.spotify.common import fetch_all
 from deneb.tools import run_tasks, search_dict_by_key
 
@@ -72,8 +71,8 @@ async def fetch_albums(sp: Spotify, artist: Artist, retry: bool = False) -> List
             artist.spotify_id, limit=50, album_type="album,single,appears_on"
         )
         albums = await fetch_all_albums(sp, data)
-    except Exception:
-        sentry_sdk.capture_exception()
+    except Exception as exc:
+        push_sentry_error(exc, sp.userdata["id"], sp.userdata["display_name"])
 
         if not retry:
             raise
@@ -190,8 +189,8 @@ async def update_artist_albums(
 
     try:
         await artist.update_synced_at()
-    except Exception:
-        sentry_sdk.capture_exception()
+    except Exception as exc:
+        push_sentry_error(exc, sp.userdata["id"], sp.userdata["display_name"])
 
     new_inserts = [a for created, a in task_results if created]
     return artist, new_inserts

@@ -145,7 +145,6 @@ class User(Model):  # type: ignore
             raise ValueError(
                 f"""
             no refresh token present.
-            CRED_MAN: {sp.client.client_credentials_manager}
             TOK_INF: {sp.client.client_credentials_manager.token_info}
             IN_DB: {self.spotify_token}
             """

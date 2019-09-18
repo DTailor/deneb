@@ -7,13 +7,12 @@ from itertools import chain
 from math import ceil
 from typing import Dict, Iterable, List, Optional, Tuple  # noqa:F401
 
-import sentry_sdk
 from spotipy.client import SpotifyException
 
 from deneb.chatbot.message import send_message
 from deneb.config import Config
 from deneb.db import Album, User
-from deneb.logger import get_logger
+from deneb.logger import get_logger, push_sentry_error
 from deneb.sp import SpotifyStats, Spotter, spotify_client
 from deneb.spotify.common import (
     fetch_all, fetch_user_playlists, get_tracks, update_spotify_playlist
@@ -242,7 +241,8 @@ async def _handle_update_user_playlist(
                 await send_message(user.fb_id, fb_alert, stats.describe())
     except SpotifyException as exc:
         _LOGGER.warning(f"spotify fail: {exc} {user}")
-        sentry_sdk.capture_exception()
+        push_sentry_error(exc, user.username, user.display_name)
+
 
 
 async def update_users_playlists(

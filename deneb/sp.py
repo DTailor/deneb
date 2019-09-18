@@ -11,7 +11,7 @@ from spotipy.client import Spotify, SpotifyException
 from spotipy.oauth2 import SpotifyClientCredentials, SpotifyOAuth
 
 from deneb.db import User
-from deneb.logger import get_logger
+from deneb.logger import get_logger, push_sentry_error
 from deneb.structs import SpotifyKeys
 
 _LOGGER = get_logger(__name__)
@@ -27,7 +27,11 @@ async def spotify_client(credentials: SpotifyKeys, user: User):
     try:
         yield sp
     finally:
-        await user.async_data(sp)
+        try:
+            await user.async_data(sp)
+        except ValueError as exc:
+            push_sentry_error(exc, sp.userdata["id"], sp.userdata["display_name"])
+
         await sp.client.session.close()
 
 

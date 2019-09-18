@@ -2,13 +2,12 @@
 import datetime
 from typing import List
 
-import sentry_sdk
 from spotipy.client import SpotifyException
 
 from deneb.chatbot.message import send_message
 from deneb.config import Config
 from deneb.db import User
-from deneb.logger import get_logger
+from deneb.logger import get_logger, push_sentry_error
 from deneb.sp import SpotifyStats, Spotter, spotify_client
 from deneb.spotify.common import (
     _get_to_update_users, _user_task_filter, fetch_all, fetch_user_playlists,
@@ -90,7 +89,7 @@ async def _handle_saved_songs_by_year_playlist(
                 await send_message(user.fb_id, fb_alert, stats.describe())
     except SpotifyException as exc:
         _LOGGER.exception(f"spotify fail: {exc} {user}")
-        sentry_sdk.capture_exception()
+        push_sentry_error(exc, user.username, user.display_name)
     return
 
 

@@ -2,12 +2,11 @@
 
 from typing import Any, Dict, List, Optional, Tuple  # noqa
 
-import sentry_sdk
 from spotipy.client import SpotifyException
 
 from deneb.config import Config
 from deneb.db import User
-from deneb.logger import get_logger
+from deneb.logger import get_logger, push_sentry_error
 from deneb.sp import spotify_client
 from deneb.spotify.common import _get_to_update_users, _user_task_filter
 from deneb.structs import SpotifyKeys
@@ -41,7 +40,7 @@ async def _update_user_artists(
                 _LOGGER.info(f"fetched {albums_nr} albums for {updated_nr} artists")
     except SpotifyException as exc:
         _LOGGER.warning(f"spotify fail: {exc} {user}")
-        sentry_sdk.capture_exception()
+        push_sentry_error(exc, sp.userdata["id"], sp.userdata["display_name"])
 
 
 async def sync_users_artists(

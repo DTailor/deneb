@@ -3,10 +3,9 @@ from asyncio import sleep
 from typing import Any, Dict, Iterable, List, Optional, Tuple  # noqa
 
 import pytz
-import sentry_sdk
 
 from deneb.db import Market, User
-from deneb.logger import get_logger
+from deneb.logger import get_logger, push_sentry_error
 from deneb.sp import Spotter
 from deneb.structs import SpotifyKeys
 from deneb.tools import clean, grouper
@@ -109,8 +108,9 @@ async def update_spotify_playlist(
             await sp.client.user_playlist_add_tracks(*args)
             index += len(album_ids) - 1
             await sleep(0.2)
-        except Exception:
-            sentry_sdk.capture_exception()
+        except Exception as exc:
+            push_sentry_error(exc, sp.userdata["id"], sp.userdata["display_name"])
+
             _LOGGER.exception(
                 f"failed add to playlist {playlist_uri}, ids: '{album_ids}'"
             )
