@@ -203,7 +203,8 @@ class SpotifyStats:
         self.added_albums = added_items.get("albums", [])
         self.added_tracks = added_items.get("tracks", [])
 
-    def humanize_track(self, track: Dict) -> str:
+    @staticmethod
+    def humanize_track(track: Dict) -> str:
         artists = ", ".join(a["name"] for a in track["artists"])
         return f"{artists} - {track['name']}"
 
