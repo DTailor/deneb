@@ -3,6 +3,7 @@ import json
 from tortoise import fields
 from tortoise.models import Model
 
+from deneb.db import Album, Market
 from deneb.logger import get_logger
 
 _LOGGER = get_logger(__name__)
