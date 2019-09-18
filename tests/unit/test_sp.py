@@ -120,7 +120,7 @@ class TestSpotifyStats:
         expected = [
             "Playlist: Test Playlist",
             "",
-            "-== Featuring tracks from other albums ==-",
+            "-== Tracks ==-",
             "Test Artist - Test Album",
             "",
             "Link: https://open.spotify.com/playlist/test_playlist",
@@ -146,7 +146,7 @@ class TestSpotifyStats:
             "-== Albums ==-",
             "Test Artist - Test Album",
             "",
-            "-== Featuring tracks from other albums ==-",
+            "-== Tracks ==-",
             "Test Artist - Test Album",
             "",
             "Link: https://open.spotify.com/playlist/test_playlist",
