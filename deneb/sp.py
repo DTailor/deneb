@@ -256,6 +256,7 @@ class SpotifyStats:
 
 
 class SpotifyYearlyStats(SpotifyStats):
+    @staticmethod
     def humanize_track(self, track: Dict) -> str:
         artists = ", ".join(a["name"] for a in track["artists"])
         return f"{artists} - {track['name']}"
@@ -266,7 +267,7 @@ class SpotifyYearlyStats(SpotifyStats):
 
         return_msg = f"-== {category} ==-\n"
         for item in items:
-            tmp_msg = f"{self.humanize_track(item['album'])}"
+            tmp_msg = f"{self.humanize_track(item)}"
             return_msg = f"{return_msg}{tmp_msg}\n"
 
         return f"{return_msg}\n"
