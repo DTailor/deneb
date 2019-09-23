@@ -38,6 +38,29 @@
   - `sentry logging`
     - `SENTRY_URL`
 
+## Docker
+
+This project is containerized.
+
+### Build image
+
+```bash
+docker build -t deneb .
+```
+
+### Enter it
+
+```bash
+docker run -i deneb /bin/sh
+```
+
+### Run it
+
+```bash
+docker run --network host  --env-file .env deneb pipenv run python -m deneb full-run --user <username> --notify --all-markets
+docker run --network host  --env-file .env deneb pipenv run python -m deneb update-playlists-yearly-liked --user <username> --notify
+```
+
 ## Deploy
 
 - Update pipenv packages if the case
