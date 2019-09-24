@@ -148,7 +148,7 @@ docker run --rm   --name pg-docker -e POSTGRES_PASSWORD=$DB_PASSWORD -e POSTGRES
 Are done by using alembic:
 
 - `pipenv run alembic upgrade head` - migrate to last state
-- `alembic revision -m "Revision Message"` - create a new db revision
+- `pipenv run alembic revision -m "Revision Message"` - create a new db revision
 - `pipenv run alembic downgrade base` - destroy all (AHTUNG!)
 
 ## Local
