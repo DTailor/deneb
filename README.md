@@ -161,11 +161,14 @@ Are done by using alembic:
 
 ### Release Notes
 
-### v1.2.0 (WIP)
+### v2.0.0 (WIP)
 
+- Add `Docker` container integration
+- Per app configs for every user (user app configs)
 - New command `update-playlists-yearly-liked`
 - `Makefile` now has `git-tag`, `deploy-test` and `full-deploy`
 - `Artist.synced_at` field (last albums fetched timestamp)
+- Packages updates
 - Major refactors on functionality toolset. Moved method into more consistent modules.
 
 ### v1.1.5 (15 september 2019)
