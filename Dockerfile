@@ -16,7 +16,7 @@ RUN pipenv --python 3.7
 COPY Pipfile .
 COPY Pipfile.lock .
 
-RUN pipenv install --verbose --skip-lock
+RUN pipenv install --verbose
 
 COPY . /app
 
