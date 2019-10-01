@@ -57,3 +57,6 @@ init-circle-venv:
 	sudo pip install --upgrade pipenv
 	sudo pip install --upgrade pip
 	make install-dev
+
+docker:
+	docker build -t deneb .
