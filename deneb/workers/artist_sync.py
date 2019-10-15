@@ -4,11 +4,10 @@ import time
 from functools import partial
 from typing import Dict, Iterable, List, Tuple
 
-from spotipy import Spotify
-
 from deneb.config import Config
 from deneb.db import Album, Artist, PoolTortoise
 from deneb.logger import get_logger, push_sentry_error
+from deneb.sp import Spotter
 from deneb.spotify.common import fetch_all
 from deneb.tools import run_tasks, search_dict_by_key
 
@@ -38,7 +37,7 @@ def should_fetch_more_albums(
     return True, validated_albums, to_check_album_types
 
 
-async def fetch_all_albums(sp: Spotify, data: dict) -> List[Dict]:
+async def fetch_all_albums(sp: Spotter, data: dict) -> List[Dict]:
     # ok, so this new `to_check_album_types` is a hack to fix-up a problem
     # the issues constits in the fact the as we fetch albums
     # we retrieve several `album_types`, like `album`, `single`, `appears_on`
@@ -64,7 +63,7 @@ async def fetch_all_albums(sp: Spotify, data: dict) -> List[Dict]:
     return contents
 
 
-async def fetch_albums(sp: Spotify, artist: Artist, retry: bool = False) -> List[dict]:
+async def fetch_albums(sp: Spotter, artist: Artist, retry: bool = False) -> List[dict]:
     """fetches artist albums from spotify"""
     try:
         data = await sp.client.artist_albums(
@@ -87,7 +86,7 @@ def is_in_artists_list(artist: Artist, item: dict) -> bool:
     return is_present_in_list
 
 
-async def get_featuring_songs(sp: Spotify, artist: Artist, album: dict) -> List[dict]:
+async def get_featuring_songs(sp: Spotter, artist: Artist, album: dict) -> List[dict]:
     """get feature tracks from an album for an artist"""
     tracks = await sp.client.album_tracks(album_id=album["id"], limit=50)
     tracks = await fetch_all(sp, tracks)
@@ -159,7 +158,7 @@ async def handle_album_sync(album: dict, artist: Artist) -> Tuple[bool, Album]:
 
 
 async def update_artist_albums(
-    sp: Spotify, artist: Artist, dry_run: bool = False
+    sp: Spotter, artist: Artist, dry_run: bool = False
 ) -> Tuple[Artist, List[Album]]:
     """update artist albums by adding them to the db"""
     albums = await fetch_albums(sp, artist)
@@ -205,7 +204,7 @@ def _album_filter(force: bool, args: Tuple[Spotify, Artist]) -> bool:
 
 
 async def get_new_releases(
-    sp: Spotify, artists: List[Artist], force_update: bool = False
+    sp: Spotter, artists: List[Artist], force_update: bool = False
 ) -> Tuple[int, int]:
     """update artists with released albums"""
     updated_nr = 0
