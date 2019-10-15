@@ -197,7 +197,7 @@ async def update_artist_albums(
     return artist, new_inserts
 
 
-def _album_filter(force: bool, args: Tuple[Spotify, Artist]) -> bool:
+def _album_filter(force: bool, args: Tuple[Spotter, Artist]) -> bool:
     if force or args[1].can_update():
         return True
     return False
