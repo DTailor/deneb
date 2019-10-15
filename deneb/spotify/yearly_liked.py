@@ -67,7 +67,7 @@ async def _sync_with_spotify_playlist(
     return stats
 
 
-async def _sync_saved_from_year_playlist(
+async def _fetch_saved_from_year_playlist(
     user: User, sp: Spotter, year: str, dry_run: bool
 ) -> List[dict]:
     current_year_tracks = []
@@ -86,7 +86,7 @@ async def _handle_saved_songs_by_year_playlist(
 ) -> None:
     try:
         async with spotify_client(credentials, user) as sp:
-            tracks = await _sync_saved_from_year_playlist(user, sp, year, dry_run)
+            tracks = await _fetch_saved_from_year_playlist(user, sp, year, dry_run)
             stats = await _sync_with_spotify_playlist(user, sp, year, tracks, dry_run)
 
             if fb_alert.notify and stats.has_new_tracks():
@@ -108,6 +108,8 @@ async def update_users_playlists_liked_by_year(
 
     if not year:
         year = str(datetime.datetime.now().year)
+
+    _LOGGER.info(f"start fetching liked songs from '{year}' for user:{user_id}")
 
     args_items = [(credentials, user, year, dry_run, fb_alert) for user in users]
     await run_tasks(
