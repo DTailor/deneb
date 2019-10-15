@@ -41,6 +41,9 @@ class Spotter:
         self.client = client
         self.userdata = userdata
 
+    def __repr__(self):
+        return f"<spotter:{userdata['id']}>"
+
 
 class AsyncSpotify(Spotify):  # pragma: no cover
     def __init__(self, *args, **kwargs):
