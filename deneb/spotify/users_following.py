@@ -9,18 +9,24 @@ from deneb.db import User
 from deneb.logger import get_logger, push_sentry_error
 from deneb.sp import spotify_client
 from deneb.spotify.common import _get_to_update_users, _user_task_filter
-from deneb.structs import SpotifyKeys
+from deneb.structs import SpotifyKeys, WeeklyPlaylistUpdateConfig
 from deneb.tools import run_tasks
 from deneb.workers.artist_sync import get_new_releases
 from deneb.workers.user_sync import sync_user_followed_artists
 
 _LOGGER = get_logger(__name__)
 
+_CONFIG_ID = "weekly-playlist-update"
+
 
 async def _update_user_artists(
     credentials: SpotifyKeys, user: User, force_update: bool, dry_run: bool
 ):
     """task to update user followed artists and artist albums"""
+    user_config = WeeklyPlaylistUpdateConfig(**user.config[_CONFIG_ID])
+    if not user_config.enabled:
+        _LOGGER.info(f"stop update followed artists for {user}; feature disabled")
+        return
     try:
         async with spotify_client(credentials, user) as sp:
             new_follows, lost_follows = await sync_user_followed_artists(

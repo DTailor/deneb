@@ -13,10 +13,12 @@ from deneb.spotify.common import (
     _get_to_update_users, _user_task_filter, fetch_all, fetch_user_playlists,
     update_spotify_playlist
 )
-from deneb.structs import FBAlert, SpotifyKeys
+from deneb.structs import FBAlert, LikedSortedYearlyConfig, SpotifyKeys
 from deneb.tools import run_tasks, search_dict_by_key
 
 _LOGGER = get_logger(__name__)
+
+_CONFIG_ID = "liked-sorted-yearly"
 
 
 def generate_playlist_name(year: str) -> str:
@@ -94,6 +96,10 @@ async def _handle_saved_songs_by_year_playlist(
         - fetch liked tracks up to last added track id previously fetched
         - sync with playlist (and create if non-existent) new tracks
     """
+    user_config = LikedSortedYearlyConfig(**user.config[_CONFIG_ID])
+    if not user_config.enabled:
+        _LOGGER.info(f"stop update yearly liked for {user}; feature disabled")
+        return
     try:
         async with spotify_client(credentials, user) as sp:
             # fetch playlist if exist and get last added track as reference
@@ -112,11 +118,15 @@ async def _handle_saved_songs_by_year_playlist(
                     sp.userdata["id"], playlist["id"], fields="tracks,next"
                 )
                 if is_created
-                else []
+                else {}
             )
+
+            # unpack tracks
+            playlist_tracks = playlist_tracks.get("tracks", {}).get("items", [])
 
             # last added track if so
             last_added_track_id = None
+
             if playlist_tracks:
                 last_added_track_id = playlist_tracks[0]["track"]["id"]
 
@@ -148,8 +158,6 @@ async def update_users_playlists_liked_by_year(
 
     if not year:
         year = str(datetime.datetime.now().year)
-
-    _LOGGER.info(f"start fetching liked songs from '{year}' for user:{user_id}")
 
     args_items = [(credentials, user, year, dry_run, fb_alert) for user in users]
     await run_tasks(

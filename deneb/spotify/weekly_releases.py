@@ -20,10 +20,14 @@ from deneb.spotify.common import (
 from deneb.spotify.users_following import (
     _get_to_update_users, _user_task_filter
 )
-from deneb.structs import AlbumTracks, FBAlert, SpotifyKeys
+from deneb.structs import (
+    AlbumTracks, FBAlert, SpotifyKeys, WeeklyPlaylistUpdateConfig
+)
 from deneb.tools import convert_to_date, run_tasks, search_dict_by_key
 
 _LOGGER = get_logger(__name__)
+
+_CONFIG_ID = "weekly-playlist-update"
 
 
 def week_of_month(dt: dt) -> int:
@@ -249,6 +253,10 @@ async def update_user_playlist(
 async def _handle_update_user_playlist(
     credentials: SpotifyKeys, user: User, dry_run: bool, fb_alert: FBAlert
 ):
+    user_config = WeeklyPlaylistUpdateConfig(**user.config[_CONFIG_ID])
+    if not user_config.enabled:
+        _LOGGER.info(f"stop update weekly playlist for {user}; feature disabled")
+        return
     try:
         async with spotify_client(credentials, user) as sp:
             stats = await update_user_playlist(user, sp, dry_run)
