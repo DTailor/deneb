@@ -98,7 +98,6 @@ async def _handle_saved_songs_by_year_playlist(
     """
     user_config = LikedSortedYearlyConfig(**user.config[_CONFIG_ID])
     if not user_config.enabled:
-        _LOGGER.info(f"stop update yearly liked for {user}; feature disabled")
         return
     try:
         async with spotify_client(credentials, user) as sp:

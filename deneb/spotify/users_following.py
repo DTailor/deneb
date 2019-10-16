@@ -25,7 +25,6 @@ async def _update_user_artists(
     """task to update user followed artists and artist albums"""
     user_config = WeeklyPlaylistUpdateConfig(**user.config[_CONFIG_ID])
     if not user_config.enabled:
-        _LOGGER.info(f"stop update followed artists for {user}; feature disabled")
         return
     try:
         async with spotify_client(credentials, user) as sp:

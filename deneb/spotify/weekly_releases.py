@@ -255,7 +255,6 @@ async def _handle_update_user_playlist(
 ):
     user_config = WeeklyPlaylistUpdateConfig(**user.config[_CONFIG_ID])
     if not user_config.enabled:
-        _LOGGER.info(f"stop update weekly playlist for {user}; feature disabled")
         return
     try:
         async with spotify_client(credentials, user) as sp:
