@@ -64,11 +64,7 @@ async def _sync_with_spotify_playlist(
 
 
 async def _fetch_year_tracks_from_saved(
-    user: User,
-    sp: Spotter,
-    year: str,
-    last_added_track_id: str = None,
-    dry_run: bool = False,
+    user: User, sp: Spotter, year: str, last_added_track_id: str = None
 ) -> List[dict]:
     current_year_tracks = []
     all_liked_partial = await sp.client.current_user_saved_tracks()
@@ -132,7 +128,7 @@ async def _handle_saved_songs_by_year_playlist(
             _LOGGER.info(f"updating playlist: <{playlist_name}> for {user}")
 
             new_tracks = await _fetch_year_tracks_from_saved(
-                user, sp, year, last_added_track_id, dry_run
+                user, sp, year, last_added_track_id
             )
             stats = await _sync_with_spotify_playlist(
                 user, sp, new_tracks, playlist, playlist_name, dry_run
