@@ -54,8 +54,8 @@ sentry:
 full-deploy: git-tag deploy migrate sentry
 
 init-circle-venv:
-	sudo pip install --upgrade pipenv
 	sudo pip install --upgrade pip
+	sudo pip install --upgrade pipenv
 	make install-dev
 
 docker:
