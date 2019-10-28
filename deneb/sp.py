@@ -148,6 +148,13 @@ class AsyncSpotify(Spotify):  # pragma: no cover
                 res.json = json.loads(res.text)
                 res.raise_for_status()
             except aiohttp.ClientResponseError:
+                if res.status == 500:
+                    raise SpotifyException(
+                        res.status,
+                        -1,
+                        "%s:\n %s" % (res.url, "error"),
+                        headers=res.headers,
+                    )
                 if res.text and len(res.text) > 0 and res.text != "null":
                     raise SpotifyException(
                         res.status,

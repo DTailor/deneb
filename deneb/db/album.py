@@ -14,9 +14,21 @@ class Album(Model):  # type: ignore
     release = fields.DateField()
     created_at = fields.DatetimeField(auto_now_add=True)
     artists = fields.ManyToManyField(
-        "models.Artist", through="artist_albums", related_name="albums"
+        "models.Artist",
+        through='deneb"."artist_albums',
+        related_name="albums",
+        forward_key="artist_id",
+        backward_key="album_id",
     )
-    markets = fields.ManyToManyField("models.Market", through="album_markets")
+    markets = fields.ManyToManyField(
+        "models.Market",
+        through='deneb"."album_markets',
+        forward_key="market_id",
+        backward_key="album_id",
+    )
+
+    class Meta:
+        table = 'deneb"."album'
 
     @property
     def uri(self):

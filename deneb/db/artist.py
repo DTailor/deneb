@@ -12,6 +12,9 @@ class Artist(Model):
     updated_at = fields.DatetimeField(auto_now_add=True)
     synced_at = fields.DatetimeField(auto_now_add=True)
 
+    class Meta:
+        table = 'deneb"."artist'
+
     def __str__(self):
         return f"{self.name}"
 

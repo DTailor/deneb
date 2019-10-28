@@ -15,9 +15,17 @@ class User(Model):  # type: ignore
     fb_id = fields.CharField(max_length=255)
     display_name = fields.CharField(max_length=255, default="")
     market = fields.ForeignKeyField("models.Market", null=True)
-    artists = fields.ManyToManyField("models.Artist", through="user_followed_artists")
+    artists = fields.ManyToManyField(
+        "models.Artist",
+        through='deneb"."user_followed_artists',
+        forward_key="artist_id",
+        backward_key="user_id",
+    )
     spotify_token = fields.CharField(max_length=255, null=True)
     config = fields.JSONField()
+
+    class Meta:
+        table = 'deneb"."user'
 
     def __str__(self) -> str:
         return f"<spotify:user:{self.username}>"

@@ -7,7 +7,7 @@ from typing import Dict, Iterable, List, Tuple
 from deneb.config import Config
 from deneb.db import Album, Artist, PoolTortoise
 from deneb.logger import get_logger, push_sentry_error
-from deneb.sp import Spotter
+from deneb.sp import Spotter, SpotifyException
 from deneb.spotify.common import fetch_all
 from deneb.tools import run_tasks, search_dict_by_key
 
@@ -70,6 +70,9 @@ async def fetch_albums(sp: Spotter, artist: Artist, retry: bool = False) -> List
             artist.spotify_id, limit=50, album_type="album,single,appears_on"
         )
         albums = await fetch_all_albums(sp, data)
+    except SpotifyException as exc:
+        _LOGGER.warning(f"failed fetch artist albums for `{artist}`: {exc}")
+        return []
     except Exception as exc:
         _LOGGER.exception(f"{sp.userdata['id']} failed to fetch all {artist} albums")
         push_sentry_error(exc, sp.userdata["id"], sp.userdata["display_name"])
