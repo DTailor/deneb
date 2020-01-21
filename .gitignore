@@ -141,3 +141,4 @@ logfile*
 .vscode
 results.xml
 notebook
+deneb/playgound.py
