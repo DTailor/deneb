@@ -1,6 +1,6 @@
 import aiohttp
 
-from deneb.logger import get_logger
+from deneb.logger import get_logger, push_sentry_error
 from deneb.structs import FBAlert
 
 _LOGGER = get_logger(__name__)
@@ -36,3 +36,7 @@ async def send_message(fb_id: str, fb_alert: FBAlert, data: str):
             ) as res:
                 if res.status != 200:
                     _LOGGER.info(f"{res} {res.content}")
+                    try:
+                        res.raise_for_status()
+                    except aiohttp.ClientError as exc:
+                        push_sentry_error(exc, fb_id)
