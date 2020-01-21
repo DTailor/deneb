@@ -25,8 +25,11 @@ install:
 	pipenv install
 
 install-dev:
-	pipenv --rm
 	pipenv install --dev
+
+reinstall-dev:
+	pipenv --rm
+	make install-dev
 
 update:
 	pipenv update
