@@ -1,12 +1,19 @@
 .PHONY : help
-help :
+
+help:
 	@echo "test - run tests"
-	@echo "install - pipenv install"
-	@echo "install-dev - pipenv install with dev packages."
+	@echo "install - pipenv install either reinstall if present"
+	@echo "install-dev - pipenv install with dev packages either reinstall if present."
 	@echo "update - update pip packages."
 	@echo "init-venv - init and install py environment."
 	@echo "clean - remove all temporary files (safe)."
 	@echo "deploy - deploy code on production."
+	@echo "git-tag - make git tag and push changes to git."
+	@echo "deploy-test - deploy the test built from specified branch."
+	@echo "migrate - run sql migrations."
+	@echo "sentry - create a sentry releases and push changes."
+	@echo "full-deploy - git tag +  deploy + migrate + sentry"
+	@echo "docker - build docker image."
 
 test:
 	pipenv run pytest --junitxml test-results/results.xml
@@ -14,12 +21,10 @@ test:
 	pipenv run coverage html
 
 install:
+	pipenv --rm
 	pipenv install
 
 install-dev:
-	pipenv install --dev
-
-reinstall-dev:
 	pipenv --rm
 	pipenv install --dev
 
