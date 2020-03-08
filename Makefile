@@ -16,7 +16,7 @@ help:
 	@echo "docker - build docker image."
 
 test:
-	source ./.env && poetry run pytest --junitxml test-results/results.xml
+	source ./.env || true && poetry run pytest --junitxml test-results/results.xml
 	poetry run coverage report
 	poetry run coverage html
 
