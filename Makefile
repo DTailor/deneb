@@ -16,9 +16,9 @@ help:
 	@echo "docker - build docker image."
 
 test:
-	pipenv run pytest --junitxml test-results/results.xml
-	pipenv run coverage report
-	pipenv run coverage html
+	poetry run pytest --junitxml test-results/results.xml
+	poetry run coverage report
+	poetry run coverage html
 
 install:
 	poetry env remove 3.7 || true
