@@ -25,7 +25,6 @@ install:
 	poetry install --no-dev
 
 install-dev:
-	poetry env remove 3.7 || true
 	poetry install
 
 reinstall-dev:
