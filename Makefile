@@ -21,15 +21,15 @@ test:
 	pipenv run coverage html
 
 install:
-	poetry env remove 3.7
+	poetry env remove 3.7 || true
 	poetry install --no-dev
 
 install-dev:
-	poetry env remove 3.7
+	poetry env remove 3.7 || true
 	poetry install
 
 reinstall-dev:
-	poetry env remove 3.7
+	poetry env remove 3.7 || true
 	make install-dev
 
 update:
