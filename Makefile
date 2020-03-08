@@ -16,7 +16,7 @@ help:
 	@echo "docker - build docker image."
 
 test:
-	poetry run pytest --junitxml test-results/results.xml
+	source ./.env && poetry run pytest --junitxml test-results/results.xml
 	poetry run coverage report
 	poetry run coverage html
 
@@ -47,13 +47,13 @@ git-tag:
 	git push --tags
 
 deploy-test:
-	poetry run fab deploy-test ${BRANCH}
+	source ./.env && poetry run fab deploy-test ${BRANCH}
 
 deploy:
-	poetry run fab deploy ${VERSION}
+	source ./.env && poetry run fab deploy ${VERSION}
 
 migrate:
-	poetry run fab migrate
+	source ./.env && poetry run fab migrate
 
 sentry:
 	sentry-cli releases new -p deneb "${VERSION}"
