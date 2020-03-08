@@ -7,7 +7,7 @@ jobs:
     steps:
       - checkout
       - restore_cache:
-          key: deps9-{{ .Branch }}-{{ checksum "Pipfile.lock" }}
+          key: deps9-{{ .Branch }}-{{ checksum "poetry.lock" }}
       - run:
           command: make init-circle-venv
       - run:
@@ -18,6 +18,6 @@ jobs:
       - store_artifacts:
           path: htmlcov
       - save_cache:
-          key: deps9-{{ .Branch }}-{{ checksum "Pipfile.lock" }}
+          key: deps9-{{ .Branch }}-{{ checksum "poetry.lock" }}
           paths:
-            - "/home/circleci/.local/share/virtualenvs/circleci-deneb-ZS5KoU3r"
+            - /home/circleci/.cache/pypoetry/virtualenvs

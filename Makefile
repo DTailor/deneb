@@ -2,8 +2,8 @@
 
 help:
 	@echo "test - run tests"
-	@echo "install - pipenv install either reinstall if present"
-	@echo "install-dev - pipenv install with dev packages either reinstall if present."
+	@echo "install - poetry install either reinstall if present"
+	@echo "install-dev - poetry install with dev packages either reinstall if present."
 	@echo "update - update pip packages."
 	@echo "init-venv - init and install py environment."
 	@echo "clean - remove all temporary files (safe)."
@@ -21,18 +21,19 @@ test:
 	pipenv run coverage html
 
 install:
-	pipenv --rm
-	pipenv install
+	poetry env remove 3.7
+	poetry install --no-dev
 
 install-dev:
-	pipenv install --dev
+	poetry env remove 3.7
+	poetry install
 
 reinstall-dev:
-	pipenv --rm
+	poetry env remove 3.7
 	make install-dev
 
 update:
-	pipenv update
+	poetry update
 
 clean:
 	rm -rf logfile*
@@ -46,13 +47,13 @@ git-tag:
 	git push --tags
 
 deploy-test:
-	pipenv run fab deploy-test ${BRANCH}
+	poetry run fab deploy-test ${BRANCH}
 
 deploy:
-	pipenv run fab deploy ${VERSION}
+	poetry run fab deploy ${VERSION}
 
 migrate:
-	pipenv run fab migrate
+	poetry run fab migrate
 
 sentry:
 	sentry-cli releases new -p deneb "${VERSION}"
@@ -63,7 +64,7 @@ full-deploy: git-tag deploy migrate sentry
 
 init-circle-venv:
 	sudo pip install --upgrade pip
-	sudo pip install --upgrade pipenv
+	sudo pip install --upgrade poetry
 	make install-dev
 
 docker:
