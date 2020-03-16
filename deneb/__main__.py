@@ -2,6 +2,8 @@ import asyncio
 import os
 
 import click
+from dotenv import load_dotenv
+load_dotenv(verbose=True)  # noqa
 
 from deneb.db import close_db, init_db
 from deneb.logger import get_logger
