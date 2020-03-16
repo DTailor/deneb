@@ -171,6 +171,10 @@ Are done by using alembic:
 - Packages updates
 - Major refactors on functionality toolset. Moved method into more consistent modules.
 
+### v1.1.6 (16 march 2020)
+
+New facebook policy imposes `"tag": "ACCOUNT_UPDATE"` to be used when sending messages now.
+
 ### v1.1.5 (15 september 2019)
 
 Start work on separate branch for a minanor refactor to enable adding more types

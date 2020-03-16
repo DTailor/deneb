@@ -30,6 +30,7 @@ async def send_message(fb_id: str, fb_alert: FBAlert, data: str):
             contents = {
                 "recipient": {"id": fb_id},
                 "message": {"text": "".join(clean_chunk)},
+                "tag": "ACCOUNT_UPDATE"
             }
             async with session.post(
                 fb_alert.url, json=contents, params=fb_token
