@@ -46,13 +46,13 @@ git-tag:
 	git push --tags
 
 deploy-test:
-	source ./.env && poetry run fab deploy-test ${BRANCH}
+	poetry run fab deploy-test ${BRANCH}
 
 deploy:
-	source ./.env && poetry run fab deploy ${VERSION}
+	poetry run fab deploy ${VERSION}
 
 migrate:
-	source ./.env && poetry run fab migrate
+	poetry run fab migrate
 
 sentry:
 	sentry-cli releases new -p deneb "${VERSION}"

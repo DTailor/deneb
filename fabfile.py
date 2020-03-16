@@ -18,7 +18,7 @@ def deploy_test(c, branch):
         captain.run("git fetch --tags")
         captain.run(f"git checkout {branch}")
         captain.run(f"git pull origin {branch}")
-        captain.run("source ./.env && poetry install")
+        captain.run("poetry install")
 
 
 @task
@@ -30,18 +30,18 @@ def deploy(c, version):
         captain.run("git fetch --tags")
         captain.run(f"git checkout {version}")
         captain.run(f"git pull origin {version}")
-        captain.run("source ./.env && poetry install")
+        captain.run("poetry install")
 
 
 @task
 def migrate(c):
     captain = Connection(f"{SSH_USER}@{SSH_HOST}")
     with captain.cd("/apps/deneb/"):
-        captain.run("source ./.env && poetry run alembic upgrade head")
+        captain.run("poetry run alembic upgrade head")
 
 
 @task
 def full_run(c):
     captain = Connection(f"{SSH_USER}@{SSH_HOST}")
     with captain.cd("/apps/deneb/"):
-        captain.run("source ./.env && poetry run python -m deneb full-run")
+        captain.run("poetry run python -m deneb full-run")
