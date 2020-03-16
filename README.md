@@ -124,6 +124,14 @@ Are done by using alembic:
 
 ### Release Notes
 
+### v1.1.6 (16 march 2020)
+
+New facebook policy imposes `"tag": "ACCOUNT_UPDATE"` to be used when sending messages now.
+
+### v1.1.5 (untracked)
+
+Untracked event; tag removed by accident.
+
 ### v1.1.4 (13 september 2019)
 
 Fucks up on `v1.1.3` with updating the artist timestamp (updated_at); somehow by using `filter` with `update` caused updating `None` objects. Fallbacked to `.updated_at=` and `.save()`.
