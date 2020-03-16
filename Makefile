@@ -16,23 +16,23 @@ help:
 	@echo "docker - build docker image."
 
 test:
-	source ./.env || true && poetry run pytest --junitxml test-results/results.xml
-	poetry run coverage report
-	poetry run coverage html
+	source ./.env || true && python -m poetry run pytest --junitxml test-results/results.xml
+	python -m poetry run coverage report
+	python -m poetry run coverage html
 
 install:
-	poetry env remove 3.7 || true
-	poetry install --no-dev
+	python -m poetry env remove 3.7 || true
+	python -m poetry install --no-dev
 
 install-dev:
-	poetry install
+	python -m poetry install
 
 reinstall-dev:
-	poetry env remove 3.7 || true
+	python -m poetry env remove 3.7 || true
 	make install-dev
 
 update:
-	poetry update
+	python -m poetry update
 
 clean:
 	rm -rf logfile*
@@ -46,13 +46,13 @@ git-tag:
 	git push --tags
 
 deploy-test:
-	poetry run fab deploy-test ${BRANCH}
+	python -m poetry run fab deploy-test ${BRANCH}
 
 deploy:
-	poetry run fab deploy ${VERSION}
+	python -m poetry run fab deploy ${VERSION}
 
 migrate:
-	poetry run fab migrate
+	python -m poetry run fab migrate
 
 sentry:
 	sentry-cli releases new -p deneb "${VERSION}"
