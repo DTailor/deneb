@@ -2,6 +2,7 @@
 
 ## v2.0.0 (WIP)
 
+- moved project to github
 - Add `Docker` container integration
 - Per app configs for every user (user app configs)
 - New command `update-playlists-yearly-liked`
