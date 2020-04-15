@@ -157,4 +157,4 @@ Are done by using alembic:
 
 ### CI
 
-- [circleci](https://circleci.com/bb/DTailor/deneb)
+- [circleci](https://circleci.com/gh/DTailor/deneb)
