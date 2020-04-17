@@ -7,6 +7,10 @@ jobs:
       - checkout # check out the code in the project directory
       - run: make init-circle-venv # run the `echo` command
       - run: make test
+      - store_test_results:
+          path: test-results
+      - store_artifacts:
+          path: htmlcov
 # version: 2
 # jobs:
 #   build:
