@@ -1,8 +1,13 @@
 version: 2.1
-jobs:
-  build:
+
+executors:
+  py-executor:
     docker:
       - image: circleci/python:3.8.0
+
+jobs:
+  build:
+    executor: py-executor
     steps:
       - checkout
       - restore_cache:
@@ -17,6 +22,7 @@ jobs:
           key: deps9-{{ .Branch }}-{{ checksum "poetry.lock" }}
           paths:
             - /home/circleci/.cache/pypoetry/virtualenvs
+
 
 # version: 2
 # jobs:
