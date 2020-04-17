@@ -23,29 +23,3 @@ jobs:
           path: test-results
       - store_artifacts:
           path: htmlcov
-
-
-
-# version: 2
-# jobs:
-#   build:
-#     working_directory: ~/circleci-deneb
-#     docker:
-#       - image: circleci/python:3.7.2
-#     steps:
-#       - checkout
-#       - restore_cache:
-#           key: deps9-{{ checksum "poetry.lock" }}
-#       - run:
-#           command: make init-circle-venv
-#       - run:
-#           name: pytest
-#           command: make test
-#       - store_test_results:
-#           path: test-results
-#       - store_artifacts:
-#           path: htmlcov
-#       - save_cache:
-#           key: deps9-{{ checksum "poetry.lock" }}
-#           paths:
-#             - /home/circleci/.cache/pypoetry/virtualenvs
