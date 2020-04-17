@@ -4,13 +4,24 @@ jobs:
     docker:
       - image: circleci/python:3.8.0
     steps:
-      - checkout # check out the code in the project directory
-      - run: make init-circle-venv # run the `echo` command
-      - run: make test
+      - run:
+          name: venv init
+          command: make init-circle-venv
+      - restore_cache:
+          key: deps9-{{ .Branch }}-{{ checksum "poetry.lock" }}
+      - checkout
+      - run:
+          name: pytest
+          command: make test
       - store_test_results:
           path: test-results
       - store_artifacts:
           path: htmlcov
+      - save_cache:
+          key: deps9-{{ .Branch }}-{{ checksum "poetry.lock" }}
+          paths:
+            - /home/circleci/.cache/pypoetry/virtualenvs
+
 # version: 2
 # jobs:
 #   build:
