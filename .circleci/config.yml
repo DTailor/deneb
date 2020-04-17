@@ -1,25 +1,33 @@
 version: 2.1
-commands:
-  init-venv:
-    steps:
-      - run: make init-circle-venv
-  pytest:
-    steps:
-      - run: make test
-
-executors:
-  py-executor:
-    docker:
-      - image: circleci/python:3.7.2
-
-workflows:
+jobs:
   build:
-    jobs:
-      - test-run-job:
-          executor: py-executor
-          steps:
-            - checkout
-            - pytest
+    docker:
+      - image: circleci/node:4.8.2 # the primary container, where your job's commands are run
+    steps:
+      - checkout # check out the code in the project directory
+      - run: echo "hello world" # run the `echo` command
+# version: 2.1
+# commands:
+#   init-venv:
+#     steps:
+#       - run: make init-circle-venv
+#   pytest:
+#     steps:
+#       - run: make test
+
+# executors:
+#   py-executor:
+#     docker:
+#       - image: circleci/python:3.7.2
+
+# workflows:
+#   build:
+#     jobs:
+#       - test-run-job:
+#           executor: py-executor
+#           steps:
+#             - checkout
+#             - pytest
 # version: 2
 # jobs:
 #   build:
