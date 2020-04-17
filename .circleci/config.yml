@@ -4,9 +4,9 @@ jobs:
     docker:
       - image: circleci/python:3.8.0
     steps:
+      - checkout
       - restore_cache:
           key: deps9-{{ .Branch }}-{{ checksum "poetry.lock" }}
-      - checkout
       - run: make init-circle-venv
       - run: make test
       - store_test_results:
