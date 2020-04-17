@@ -11,17 +11,19 @@ jobs:
     steps:
       - checkout
       - restore_cache:
-          key: deps9-{{ .Branch }}-{{ checksum "poetry.lock" }}
+          key: deps9-{{ checksum "poetry.lock" }}
       - run: make init-circle-venv
+      - save_cache:
+          key: deps9-{{ checksum "poetry.lock" }}
+          paths:
+            - /home/circleci/.cache/pypoetry/virtualenvs
+            - /home/circleci/.cache/pip
       - run: make test
       - store_test_results:
           path: test-results
       - store_artifacts:
           path: htmlcov
-      - save_cache:
-          key: deps9-{{ .Branch }}-{{ checksum "poetry.lock" }}
-          paths:
-            - /home/circleci/.cache/pypoetry/virtualenvs
+
 
 
 # version: 2
@@ -33,7 +35,7 @@ jobs:
 #     steps:
 #       - checkout
 #       - restore_cache:
-#           key: deps9-{{ .Branch }}-{{ checksum "poetry.lock" }}
+#           key: deps9-{{ checksum "poetry.lock" }}
 #       - run:
 #           command: make init-circle-venv
 #       - run:
@@ -44,6 +46,6 @@ jobs:
 #       - store_artifacts:
 #           path: htmlcov
 #       - save_cache:
-#           key: deps9-{{ .Branch }}-{{ checksum "poetry.lock" }}
+#           key: deps9-{{ checksum "poetry.lock" }}
 #           paths:
 #             - /home/circleci/.cache/pypoetry/virtualenvs
