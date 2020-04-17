@@ -11,13 +11,12 @@ jobs:
     steps:
       - checkout
       - restore_cache:
-          key: deps9-{{ checksum "poetry.lock" }}
+          key: deps9-{{ .Branch }}
       - run: make init-circle-venv
       - save_cache:
-          key: deps9-{{ checksum "poetry.lock" }}
+          key: deps9-{{ .Branch }}
           paths:
             - /home/circleci/.cache/pypoetry/virtualenvs
-            - /home/circleci/.cache/pip
       - run: make test
       - store_test_results:
           path: test-results
