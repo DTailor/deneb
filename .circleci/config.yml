@@ -1,23 +1,43 @@
-version: 2
-jobs:
-  build:
-    working_directory: ~/circleci-deneb
+version: 2.1
+commands:
+  init-venv:
+    steps:
+      - run: make init-circle-venv
+  pytest:
+    steps:
+      - run: make test
+
+executors:
+  py-executor:
     docker:
       - image: circleci/python:3.7.2
+
+jobs:
+  test-run-job:
+    executor: py-executor
     steps:
       - checkout
-      - restore_cache:
-          key: deps9-{{ .Branch }}-{{ checksum "poetry.lock" }}
-      - run:
-          command: make init-circle-venv
-      - run:
-          name: pytest
-          command: make test
-      - store_test_results:
-          path: test-results
-      - store_artifacts:
-          path: htmlcov
-      - save_cache:
-          key: deps9-{{ .Branch }}-{{ checksum "poetry.lock" }}
-          paths:
-            - /home/circleci/.cache/pypoetry/virtualenvs
+      - pytest
+# version: 2
+# jobs:
+#   build:
+#     working_directory: ~/circleci-deneb
+#     docker:
+#       - image: circleci/python:3.7.2
+#     steps:
+#       - checkout
+#       - restore_cache:
+#           key: deps9-{{ .Branch }}-{{ checksum "poetry.lock" }}
+#       - run:
+#           command: make init-circle-venv
+#       - run:
+#           name: pytest
+#           command: make test
+#       - store_test_results:
+#           path: test-results
+#       - store_artifacts:
+#           path: htmlcov
+#       - save_cache:
+#           key: deps9-{{ .Branch }}-{{ checksum "poetry.lock" }}
+#           paths:
+#             - /home/circleci/.cache/pypoetry/virtualenvs
