@@ -60,10 +60,10 @@ async def check_follows(sp: Spotter, artists: List[Artist]) -> List[Artist]:
     return lost_follows
 
 
-async def fetch_user_followed_artists(
+async def sync_user_followed_artists(
     user: User, sp: Spotter, dry_run: bool
 ) -> Tuple[List[Artist], List[Artist]]:
-    """fetch artists followed by user"""
+    """sync in db the artists followed by user"""
     followed_artists = await fetch_artists(sp)
     user_db_artists = await user.artists.filter()
     following_ids = [a.spotify_id for a in user_db_artists]

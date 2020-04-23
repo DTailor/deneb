@@ -1,28 +1,81 @@
 """Module to handle artist related updates"""
+import datetime
 import time
 from functools import partial
-from typing import Iterable, List, Tuple
-
-import sentry_sdk
-from spotipy import Spotify
+from typing import Dict, Iterable, List, Tuple
 
 from deneb.config import Config
 from deneb.db import Album, Artist, PoolTortoise
-from deneb.logger import get_logger
-from deneb.tools import fetch_all, fetch_all_albums, is_present, run_tasks
+from deneb.logger import get_logger, push_sentry_error
+from deneb.sp import Spotter, SpotifyException
+from deneb.spotify.common import fetch_all
+from deneb.tools import run_tasks, search_dict_by_key
 
 _LOGGER = get_logger(__name__)
 
 
-async def fetch_albums(sp: Spotify, artist: Artist, retry: bool = False) -> List[dict]:
+def should_fetch_more_albums(
+    albums: List[Dict], to_check_album_types: List[str]
+) -> Tuple[bool, List[Dict], List[str]]:
+    """
+    filter artist albums from current year only and return if more fetching
+    required
+    #TODO: add year as a function argument
+    """
+    required_year = str(datetime.datetime.now().year)
+    validated_albums = []  # type: List[dict]
+    for album in albums:
+        if album["album_type"] in to_check_album_types:
+            to_check_album_types.remove(album["album_type"])
+
+        if required_year in album["release_date"]:
+            validated_albums.append(album)
+        else:
+            if not to_check_album_types:
+                return False, validated_albums, to_check_album_types
+
+    return True, validated_albums, to_check_album_types
+
+
+async def fetch_all_albums(sp: Spotter, data: dict) -> List[Dict]:
+    # ok, so this new `to_check_album_types` is a hack to fix-up a problem
+    # the issues constits in the fact the as we fetch albums
+    # we retrieve several `album_types`, like `album`, `single`, `appears_on`
+    # and they are returned back in descendant order by `release_date`, the catch
+    # is that they are group, meaning that you'll then them ordered that way but
+    # first the `albums`, then the `single` and `appears_on`. This made the script
+    # to miss some `sinlge` and `appears_on` type of albums
+
+    to_check_album_types = ["album", "single", "appears_on"]
+    contents = []
+
+    while True:
+        should, albums, to_check_album_types = should_fetch_more_albums(
+            data["items"], to_check_album_types
+        )
+        contents.extend(albums)
+        if not should or not data["next"]:
+            break
+        data = await sp.client.next(data)  # noqa: B305
+
+    # there are some duplicates, remove them
+    contents = list({v["id"]: v for v in contents}.values())
+    return contents
+
+
+async def fetch_albums(sp: Spotter, artist: Artist, retry: bool = False) -> List[dict]:
     """fetches artist albums from spotify"""
     try:
         data = await sp.client.artist_albums(
             artist.spotify_id, limit=50, album_type="album,single,appears_on"
         )
         albums = await fetch_all_albums(sp, data)
+    except SpotifyException as exc:
+        _LOGGER.warning(f"failed fetch artist albums for `{artist}`: {exc}")
+        return []
     except Exception as exc:
-        sentry_sdk.capture_exception()
+        _LOGGER.exception(f"{sp.userdata['id']} failed to fetch all {artist} albums")
+        push_sentry_error(exc, sp.userdata["id"], sp.userdata["display_name"])
 
         if not retry:
             raise
@@ -32,10 +85,11 @@ async def fetch_albums(sp: Spotify, artist: Artist, retry: bool = False) -> List
 
 def is_in_artists_list(artist: Artist, item: dict) -> bool:
     """True if appears in artists list, else False"""
-    return bool(is_present(artist.spotify_id, item["artists"], "id"))
+    is_present_in_list, _ = search_dict_by_key(artist.spotify_id, item["artists"], "id")
+    return is_present_in_list
 
 
-async def get_featuring_songs(sp: Spotify, artist: Artist, album: dict) -> List[dict]:
+async def get_featuring_songs(sp: Spotter, artist: Artist, album: dict) -> List[dict]:
     """get feature tracks from an album for an artist"""
     tracks = await sp.client.album_tracks(album_id=album["id"], limit=50)
     tracks = await fetch_all(sp, tracks)
@@ -107,7 +161,7 @@ async def handle_album_sync(album: dict, artist: Artist) -> Tuple[bool, Album]:
 
 
 async def update_artist_albums(
-    sp: Spotify, artist: Artist, dry_run: bool = False
+    sp: Spotter, artist: Artist, dry_run: bool = False
 ) -> Tuple[Artist, List[Album]]:
     """update artist albums by adding them to the db"""
     albums = await fetch_albums(sp, artist)
@@ -137,22 +191,23 @@ async def update_artist_albums(
     )
 
     try:
-        await artist.update_timestamp()
-    except Exception:
-        sentry_sdk.capture_exception()
+        await artist.update_synced_at()
+    except Exception as exc:
+        _LOGGER.exception(f"{sp.userdata['id']} failed to update {artist} synced_at")
+        push_sentry_error(exc, sp.userdata["id"], sp.userdata["display_name"])
 
     new_inserts = [a for created, a in task_results if created]
     return artist, new_inserts
 
 
-def _album_filter(force: bool, args: Tuple[Spotify, Artist]) -> bool:
+def _album_filter(force: bool, args: Tuple[Spotter, Artist]) -> bool:
     if force or args[1].can_update():
         return True
     return False
 
 
 async def get_new_releases(
-    sp: Spotify, artists: List[Artist], force_update: bool = False
+    sp: Spotter, artists: List[Artist], force_update: bool = False
 ) -> Tuple[int, int]:
     """update artists with released albums"""
     updated_nr = 0

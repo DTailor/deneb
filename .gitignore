@@ -140,3 +140,5 @@ logfile*
 .mypy_cache
 .vscode
 results.xml
+notebook
+deneb/playgound.py

@@ -1,13 +1,31 @@
 """Logger config for project"""
 import logging
 import os
-from typing import Any, Dict  # noqa
+from typing import Any, Dict, Optional  # noqa
 
 import logzero
 import sentry_sdk
 from sentry_sdk.integrations.aiohttp import AioHttpIntegration
+from sentry_sdk.integrations.sqlalchemy import SqlalchemyIntegration
 
 from deneb.config import VERSION
+
+
+def push_sentry_error(
+    exc, user_id: Optional[str] = None, username: Optional[str] = None
+) -> None:
+    user = {}
+    if user_id:
+        user["id"] = user_id
+    if username:
+        user["name"] = username
+
+    if user:
+        with sentry_sdk.push_scope() as scope:
+            scope.user = user
+            sentry_sdk.capture_exception(exc)
+    else:
+        sentry_sdk.capture_exception(exc)
 
 
 def get_logger(name: str) -> Any:
@@ -27,7 +45,7 @@ def get_logger(name: str) -> Any:
     sentry_url = os.environ.get("SENTRY_URL")
     sentry_kwargs = {}  # type: Dict[str, Any]
 
-    sentry_kwargs["integrations"] = [AioHttpIntegration()]
+    sentry_kwargs["integrations"] = [AioHttpIntegration(), SqlalchemyIntegration()]
     environ = os.environ.get("ENVIRON")
     if environ:
         sentry_kwargs["environment"] = environ

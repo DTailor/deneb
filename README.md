@@ -38,13 +38,44 @@
   - `sentry logging`
     - `SENTRY_URL`
 
+## Docker
+
+This project is containerized.
+
+### Build image
+
+```bash
+docker build -t deneb .
+```
+
+### Enter it
+
+```bash
+docker run -i deneb /bin/sh
+```
+
+### Run it
+
+```bash
+docker run --network host  --env-file .env deneb pipenv run python -m deneb full-run --user <username> --notify --all-markets
+docker run --network host  --env-file .env deneb pipenv run python -m deneb update-playlists-yearly-liked --user <username> --notify
+```
+
 ## Deploy
 
-- Add `README` entry with version deployed & changelog
+- Update poetry packages if the case
+- `Make test`
+- Add `CHANGELOG` entry with version deployed & changelog
 - Update `deneb/config.py` app version
 - `git tag -a <version> -m "release <version>"`
 - `git push --tags`
 - `make VERSION=<version> deploy`
+- `make migrate`
+- `make VERSION=<version> sentry`
+
+or for the last 5 steps
+
+``make VERSION=<version> full-deploy``
 
 ### Update config.py version
 
@@ -78,21 +109,27 @@ There's a cli tool available to use the tool easier.
 ### Commands
 
 - `pipenv run python -m deneb`
-  - `full-run`
-    - `--force` - validate to check artist anyway
+  - `full-run` (runs all commands bellow)
+    - `--force` - ignore artist synced_at timestamp (for: `update-followed`)
+    - `--notify` - send fb users what tracks were added to playlist
+    - `--dry-run` - dont'a add tracks to spotify playlist (for: all)
+    - `--user <spotify_id>` - full run for specific spotify id (for: all)
+    - `--all-markets` - will query all markets instead of 12/24 hour ones (for: `update-followed`, `update-playlists`)
+    - `--year <year>` - collect liked tracks from specific year (for: `update-playlists-yearly-liked`)
+  - `update-followed` (collect user followed artists and albums (from current year) from spotify )
+    - `--force` - ignore artist synced_at timestamp
+    - `--user <spotify_id>` - full run for specific spotify id
+    - `--all-markets` - will query all markets instead of 12/24 hour ones
+  - `update-playlists`(update current week realeased tracks playlist from followed artists)
     - `--notify` - send fb users what tracks were added to playlist
     - `--dry-run` - dont'a add tracks to spotify playlist
     - `--user <spotify_id>` - full run for specific spotify id
     - `--all-markets` - will query all markets instead of 12/24 hour ones
-  - `update-followed`
-    - `--force` - validate to check artist anyway
-    - `--user <spotify_id>` - full run for specific spotify id
-    - `--all-markets` - will query all markets instead of 12/24 hour ones
-  - `update-playlists`
+  - `update-playlists-yearly-liked` (update liked songs from released specific year playlist)
     - `--notify` - send fb users what tracks were added to playlist
     - `--dry-run` - dont'a add tracks to spotify playlist
     - `--user <spotify_id>` - full run for specific spotify id
-    - `--all-markets` - will query all markets instead of 12/24 hour ones
+    - `--year <year>` - collect liked tracks from specific year
 
 ## Testing
 
@@ -111,7 +148,7 @@ docker run --rm   --name pg-docker -e POSTGRES_PASSWORD=$DB_PASSWORD -e POSTGRES
 Are done by using alembic:
 
 - `pipenv run alembic upgrade head` - migrate to last state
-- `alembic revision -m "Revision Message"` - create a new db revision
+- `pipenv run alembic revision -m "Revision Message"` - create a new db revision
 - `pipenv run alembic downgrade base` - destroy all (AHTUNG!)
 
 ## Local
@@ -120,44 +157,4 @@ Are done by using alembic:
 
 ### CI
 
-- [circleci](https://circleci.com/bb/DTailor/deneb)
-
-### Release Notes
-
-### v1.1.6 (16 march 2020)
-
-New facebook policy imposes `"tag": "ACCOUNT_UPDATE"` to be used when sending messages now.
-
-### v1.1.5 (untracked)
-
-Untracked event; tag removed by accident.
-
-### v1.1.4 (13 september 2019)
-
-Fucks up on `v1.1.3` with updating the artist timestamp (updated_at); somehow by using `filter` with `update` caused updating `None` objects. Fallbacked to `.updated_at=` and `.save()`.
-
-- Change `artist.updated_at` update way.
-- Capture exceptions instead of messaged for `sentry`
-- Add `migrate` cmd to `Makefile` to run remote migrations
-
-### v1.1.3 (12 september 2019)
-
-- Add timestamps (created_at, updated_at) for "user"
-- Always insert on top of playlist (makes it harder reach fresh stuff by scrolls)
-
-### v1.1.2 (25 august 2019)
-
-- Handle first coming users (not having market made deneb skip their check)
-- Use `41` as default popularity for tracks if missing
-- Add sentry-tag via Makefile
-- Migrations doc update
-- Timestamps for user table
-- Pip update
-
-#### v1.1.1
-
-- Dropped calver for semver (feels awkward)
-- Removed discarded albums log entry
-- Update pip modules
-- Now deploy with `make VERSION=version deploy`
-- Fix models `updated_at` and `created_at` params (use `auto_now_add`)
+- [circleci](https://circleci.com/gh/DTailor/deneb)

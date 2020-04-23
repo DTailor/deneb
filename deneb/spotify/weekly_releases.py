@@ -1,31 +1,38 @@
 """Create spotify playlist with weekly new releases"""
 import calendar
-from asyncio import sleep
+import datetime
 from datetime import datetime as dt
 from datetime import timedelta
 from itertools import chain
 from math import ceil
-from typing import Dict, Iterator, List, Optional, Tuple  # noqa:F401
+from typing import Dict, Iterable, List, Optional, Tuple  # noqa:F401
 
-import sentry_sdk
 from spotipy.client import SpotifyException
 
 from deneb.chatbot.message import send_message
 from deneb.config import Config
 from deneb.db import Album, User
-from deneb.logger import get_logger
+from deneb.logger import get_logger, push_sentry_error
 from deneb.sp import SpotifyStats, Spotter, spotify_client
-from deneb.spotify.users import _get_to_update_users, _user_task_filter
-from deneb.structs import AlbumTracks, FBAlert, SpotifyKeys
-from deneb.tools import (
-    clean, convert_to_date, fetch_all, grouper, is_present, run_tasks
+from deneb.spotify.common import (
+    fetch_all, fetch_user_playlists, get_tracks, update_spotify_playlist
 )
+from deneb.spotify.users_following import (
+    _get_to_update_users, _user_task_filter
+)
+from deneb.structs import (
+    AlbumTracks, FBAlert, SpotifyKeys, WeeklyPlaylistUpdateConfig
+)
+from deneb.tools import convert_to_date, run_tasks, search_dict_by_key
 
 _LOGGER = get_logger(__name__)
+
+_CONFIG_ID = "weekly-playlist-update"
 
 
 def week_of_month(dt: dt) -> int:
     """ Returns the week of the month for the specified date.
+    https://stackoverflow.com/a/16804556
     """
 
     first_day = dt.replace(day=1)
@@ -39,25 +46,12 @@ def week_of_month(dt: dt) -> int:
 def generate_playlist_name() -> str:
     """return a string of format <Month> W<WEEK_NR> <Year>"""
     now = dt.now()
+    # get last day of current week so that there won't be 2 playlists
+    # in the same week as happened in-between months
+    now = now + datetime.timedelta(days=6 - now.weekday())
     month_name = calendar.month_name[now.month]
     week_nr = week_of_month(now)
     return f"{month_name} W{week_nr} {now.year}"
-
-
-async def fetch_user_playlists(sp: Spotter) -> List[dict]:
-    """Return user playlists"""
-    playlists = []  # type: List[dict]
-    data = await sp.client.user_playlists(sp.userdata["id"])
-    playlists = await fetch_all(sp, data)
-    return playlists
-
-
-async def get_tracks(sp: Spotter, playlist: dict) -> List[dict]:
-    """return playlist tracks"""
-    tracks = await sp.client.user_playlist(
-        sp.userdata["id"], playlist["id"], fields="tracks,next"
-    )
-    return await fetch_all(sp, tracks["tracks"])
 
 
 async def _make_album_tracks(sp: Spotter, album: Album) -> AlbumTracks:
@@ -177,29 +171,6 @@ async def generate_tracks_to_add(  # noqa
     return singles, main_albums, list(featuring_albums.values())
 
 
-async def update_spotify_playlist(
-    tracks: Iterator, playlist_uri: str, sp: Spotter, insert_top: bool = False
-):
-    """Add the ids from track iterable to the playlist, insert_top bool does it
-    on top of all the items, for fridays"""
-
-    index = 0
-    for album_ids in grouper(100, tracks):
-        album_ids = clean(album_ids)
-        album_ids = [a["id"] for a in album_ids]
-        args = (sp.userdata["id"], playlist_uri, album_ids)
-
-        if insert_top:
-            args = args + (index,)  # type: ignore
-
-        try:
-            await sp.client.user_playlist_add_tracks(*args)
-            index += len(album_ids) - 1
-            await sleep(0.2)
-        except Exception as exc:
-            _LOGGER.exception(f"add to playlist '{album_ids}' failed with: {exc}")
-
-
 def remove_unwanted_tracks(tracks: List[Dict]) -> List[Dict]:
     # remove low popularity tracks
     # using "41" as default popularity, there were track objects
@@ -225,13 +196,10 @@ async def update_user_playlist(
     user_playlists = await fetch_user_playlists(sp)
     _LOGGER.info(f"updating playlist: <{playlist_name}> for {user}")
 
-    playlist = is_present(playlist_name, user_playlists, "name")
-    if not playlist:
-        playlist = await sp.client.user_playlist_create(
-            sp.userdata["id"], playlist_name, public=False
-        )
+    is_created, playlist = search_dict_by_key(playlist_name, user_playlists, "name")
 
-    playlist_tracks = await get_tracks(sp, playlist)
+    playlist_tracks = await get_tracks(sp, playlist) if is_created else []
+
     singles, albums, tracks = await generate_tracks_to_add(
         sp, week_tracks_db, playlist_tracks
     )
@@ -240,34 +208,62 @@ async def update_user_playlist(
     tracks_from_albums = [a.tracks for a in albums]
     tracks_without_albums = [a.tracks for a in tracks]
 
-    stats = SpotifyStats(
-        user.fb_id, playlist, {"singles": singles, "albums": albums, "tracks": tracks}
+    to_add_tracks = chain(
+        *tracks_from_singles, *tracks_from_albums, *tracks_without_albums
     )
 
     if not dry_run:
-        to_add_tracks = chain(
-            *tracks_from_singles, *tracks_from_albums, *tracks_without_albums
+        has_new_tracks = bool(
+            len(
+                list(
+                    chain.from_iterable(
+                        [
+                            *tracks_from_singles,
+                            *tracks_from_albums,
+                            *tracks_without_albums,
+                        ]
+                    )
+                )
+            )
         )
+        if not is_created and has_new_tracks:
+            playlist = await sp.client.user_playlist_create(
+                sp.userdata["id"], playlist_name, public=False
+            )
+            _LOGGER.info(f"created `{playlist_name}` for {sp.userdata['id']}")
 
-        await update_spotify_playlist(to_add_tracks, playlist["uri"], sp, insert_top=True)
+        if has_new_tracks:
+            await update_spotify_playlist(
+                to_add_tracks, playlist["uri"], sp, insert_top=True
+            )
 
+    if not playlist:
+        playlist = {"name": playlist_name}
+
+    stats = SpotifyStats(
+        user.fb_id, playlist, {"singles": singles, "albums": albums, "tracks": tracks}
+    )
     _LOGGER.info(
         f"updated playlist: <{playlist_name}> for {user} | {stats.describe(brief=True)}"
     )
+
     return stats
 
 
 async def _handle_update_user_playlist(
     credentials: SpotifyKeys, user: User, dry_run: bool, fb_alert: FBAlert
 ):
+    user_config = WeeklyPlaylistUpdateConfig(**user.config[_CONFIG_ID])
+    if not user_config.enabled:
+        return
     try:
         async with spotify_client(credentials, user) as sp:
             stats = await update_user_playlist(user, sp, dry_run)
-            if fb_alert.notify and stats.has_new_releases():
+            if fb_alert.notify and stats.has_new_tracks():
                 await send_message(user.fb_id, fb_alert, stats.describe())
     except SpotifyException as exc:
-        _LOGGER.warning(f"spotify fail: {exc} {user}")
-        sentry_sdk.capture_exception()
+        _LOGGER.warning(f"{user} failed to update playlist")
+        push_sentry_error(exc, user.username, user.display_name)
 
 
 async def update_users_playlists(

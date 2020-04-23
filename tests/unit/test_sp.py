@@ -120,7 +120,7 @@ class TestSpotifyStats:
         expected = [
             "Playlist: Test Playlist",
             "",
-            "-== Featuring tracks from other albums ==-",
+            "-== Tracks ==-",
             "Test Artist - Test Album",
             "",
             "Link: https://open.spotify.com/playlist/test_playlist",
@@ -146,7 +146,7 @@ class TestSpotifyStats:
             "-== Albums ==-",
             "Test Artist - Test Album",
             "",
-            "-== Featuring tracks from other albums ==-",
+            "-== Tracks ==-",
             "Test Artist - Test Album",
             "",
             "Link: https://open.spotify.com/playlist/test_playlist",
@@ -160,8 +160,8 @@ class TestSpotifyStats:
     @pytest.mark.asyncio
     async def test_describe_nothing_added(self, playlist):
         valid_responses = [
-            "Uhh, sorry, no releases today for you.",
-            "Didn't find anything new today",
+            "Uhh, sorry, no new tracks.",
+            "Nothing new",
             "Sad day, no new music",
             "No adds, you should follow more artists",
         ]

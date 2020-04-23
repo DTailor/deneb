@@ -2,11 +2,14 @@ import asyncio
 import os
 
 import click
+from dotenv import load_dotenv
+load_dotenv(verbose=True)  # noqa
 
 from deneb.db import close_db, init_db
 from deneb.logger import get_logger
-from deneb.spotify.users import update_users_artists
+from deneb.spotify.users_following import sync_users_artists
 from deneb.spotify.weekly_releases import update_users_playlists
+from deneb.spotify.yearly_liked import update_users_playlists_liked_by_year
 from deneb.structs import FBAlert, SpotifyKeys
 
 _LOGGER = get_logger(__name__)
@@ -46,8 +49,9 @@ def cli():
 @click.option("--notify", is_flag=True)
 @click.option("--dry-run", is_flag=True)
 @click.option("--all-markets", is_flag=True)
+@click.option("--year")
 @click.pass_context
-def full_run(ctx, user, force, notify, dry_run, all_markets):
+def full_run(ctx, user, force, notify, dry_run, all_markets, year):
     orig_params = ctx.params.copy()
 
     ctx.params = {
@@ -66,6 +70,14 @@ def full_run(ctx, user, force, notify, dry_run, all_markets):
     }
     update_playlists.invoke(ctx)
 
+    ctx.params = {
+        "user": orig_params["user"],
+        "year": orig_params.get("year", None),
+        "notify": orig_params.get("notify", False),
+        "dry_run": orig_params.get("dry_run", False),
+    }
+    update_playlists_yearly_liked.invoke(ctx)
+
 
 @click.command()
 @click.option("--user")
@@ -74,7 +86,7 @@ def full_run(ctx, user, force, notify, dry_run, all_markets):
 @click.option("--all-markets", is_flag=True)
 def update_followed(user, force, dry_run, all_markets):
     _LOGGER.info("running: update user followed artists and artist albums")
-    runner(update_users_artists, (SPOTIFY_KEYS, user, force, dry_run, all_markets))
+    runner(sync_users_artists, (SPOTIFY_KEYS, user, force, dry_run, all_markets))
 
 
 @click.command()
@@ -88,6 +100,21 @@ def update_playlists(user, notify, dry_run, all_markets):
     runner(update_users_playlists, (SPOTIFY_KEYS, fb_alert, user, dry_run, all_markets))
 
 
+@click.command()
+@click.option("--user")
+@click.option("--year")
+@click.option("--notify", is_flag=True)
+@click.option("--dry-run", is_flag=True)
+def update_playlists_yearly_liked(user, year, notify, dry_run):
+    _LOGGER.info("running: update users spotify liked by year playlist")
+    fb_alert = get_fb_alert(notify)
+    runner(
+        update_users_playlists_liked_by_year,
+        (SPOTIFY_KEYS, fb_alert, user, year, dry_run),
+    )
+
+
+cli.add_command(update_playlists_yearly_liked)
 cli.add_command(update_followed)
 cli.add_command(update_playlists)
 cli.add_command(full_run)

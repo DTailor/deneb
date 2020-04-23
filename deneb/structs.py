@@ -1,4 +1,5 @@
 from collections import namedtuple
+from dataclasses import dataclass
 from typing import Dict, List, Optional
 
 SpotifyKeys = namedtuple("SpotifyKeys", ["client_id", "client_secret", "client_uri"])
@@ -12,3 +13,15 @@ class AlbumTracks:
 
     def __repr__(self):
         return f"{[a['name'] for a in self.parent['artists']]} - {self.parent['name']}"
+
+
+@dataclass
+class WeeklyPlaylistUpdateConfig:
+    enabled: bool
+
+
+@dataclass
+class LikedSortedYearlyConfig:
+    enabled: bool
+    mode: str
+    data: str
