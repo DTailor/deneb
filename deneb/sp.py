@@ -93,7 +93,7 @@ class AsyncSpotify(Spotify):  # pragma: no cover
     async def _async_request(self, method, url, args=None, payload=None, **kwargs):
         if args:
             kwargs.update(args)
-        retries = self.max_get_retries
+        retries = self.max_retries
         delay = 2
         while retries > 0:
             try:
