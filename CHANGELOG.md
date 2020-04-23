@@ -1,6 +1,6 @@
 # Changelog
 
-## v2.0.0 (WIP)
+## v2.0.0 (23 april 2020)
 
 - moved project to github
 - Add `Docker` container integration

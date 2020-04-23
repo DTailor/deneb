@@ -63,9 +63,9 @@ docker run --network host  --env-file .env deneb pipenv run python -m deneb upda
 
 ## Deploy
 
-- Update pipenv packages if the case
+- Update poetry packages if the case
 - `Make test`
-- Add `README` entry with version deployed & changelog
+- Add `CHANGELOG` entry with version deployed & changelog
 - Update `deneb/config.py` app version
 - `git tag -a <version> -m "release <version>"`
 - `git push --tags`
