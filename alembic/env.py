@@ -4,7 +4,11 @@ import os
 from logging.config import fileConfig
 
 from alembic import context
+from dotenv import load_dotenv
 from sqlalchemy import engine_from_config, pool
+
+# OR, the same with increased verbosity
+load_dotenv(verbose=True)
 
 
 def get_connection_string():
@@ -65,9 +69,7 @@ def run_migrations_online():
     config_data["sqlalchemy.url"] = get_connection_string()
 
     connectable = engine_from_config(
-        config_data,
-        prefix="sqlalchemy.",
-        poolclass=pool.NullPool,
+        config_data, prefix="sqlalchemy.", poolclass=pool.NullPool,
     )
 
     with connectable.connect() as connection:

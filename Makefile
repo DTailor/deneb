@@ -42,7 +42,7 @@ clean:
 	find . -name "*.pyc" -exec rm -f {} \;
 
 git-tag:
-	git tag -a ${VERSION} -m "release ${VERSION}"`
+	git tag -a ${VERSION} -m "release ${VERSION}"
 	git push --tags
 
 deploy-test:

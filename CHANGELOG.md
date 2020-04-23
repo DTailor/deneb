@@ -1,5 +1,9 @@
 # Changelog
 
+## v2.0.1 (23 april)
+
+- fix env variables load for migrations
+
 ## v2.0.0 (23 april 2020)
 
 - moved project to github
