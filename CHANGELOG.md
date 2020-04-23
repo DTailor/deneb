@@ -1,10 +1,15 @@
 # Changelog
 
-## v2.0.2 (23 april)
+## v2.0.3 (23 april 2020)
+
+- remove faulty log entry
+- update readme deploy steps
+
+## v2.0.2 (23 april 2020)
 
 - fix spotipy `max_retries` property rename
 
-## v2.0.1 (23 april)
+## v2.0.1 (23 april 2020)
 
 - fix env variables load for migrations
 
