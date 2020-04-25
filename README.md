@@ -67,6 +67,7 @@ docker run --network host  --env-file .env deneb pipenv run python -m deneb upda
 - `Make test`
 - Add `CHANGELOG` entry with version deployed & changelog
 - Update `deneb/config.py` app version
+- Update `pyproject.toml` app version
 - `git tag -a <version> -m "release <version>"`
 - `git push --tags`
 - `make VERSION=<version> deploy`

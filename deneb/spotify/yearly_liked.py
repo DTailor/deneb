@@ -53,8 +53,6 @@ async def _sync_with_spotify_playlist(
                 new_tracks, playlist["uri"], sp, insert_top=True
             )
 
-    _LOGGER.info(f"updated playlist: <{playlist['name']}> for {user}")
-
     stats = SpotifyYearlyStats(user.fb_id, playlist, {"tracks": new_tracks})
 
     _LOGGER.info(
