@@ -71,9 +71,7 @@ full-deploy: git-tag deploy migrate sentry
 init-circle-venv:
 	sudo pip install --upgrade pip
 	sudo pip install --upgrade poetry
-	poetry env remove 3.8 || true
 	make install-dev
-	poetry env use 3.8
 
 docker:
 	docker build -t deneb .
