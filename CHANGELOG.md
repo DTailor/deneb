@@ -1,5 +1,11 @@
 # Changelog
 
+## v2.0.4 (26 april 2020)
+
+- fix circleci build
+- new session on every request, no more reuse
+- fix `fetch_album` logic
+
 ## v2.0.3 (23 april 2020)
 
 - remove faulty log entry
