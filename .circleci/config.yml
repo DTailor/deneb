@@ -12,7 +12,8 @@ jobs:
       - checkout
       - restore_cache:
           key: deps9-{{ .Branch }}
-      - run: sudo apt-get install python3-venv
+      - run: sudo apt-get update
+      - run: sudo apt-get install -y python3-venv
       - run: make init-circle-venv
       - save_cache:
           key: deps9-{{ .Branch }}
