@@ -33,8 +33,6 @@ async def spotify_client(credentials: SpotifyKeys, user: User):
             _LOGGER.exception(f"{sp.userdata['id']} on sync user with db")
             push_sentry_error(exc, sp.userdata["id"], sp.userdata["display_name"])
 
-        await sp.client.session.close()
-
 
 class Spotter:
     def __init__(self, client: Spotify, userdata: dict) -> None:
@@ -42,14 +40,12 @@ class Spotter:
         self.userdata = userdata
 
     def __repr__(self):
-        return f"<spotter:{userdata['id']}>"
+        return f"<spotter:{self.userdata.get('id', 'unknown_id')}>"
 
 
 class AsyncSpotify(Spotify):  # pragma: no cover
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        conn = aiohttp.TCPConnector(limit=10)
-        self.session = aiohttp.ClientSession(connector=conn)
 
     async def current_user(self):
         """ Get detailed profile information about the current user.
@@ -140,40 +136,39 @@ class AsyncSpotify(Spotify):  # pragma: no cover
         if payload:
             args["data"] = json.dumps(payload)
 
-        async with self.session.request(
-            method, url, headers=headers, timeout=60, **args
-        ) as res:
-            try:
-                res.text = await res.text()
-                res.json = json.loads(res.text)
-                res.raise_for_status()
-            except aiohttp.ClientResponseError:
-                if res.status == 500:
-                    raise SpotifyException(
-                        res.status,
-                        -1,
-                        "%s:\n %s" % (res.url, "error"),
-                        headers=res.headers,
-                    )
+        async with aiohttp.ClientSession() as session:
+            async with session.request(method, url, headers=headers, **args) as res:
+                try:
+                    res.text = await res.text()
+                    res.json = json.loads(res.text)
+                    res.raise_for_status()
+                except aiohttp.ClientResponseError:
+                    if res.status == 500:
+                        raise SpotifyException(
+                            res.status,
+                            -1,
+                            "%s:\n %s" % (res.url, "error"),
+                            headers=res.headers,
+                        )
+                    if res.text and len(res.text) > 0 and res.text != "null":
+                        raise SpotifyException(
+                            res.status,
+                            -1,
+                            "%s:\n %s" % (res.url, res.json["error"]["message"]),
+                            headers=res.headers,
+                        )
+                    else:
+                        raise SpotifyException(
+                            res.status,
+                            -1,
+                            "%s:\n %s" % (res.url, "error"),
+                            headers=res.headers,
+                        )
                 if res.text and len(res.text) > 0 and res.text != "null":
-                    raise SpotifyException(
-                        res.status,
-                        -1,
-                        "%s:\n %s" % (res.url, res.json["error"]["message"]),
-                        headers=res.headers,
-                    )
+                    results = res.json
+                    return results
                 else:
-                    raise SpotifyException(
-                        res.status,
-                        -1,
-                        "%s:\n %s" % (res.url, "error"),
-                        headers=res.headers,
-                    )
-            if res.text and len(res.text) > 0 and res.text != "null":
-                results = res.json
-                return results
-            else:
-                return None
+                    return None
 
 
 async def get_client(credentials: SpotifyKeys, token_info: dict) -> Spotter:
@@ -193,8 +188,6 @@ async def get_client(credentials: SpotifyKeys, token_info: dict) -> Spotter:
     try:
         current_user = await client.current_user()
     except SpotifyException:
-        # need new client, close old client session
-        await client.session.close()
         token_info = sp_oauth.refresh_access_token(token_info["refresh_token"])
         client_credentials.token_info = token_info
         client = AsyncSpotify(client_credentials_manager=client_credentials)

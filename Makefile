@@ -23,6 +23,7 @@ test:
 install:
 	poetry env remove 3.7 || true
 	poetry install --no-dev
+	poetry env use 3.7
 
 install-dev:
 	poetry install
@@ -39,7 +40,12 @@ clean:
 	rm -rf .mypy_cache
 	rm -rf .pytest_cache
 	rm -rf test-results/
+	rm -rf htmlcov/
+	rm -rf *.egg-info
 	find . -name "*.pyc" -exec rm -f {} \;
+	rm -rf dist/
+	rm -rf .cache
+
 
 git-tag:
 	git tag -a ${VERSION} -m "release ${VERSION}"

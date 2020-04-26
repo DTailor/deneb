@@ -20,7 +20,6 @@ class TestSpotifyClient:
         sp_client = None
         with patch("deneb.sp.get_client", new=AIOMock()) as mock_get_client:
             mocked_sp = AIOMock()
-            mocked_sp.client.session.close = _mocked_call()
             mock_get_client.async_return_value = mocked_sp
 
             async with spotify_client(credentials=None, user=user) as sp:
@@ -28,7 +27,6 @@ class TestSpotifyClient:
             mock_get_client.assert_called_once()
 
         user.async_data.assert_called_once_with(sp_client)
-        sp_client.client.session.close.assert_called_once()
 
 
 class TestSpotter:
@@ -41,7 +39,7 @@ class TestSpotter:
 class TestGetClient:
     @pytest.mark.asyncio
     async def test_get_client(self):
-        keys = SpotifyKeys("", "", "")
+        keys = SpotifyKeys("client_id", "client_secret", "client_uri")
         token_info = dict()
         with patch("deneb.sp.AsyncSpotify") as mocked_spotify:
             mocked_sp = AIOMock()
@@ -55,29 +53,33 @@ class TestGetClient:
             # called current user method
             sp.client.current_user.assert_called_once()
 
+    # @patch("deneb.sp._LOGGER")
+    # @patch("deneb.sp.AsyncSpotify")
+    # @patch("deneb.sp.SpotifyOAuth")
+    # @patch("deneb.sp.Spotify.current_user", side_effect=[Exception(), {"id": "test"}])
     @pytest.mark.asyncio
-    @patch("deneb.sp._LOGGER")
-    @patch("deneb.sp.SpotifyOAuth")
-    @patch("deneb.sp.Spotify.current_user", side_effect=[Exception(), {"id": "test"}])
-    async def test_get_client_exception(self, current_user, oauth, logger):
-        keys = SpotifyKeys("", "", "")
-        token_info = {"refresh_token": ""}
+    async def test_get_client_exception(self, mocker):
+        keys = SpotifyKeys("client_id", "client_secret", "client_uri")
 
-        with patch("deneb.sp.AsyncSpotify") as mocked_spotify:
-            mocked_sp = AIOMock()
-            mocked_sp.current_user.async_side_effect = [
-                SpotifyException(http_status=401, code=401, msg="Unauthorized"),
-                {"id": "test-user"},
-            ]
-            mocked_sp.session.close = _mocked_call()
-            mocked_spotify.return_value = mocked_sp
+        from deneb.sp import SpotifyOAuth
+        mocked_refresh_access_token = mocker.patch.object(
+            SpotifyOAuth, "refresh_access_token", return_value="new-test-token"
+        )
 
-            sp = await get_client(keys, token_info)
+        from deneb.sp import AsyncSpotify
+        mocked_current_user = mocker.patch.object(
+            AsyncSpotify, "current_user", new=AIOMock()
+        )
+        mocked_current_user.async_side_effect = [
+            SpotifyException(http_status=401, code=401, msg="Unauthorized"),
+            {"id": "test-user"},
+        ]
 
-            # try and except
-            assert mocked_spotify.call_count == 2
-            assert sp.client.current_user.call_count == 2
-            mocked_sp.session.close.assert_called_once()
+        sp = await get_client(keys, {"refresh_token": "test-token"})
+
+        # try and except
+        assert mocked_current_user.call_count == 2
+        assert mocked_refresh_access_token.call_count == 1
 
 
 class TestSpotifyStats:
