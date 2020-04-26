@@ -40,7 +40,7 @@ class Spotter:
         self.userdata = userdata
 
     def __repr__(self):
-        return f"<spotter:{userdata.get('id', 'unknown_id')}>"
+        return f"<spotter:{self.userdata.get('id', 'unknown_id')}>"
 
 
 class AsyncSpotify(Spotify):  # pragma: no cover
