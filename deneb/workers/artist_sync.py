@@ -1,4 +1,5 @@
 """Module to handle artist related updates"""
+import copy
 import datetime
 import time
 from functools import partial
@@ -7,7 +8,7 @@ from typing import Dict, Iterable, List, Tuple
 from deneb.config import Config
 from deneb.db import Album, Artist, PoolTortoise
 from deneb.logger import get_logger, push_sentry_error
-from deneb.sp import Spotter, SpotifyException
+from deneb.sp import SpotifyException, Spotter
 from deneb.spotify.common import fetch_all
 from deneb.tools import run_tasks, search_dict_by_key
 
@@ -63,7 +64,7 @@ async def fetch_all_albums(sp: Spotter, data: dict) -> List[Dict]:
     return contents
 
 
-async def fetch_albums(sp: Spotter, artist: Artist, retry: bool = False) -> List[dict]:
+async def fetch_albums(sp: Spotter, artist: Artist, retry: bool = True) -> List[dict]:
     """fetches artist albums from spotify"""
     try:
         data = await sp.client.artist_albums(
@@ -74,12 +75,13 @@ async def fetch_albums(sp: Spotter, artist: Artist, retry: bool = False) -> List
         _LOGGER.warning(f"failed fetch artist albums for `{artist}`: {exc}")
         return []
     except Exception as exc:
-        _LOGGER.exception(f"{sp.userdata['id']} failed to fetch all {artist} albums")
-        push_sentry_error(exc, sp.userdata["id"], sp.userdata["display_name"])
-
         if not retry:
+            _LOGGER.exception(f"{sp.userdata['id']} failed to fetch all {artist} albums")
+            push_sentry_error(exc, sp.userdata["id"], sp.userdata["display_name"])
             raise
-        albums = await fetch_albums(sp, artist, retry=True)
+        _LOGGER.warning(f"{sp.userdata['id']} attempt another fetch all {artist} albums")
+        albums = await fetch_albums(sp, artist, retry=False)
+
     return albums
 
 
