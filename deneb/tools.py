@@ -41,7 +41,7 @@ def generate_release_date(date: str, precision: str) -> datetime.date:
 
 
 def _create_jobs(func: Callable, args_items: List[Any]) -> List[asyncio.Future]:
-    return [asyncio.ensure_future(func(*item)) for item in args_items]
+    return [asyncio.create_task(func(*item)) for item in args_items]
 
 
 def _take(
