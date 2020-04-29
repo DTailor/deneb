@@ -14,6 +14,7 @@ from deneb.spotify.weekly_releases import update_users_playlists
 from deneb.spotify.yearly_liked import update_users_playlists_liked_by_year
 from deneb.structs import FBAlert, SpotifyKeys
 
+uvloop.install()
 
 _LOGGER = get_logger(__name__)
 
@@ -26,7 +27,6 @@ SPOTIFY_KEYS = SpotifyKeys(
 
 
 def runner(func, args):
-    asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
     loop = asyncio.new_event_loop()
     try:
         loop.run_until_complete(init_db())
