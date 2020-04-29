@@ -46,9 +46,8 @@ def get_album(name: str = "default-album") -> dict:
     album_data = (
         album_data.replace("TESTID", name.lower())
         .replace("TEST_ID", name.capitalize())
-        .replace("DATE_FIELD", datetime.now().strftime("%Y-%m%d"))
+        .replace("DATE_FIELD", datetime.now().strftime("%Y-%m-%d"))
     )
-
     return json.loads(album_data)
 
 

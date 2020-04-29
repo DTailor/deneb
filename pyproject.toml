@@ -19,6 +19,8 @@ pytz = "^2019.3"
 sqlalchemy = "^1.3.13"
 python-dotenv = "^0.12.0"
 uvloop = "^0.14.0"
+flower = "^0.9.4"
+celery = "^4.4.2"
 
 [tool.poetry.dev-dependencies]
 ipdb = "^0.13.2"

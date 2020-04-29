@@ -1,7 +1,6 @@
 import os
 from dotenv import load_dotenv
 
-# OR, the same with increased verbosity
 load_dotenv(verbose=True)
 from fabric import Connection, task
 

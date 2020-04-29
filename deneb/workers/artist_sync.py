@@ -24,7 +24,8 @@ def should_fetch_more_albums(
     #TODO: add year as a function argument
     """
     required_year = str(datetime.datetime.now().year)
-    required_month = str(datetime.datetime.now().month)
+    required_month = "{:02d}".format(datetime.datetime.now().month)
+
     validated_albums = []  # type: List[dict]
     for album in albums:
         if album["album_type"] in to_check_album_types:

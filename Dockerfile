@@ -1,23 +1,21 @@
-FROM alpine:latest
+FROM python:3.8.2-buster
 
-LABEL Name=deneb Version=0.0.1
+LABEL Name=deneb Version=1.0.0
 
-RUN apk update && apk add postgresql-dev gcc python3-dev musl-dev zeromq-dev openssl-dev libffi-dev gcc
+RUN apt-get update && apt-get install -y python3-venv
 
 ENV LANG=en_US.UTF-8
 ENV LC_ALL=en_US.UTF-8
 
 WORKDIR /app
 
-RUN python3 -m pip install --upgrade pip
-RUN python3 -m pip install --upgrade pipenv
-RUN pipenv --python 3.7
+RUN pip install -U pip
+RUN pip install poetry
 
-COPY Pipfile .
-COPY Pipfile.lock .
+COPY poetry.lock .
+COPY pyproject.toml .
+COPY Makefile .
 
-RUN pipenv install --verbose
+RUN make install-dev
 
 COPY . /app
-
-CMD [ "pipenv",  "run", "python", "-m", "deneb"]
