@@ -21,15 +21,15 @@ test:
 	poetry run coverage html
 
 install:
-	poetry env remove 3.7 || true
+	poetry env use 3.8
 	poetry install --no-dev
-	poetry env use 3.7
 
 install-dev:
+	poetry env use 3.8
 	poetry install
 
 reinstall-dev:
-	poetry env remove 3.7 || true
+	poetry env remove 3.8 || true
 	make install-dev
 
 update:

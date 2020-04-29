@@ -142,3 +142,4 @@ logfile*
 results.xml
 notebook
 deneb/playgound.py
+.idea/
