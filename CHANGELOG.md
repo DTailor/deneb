@@ -1,5 +1,10 @@
 # Changelog
 
+## v2.1.1 (30 april 2020)
+
+- switch back to python3.7
+- broader exception handling
+
 ## v2.1.0 (29 april 2020)
 
 - switch to python3.8
