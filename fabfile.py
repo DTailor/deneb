@@ -21,6 +21,7 @@ def deploy_test(c, branch):
         captain.run(f"git pull origin {branch}")
         captain.run(f"{POETRY} env use {PY}")
         captain.run(f"{POETRY} install")
+        captain.run(f"{POETRY} run python -m pytest")
 
 
 @task
@@ -34,6 +35,8 @@ def deploy(c, version):
         captain.run(f"git pull origin {version}")
         captain.run(f"{POETRY} env use {PY}")
         captain.run(f"{POETRY} install --no-dev")
+        captain.run(f"{POETRY} run python -m pytest")
+
 
 @task
 def migrate(c):
