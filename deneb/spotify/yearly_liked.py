@@ -134,7 +134,7 @@ async def _handle_saved_songs_by_year_playlist(
 
             if fb_alert.notify and stats.has_new_tracks():
                 await send_message(user.fb_id, fb_alert, stats.describe())
-    except SpotifyException as exc:
+    except Exception as exc:
         _LOGGER.exception(f"{user} failed to save liked songs by year")
         push_sentry_error(exc, user.username, user.display_name)
     return

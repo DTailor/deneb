@@ -24,12 +24,13 @@ def should_fetch_more_albums(
     #TODO: add year as a function argument
     """
     required_year = str(datetime.datetime.now().year)
+    required_month = "{:02d}".format(datetime.datetime.now().month)
+
     validated_albums = []  # type: List[dict]
     for album in albums:
         if album["album_type"] in to_check_album_types:
             to_check_album_types.remove(album["album_type"])
-
-        if required_year in album["release_date"]:
+        if f"{required_year}-{required_month}" in album["release_date"]:
             validated_albums.append(album)
         else:
             if not to_check_album_types:

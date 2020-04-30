@@ -2,8 +2,10 @@ import asyncio
 import os
 
 import click
+import uvloop
 from dotenv import load_dotenv
-load_dotenv(verbose=True)  # noqa
+
+load_dotenv()  # noqa
 
 from deneb.db import close_db, init_db
 from deneb.logger import get_logger
@@ -11,6 +13,8 @@ from deneb.spotify.users_following import sync_users_artists
 from deneb.spotify.weekly_releases import update_users_playlists
 from deneb.spotify.yearly_liked import update_users_playlists_liked_by_year
 from deneb.structs import FBAlert, SpotifyKeys
+
+uvloop.install()
 
 _LOGGER = get_logger(__name__)
 
@@ -20,10 +24,6 @@ SPOTIFY_KEYS = SpotifyKeys(
     os.environ["SPOTIPY_CLIENT_SECRET"],
     os.environ["SPOTIPY_REDIRECT_URI"],
 )
-
-
-def get_fb_alert(notify: bool) -> FBAlert:
-    return FBAlert(os.environ["FB_API_KEY"], os.environ["FB_API_URL"], notify)
 
 
 def runner(func, args):
@@ -36,6 +36,10 @@ def runner(func, args):
     finally:
         loop.run_until_complete(close_db())
         loop.close()
+
+
+def get_fb_alert(notify: bool) -> FBAlert:
+    return FBAlert(os.environ["FB_API_KEY"], os.environ["FB_API_URL"], notify)
 
 
 @click.group()

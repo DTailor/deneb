@@ -14,17 +14,13 @@ from deneb.config import VERSION
 def push_sentry_error(
     exc, user_id: Optional[str] = None, username: Optional[str] = None
 ) -> None:
-    user = {}
-    if user_id:
-        user["id"] = user_id
-    if username:
-        user["name"] = username
+    user = {
+        "id": user_id,
+        "name": username,
+    }
 
-    if user:
-        with sentry_sdk.push_scope() as scope:
-            scope.user = user
-            sentry_sdk.capture_exception(exc)
-    else:
+    with sentry_sdk.push_scope() as scope:
+        scope.user = user
         sentry_sdk.capture_exception(exc)
 
 

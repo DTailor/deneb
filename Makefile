@@ -1,5 +1,7 @@
 .PHONY : help
 
+PY_VERSION = 3.7.0
+
 help:
 	@echo "test - run tests"
 	@echo "install - poetry install either reinstall if present"
@@ -21,15 +23,15 @@ test:
 	poetry run coverage html
 
 install:
-	poetry env remove 3.7 || true
+	poetry env use ${PY_VERSION}
 	poetry install --no-dev
-	poetry env use 3.7
 
 install-dev:
+	poetry env use ${PY_VERSION}
 	poetry install
 
 reinstall-dev:
-	poetry env remove 3.7 || true
+	poetry env remove ${PY_VERSION} || true
 	make install-dev
 
 update:

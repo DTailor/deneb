@@ -1,13 +1,14 @@
 import os
 from dotenv import load_dotenv
 
-# OR, the same with increased verbosity
 load_dotenv(verbose=True)
 from fabric import Connection, task
 
 SSH_USER = os.environ["SSH_USER"]
 SSH_HOST = os.environ["SSH_HOST"]
 
+POETRY = f"/home/{SSH_USER}/.local/bin/poetry"
+PY = "3.7.0"
 
 @task
 def deploy_test(c, branch):
@@ -18,7 +19,9 @@ def deploy_test(c, branch):
         captain.run("git fetch --tags")
         captain.run(f"git checkout {branch}")
         captain.run(f"git pull origin {branch}")
-        captain.run("python -m poetry install")
+        captain.run(f"{POETRY} env use {PY}")
+        captain.run(f"{POETRY} install")
+        captain.run(f"{POETRY} run python -m pytest")
 
 
 @task
@@ -30,7 +33,9 @@ def deploy(c, version):
         captain.run("git fetch --tags")
         captain.run(f"git checkout {version}")
         captain.run(f"git pull origin {version}")
-        captain.run("python -m poetry install")
+        captain.run(f"{POETRY} env use {PY}")
+        captain.run(f"{POETRY} install --no-dev")
+        captain.run(f"{POETRY} run python -m pytest")
 
 
 @task

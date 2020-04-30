@@ -1,5 +1,15 @@
 # Changelog
 
+## v2.1.1 (30 april 2020)
+
+- switch back to python3.7
+- broader exception handling
+
+## v2.1.0 (29 april 2020)
+
+- switch to python3.8
+- filter artist albums by date as well
+
 ## v2.0.4 (26 april 2020)
 
 - fix circleci build
