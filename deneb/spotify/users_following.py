@@ -2,8 +2,6 @@
 
 from typing import Any, Dict, List, Optional, Tuple  # noqa
 
-from spotipy.client import SpotifyException
-
 from deneb.config import Config
 from deneb.db import User
 from deneb.logger import get_logger, push_sentry_error

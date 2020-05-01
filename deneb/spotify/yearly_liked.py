@@ -1,8 +1,6 @@
 """Create spotify playlist with liked songs based on years"""
 import datetime
-from typing import List, Optional
-
-from spotipy.client import SpotifyException
+from typing import List
 
 from deneb.chatbot.message import send_message
 from deneb.config import Config
