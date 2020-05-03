@@ -51,7 +51,7 @@ def generate_playlist_name() -> str:
     now = now + datetime.timedelta(days=6 - now.weekday())
     month_name = calendar.month_name[now.month]
     week_nr = week_of_month(now)
-    return f"{month_name} W{week_nr} {now.year}"
+    return f"{Config.PLAYLIST_NAME_PREFIX}{month_name} W{week_nr} {now.year}"
 
 
 async def _make_album_tracks(sp: Spotter, album: Album) -> AlbumTracks:
@@ -236,9 +236,11 @@ async def update_user_playlist(
             await update_spotify_playlist(
                 to_add_tracks, playlist["uri"], sp, insert_top=True
             )
-
-    if not playlist:
-        playlist = {"name": playlist_name}
+    else:
+        playlist = {
+            "name": f"dry-run-{playlist_name}",
+            "external_urls": {"spotify": "dry-run-url"},
+        }
 
     stats = SpotifyStats(
         user.fb_id, playlist, {"singles": singles, "albums": albums, "tracks": tracks}

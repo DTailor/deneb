@@ -20,25 +20,21 @@ SPOTIFY_KEYS = SpotifyKeys(
     os.environ["SPOTIPY_REDIRECT_URI"],
 )
 
-# asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
 uvloop.install()
 
 
 @worker_process_init.connect
 def init_worker(*args, **kwargs):
-    _LOGGER.info("Initializing +++++ database.")
     loop = asyncio.get_event_loop()
     loop.run_until_complete(init_db())
 
 
 @worker_process_shutdown.connect
 def shutdown_worker(**kwargs):
-    _LOGGER.info("Closing database !-------! for worker.")
     loop = asyncio.get_event_loop()
     loop.run_until_complete(close_db())
 
 
-# def make_celery():
 app = Celery(f"deneb-{VERSION}")
 
 
@@ -52,10 +48,9 @@ def liked_task():
             FBAlert(os.environ["FB_API_KEY"], os.environ["FB_API_URL"], True),
             "dann.croitoru",
             "2020",
-            "False",
+            dry_run=False,
         )
     )
-    print("print traskrun")
 
 
 config = {
@@ -67,11 +62,5 @@ config = {
     },
     "timezone": "Europe/Bucharest",
 }
+
 app.conf.update(config)
-# "args": (
-# SPOTIFY_KEYS,
-# FBAlert(os.environ["FB_API_KEY"], os.environ["FB_API_URL"], True),
-# "dann.croitoru",
-# "2020",
-# "False",
-# ),
