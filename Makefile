@@ -77,3 +77,8 @@ init-circle-venv:
 
 docker:
 	docker build -t deneb .
+
+compose:
+	docker-compose down
+	docker-compose up --build -V -d
+	docker-compose logs -f
