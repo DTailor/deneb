@@ -57,7 +57,7 @@ config = {
     "beat_schedule": {
         "liked-sorted-yearly": {
             "task": "celery_ship.liked_task",
-            "schedule": crontab(minute="*"),
+            "schedule": crontab(hour="*"),
         },
     },
     "timezone": "Europe/Bucharest",
