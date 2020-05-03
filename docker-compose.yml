@@ -2,7 +2,7 @@ version: '3'
 
 services:
   celery-beat:
-    build: .
+    image: dtailor/deneb:latest
     environment:
       TZ: "Europe/Bucharest"
     links:
@@ -13,7 +13,7 @@ services:
     depends_on:
       - my-rabbitmq
   celery-worker:
-    build: .
+    image: dtailor/deneb:latest
     environment:
       TZ: "Europe/Bucharest"
     links:
@@ -24,7 +24,7 @@ services:
     depends_on:
       - my-rabbitmq
   celery-flower:
-    build: .
+    image: dtailor/deneb:latest
     environment:
       TZ: "Europe/Bucharest"
     ports:
