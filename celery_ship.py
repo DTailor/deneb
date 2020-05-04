@@ -40,14 +40,13 @@ app = Celery(f"deneb-{VERSION}")
 
 @app.task()
 def liked_task():
-    _LOGGER.info("task run")
     loop = asyncio.get_event_loop()
     loop.run_until_complete(
         update_users_playlists_liked_by_year(
             SPOTIFY_KEYS,
             FBAlert(os.environ["FB_API_KEY"], os.environ["FB_API_URL"], True),
-            "dann.croitoru",
-            "2020",
+            None,
+            None,
             dry_run=False,
         )
     )
