@@ -68,11 +68,11 @@ def deploy(c, version):
 def migrate(c):
     captain = Connection(f"{SSH_USER}@{SSH_HOST}")
     with captain.cd("/apps/deneb/"):
-        captain.run("python -m poetry run alembic upgrade head")
+        captain.run(f"{POETRY} run alembic upgrade head")
 
 
 @task
 def full_run(c):
     captain = Connection(f"{SSH_USER}@{SSH_HOST}")
     with captain.cd("/apps/deneb/"):
-        captain.run("python -m poetry run python -m deneb full-run")
+        captain.run(f"{POETRY} run python -m deneb full-run")
