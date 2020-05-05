@@ -1,5 +1,13 @@
 # Changelog
 
+## v2.2.0 (5 may 2020)
+
+- run via docker-compose
+- includes: celery, flower, rabbitmq
+- hourly task of weekly liked and yearly like separated
+- update deploy process
+- minor fixes for docker compatibility
+
 ## v2.1.1 (30 april 2020)
 
 - switch back to python3.7
