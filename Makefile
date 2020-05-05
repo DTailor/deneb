@@ -58,7 +58,7 @@ git-tag:
 deploy-test:
 	poetry run fab compose-test ${BRANCH}
 
-deploy:
+deploy: docker push
 	poetry run fab compose ${VERSION}
 
 migrate:
@@ -70,7 +70,7 @@ sentry:
 	sentry-cli --url https://sentry.io/ releases deploys "${VERSION}" new -e production
 	sentry-cli --url https://sentry.io/ releases finalize "${VERSION}"
 
-full-deploy: docker push migrate git-tag sentry deploy
+full-deploy: migrate git-tag sentry deploy
 
 init-circle-venv:
 	sudo pip install --upgrade pip
