@@ -24,20 +24,20 @@ async def send_message(fb_id: str, fb_alert: FBAlert, data: str):
     fb_token = {"access_token": fb_alert.key}
 
     # max message size is 2000
-    async with aiohttp.ClientSession() as session:
-        for msg_chunk in grouper(2000, data):
-            clean_chunk = [a for a in msg_chunk if a is not None]
-            contents = {
-                "recipient": {"id": fb_id},
-                "message": {"text": "".join(clean_chunk)},
-                "tag": "ACCOUNT_UPDATE"
-            }
+    for msg_chunk in grouper(2000, data):
+        clean_chunk = [a for a in msg_chunk if a is not None]
+        contents = {
+            "recipient": {"id": fb_id},
+            "message": {"text": "".join(clean_chunk)},
+            "tag": "ACCOUNT_UPDATE"
+        }
+        async with aiohttp.ClientSession() as session:
             async with session.post(
                 fb_alert.url, json=contents, params=fb_token
             ) as res:
                 if res.status != 200:
-                    _LOGGER.info(f"{res} {res.content}")
                     try:
                         res.raise_for_status()
                     except aiohttp.ClientError as exc:
+                        _LOGGER.exception(f"{res} {res.content}")
                         push_sentry_error(exc, fb_id)
