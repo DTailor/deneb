@@ -1,3 +1,5 @@
+-include .env
+
 .PHONY : help
 
 PY_VERSION = 3.7.0
@@ -76,9 +78,12 @@ init-circle-venv:
 	make install-dev
 
 docker:
-	docker build -t deneb .
+	docker build -t ${DOCKER_REPO} .
+
+push:
+	docker push ${DOCKER_REPO}
 
 compose:
 	docker-compose down
-	docker-compose up --build -V -d
+	docker-compose up --force-recreate -V -d
 	docker-compose logs -f
