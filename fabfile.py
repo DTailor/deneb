@@ -25,7 +25,7 @@ def compose_test(c, branch):
 
 
 @task
-def deploy(c, version):
+def compose(c, version):
     captain = Connection(f"{SSH_USER}@{SSH_HOST}")
     with captain.cd("/apps/deneb/"):
         captain.run("git reset --hard HEAD")
