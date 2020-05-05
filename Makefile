@@ -85,5 +85,5 @@ push:
 
 compose:
 	docker-compose down
-	docker-compose up --force-recreate -V -d
+	docker-compose up --force-recreate -d
 	docker-compose logs -f
