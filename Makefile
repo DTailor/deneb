@@ -1,3 +1,5 @@
+-include .env
+
 .PHONY : help
 
 PY_VERSION = 3.7.0
@@ -54,21 +56,21 @@ git-tag:
 	git push --tags
 
 deploy-test:
-	poetry run fab deploy-test ${BRANCH}
+	poetry run fab compose-test ${BRANCH}
 
-deploy:
-	poetry run fab deploy ${VERSION}
+deploy: docker push
+	poetry run fab compose ${VERSION}
 
 migrate:
 	poetry run fab migrate
 
 sentry:
-	sentry-cli --url https://sentry.io/ releases new -p deneb "${VERSION}"
-	sentry-cli --url https://sentry.io/ releases set-commits --auto "${VERSION}"
-	sentry-cli --url https://sentry.io/ releases deploys "${VERSION}" new -e production
-	sentry-cli --url https://sentry.io/ releases finalize "${VERSION}"
+	sentry-cli --url https://sentry.io/ releases --org ${SENTRY_ORG} new -p deneb "${VERSION}"
+	sentry-cli --url https://sentry.io/ releases --org ${SENTRY_ORG} set-commits --auto "${VERSION}"
+	sentry-cli --url https://sentry.io/ releases --org ${SENTRY_ORG} deploys "${VERSION}" new -e production
+	sentry-cli --url https://sentry.io/ releases --org ${SENTRY_ORG} finalize "${VERSION}"
 
-full-deploy: git-tag deploy migrate sentry
+full-deploy: migrate git-tag sentry deploy
 
 init-circle-venv:
 	sudo pip install --upgrade pip
@@ -76,4 +78,12 @@ init-circle-venv:
 	make install-dev
 
 docker:
-	docker build -t deneb .
+	docker build -t ${DOCKER_REPO} .
+
+push:
+	docker push ${DOCKER_REPO}
+
+compose:
+	docker-compose down
+	docker-compose up --force-recreate -d
+	docker-compose logs -f

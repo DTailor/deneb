@@ -1,8 +1,6 @@
 """Create spotify playlist with liked songs based on years"""
 import datetime
-from typing import List, Optional
-
-from spotipy.client import SpotifyException
+from typing import List
 
 from deneb.chatbot.message import send_message
 from deneb.config import Config
@@ -23,7 +21,7 @@ _CONFIG_ID = "liked-sorted-yearly"
 
 def generate_playlist_name(year: str) -> str:
     """return a string of format `liked from <Year>`"""
-    return f"liked from {year}"
+    return f"{Config.PLAYLIST_NAME_PREFIX}liked from {year}"
 
 
 def generate_tracks_to_add(
@@ -52,6 +50,11 @@ async def _sync_with_spotify_playlist(
             await update_spotify_playlist(
                 new_tracks, playlist["uri"], sp, insert_top=True
             )
+    else:
+        playlist = {
+            "name": f"dry-run-{playlist_name}",
+            "external_urls": {"spotify": "dry-run-url"},
+        }
 
     stats = SpotifyYearlyStats(user.fb_id, playlist, {"tracks": new_tracks})
 

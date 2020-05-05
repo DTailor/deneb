@@ -243,7 +243,7 @@ class SpotifyStats:
         if not self.has_new_tracks():
             return random.choice(fallback_responses)
 
-        return_msg = f"Playlist: {self.playlist['name']}\n\n"
+        return_msg = f"Playlist: {self.playlist.get('name')}\n\n"
 
         for category, items in (
             ("Singles", self.added_singles),

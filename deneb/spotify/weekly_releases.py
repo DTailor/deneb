@@ -25,6 +25,8 @@ from deneb.structs import (
 )
 from deneb.tools import convert_to_date, run_tasks, search_dict_by_key
 
+from .users_following import _update_user_artists
+
 _LOGGER = get_logger(__name__)
 
 _CONFIG_ID = "weekly-playlist-update"
@@ -51,7 +53,7 @@ def generate_playlist_name() -> str:
     now = now + datetime.timedelta(days=6 - now.weekday())
     month_name = calendar.month_name[now.month]
     week_nr = week_of_month(now)
-    return f"{month_name} W{week_nr} {now.year}"
+    return f"{Config.PLAYLIST_NAME_PREFIX}{month_name} W{week_nr} {now.year}"
 
 
 async def _make_album_tracks(sp: Spotter, album: Album) -> AlbumTracks:
@@ -236,9 +238,11 @@ async def update_user_playlist(
             await update_spotify_playlist(
                 to_add_tracks, playlist["uri"], sp, insert_top=True
             )
-
-    if not playlist:
-        playlist = {"name": playlist_name}
+    else:
+        playlist = {
+            "name": f"dry-run-{playlist_name}",
+            "external_urls": {"spotify": "dry-run-url"},
+        }
 
     stats = SpotifyStats(
         user.fb_id, playlist, {"singles": singles, "albums": albums, "tracks": tracks}
@@ -279,5 +283,29 @@ async def update_users_playlists(
         Config.USERS_TASKS_AMOUNT,
         args_items,
         _handle_update_user_playlist,
+        _user_task_filter,
+    )
+
+
+async def _handle_update_users_followed_artists_and_weekly_playlists(
+    credentials: SpotifyKeys, user: User, dry_run: bool, fb_alert: FBAlert
+):
+    await _update_user_artists(credentials, user, force_update=True, dry_run=dry_run)
+    await _handle_update_user_playlist(credentials, user, dry_run, fb_alert)
+
+
+async def update_users_followed_artists_and_weekly_playlists(
+    credentials: SpotifyKeys,
+    fb_alert: FBAlert,
+    user_id: str = None,
+    dry_run: bool = False,
+    all_markets: bool = False,
+):
+    users = await _get_to_update_users(user_id, all_markets=all_markets)
+    args_items = [(credentials, user, dry_run, fb_alert) for user in users]
+    await run_tasks(
+        Config.USERS_TASKS_AMOUNT,
+        args_items,
+        _handle_update_users_followed_artists_and_weekly_playlists,
         _user_task_filter,
     )

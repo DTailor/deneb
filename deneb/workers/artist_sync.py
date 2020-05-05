@@ -1,5 +1,4 @@
 """Module to handle artist related updates"""
-import copy
 import datetime
 import time
 from functools import partial
