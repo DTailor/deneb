@@ -66,9 +66,9 @@ migrate:
 
 sentry:
 	sentry-cli --url https://sentry.io/ releases --org ${SENTRY_ORG} new -p deneb "${VERSION}"
-	sentry-cli --url https://sentry.io/ releases --org ${SENTRY_ORG} set-commits -p deneb --auto "${VERSION}"
-	sentry-cli --url https://sentry.io/ releases --org ${SENTRY_ORG} deploys -p deneb "${VERSION}" new -e production
-	sentry-cli --url https://sentry.io/ releases --org ${SENTRY_ORG} finalize -p deneb "${VERSION}"
+	sentry-cli --url https://sentry.io/ releases --org ${SENTRY_ORG} set-commits --auto "${VERSION}"
+	sentry-cli --url https://sentry.io/ releases --org ${SENTRY_ORG} deploys "${VERSION}" new -e production
+	sentry-cli --url https://sentry.io/ releases --org ${SENTRY_ORG} finalize "${VERSION}"
 
 full-deploy: migrate git-tag sentry deploy
 
