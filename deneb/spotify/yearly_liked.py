@@ -2,6 +2,8 @@
 import datetime
 from typing import List
 
+from spotipy.exceptions import SpotifyException
+
 from deneb.chatbot.message import send_message
 from deneb.config import Config
 from deneb.db import User
@@ -128,9 +130,16 @@ async def _handle_saved_songs_by_year_playlist(
 
             _LOGGER.info(f"updating playlist: <{playlist_name}> for {user}")
 
-            new_tracks = await _fetch_year_tracks_from_saved(
-                user, sp, year, last_added_track_id
-            )
+            try:
+                new_tracks = await _fetch_year_tracks_from_saved(
+                    user, sp, year, last_added_track_id
+                )
+            except SpotifyException:
+                msg = f"Bad spotify request attempt from {user}"
+                push_sentry_error(msg, user.fb_id, sp.userdata["id"], is_exc=False)
+                _LOGGER.exception(msg)
+                new_tracks = []
+
             stats = await _sync_with_spotify_playlist(
                 user, sp, new_tracks, playlist, playlist_name, dry_run
             )

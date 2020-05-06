@@ -1,7 +1,7 @@
 """Logger config for project"""
 import logging
 import os
-from typing import Any, Dict, Optional  # noqa
+from typing import Any, Dict, Optional, Union  # noqa
 
 import logzero
 import sentry_sdk
@@ -12,7 +12,10 @@ from deneb.config import VERSION
 
 
 def push_sentry_error(
-    exc, user_id: Optional[str] = None, username: Optional[str] = None
+    exc: Union[Exception, str],
+    user_id: Optional[str] = None,
+    username: Optional[str] = None,
+    is_exc: bool = True,
 ) -> None:
     user = {
         "id": user_id,
@@ -21,7 +24,10 @@ def push_sentry_error(
 
     with sentry_sdk.push_scope() as scope:
         scope.user = user
-        sentry_sdk.capture_exception(exc)
+        if is_exc:
+            sentry_sdk.capture_exception(exc)
+        else:
+            sentry_sdk.capture_message(exc)
 
 
 def get_logger(name: str) -> Any:
