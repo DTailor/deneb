@@ -33,7 +33,7 @@ services:
       - my-rabbitmq:rabbitmq-inst
     env_file:
       - .env
-    command: poetry run celery flower -A celery_ship --broker_api=http://rabbitmq-inst:15672/api/ --broker=amqp://guest:guest@rabbitmq-inst:5672// --info
+    command: poetry run celery flower --basic_auth=${FLOWER_USER}:${FLOWER_PASSWORD} -A celery_ship --broker_api=http://rabbitmq-inst:15672/api/ --broker=amqp://guest:guest@rabbitmq-inst:5672// --info
     depends_on:
       - my-rabbitmq
   my-rabbitmq:
