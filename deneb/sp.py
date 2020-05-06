@@ -111,7 +111,6 @@ class AsyncSpotify(Spotify):  # pragma: no cover
                         await asyncio.sleep(sleep_seconds)
                         delay += 1
                 else:
-                    _LOGGER.exception(f"bad request {url}: {e}")
                     raise
             except (json.JSONDecodeError, asyncio.TimeoutError):
                 retries -= 1
