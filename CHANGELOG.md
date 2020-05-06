@@ -1,5 +1,10 @@
 # Changelog
 
+## v2.2.1 (6 may 2020)
+
+- login user/pass for flower gui
+- send message on insuficient scope for spotify on liked yearly
+
 ## v2.2.0 (5 may 2020)
 
 - run via docker-compose

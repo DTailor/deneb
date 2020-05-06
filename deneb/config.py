@@ -1,7 +1,7 @@
 """Module to store app config"""
 import os
 
-VERSION = "v2.2.0"
+VERSION = "v2.2.1"
 
 
 class Config:
