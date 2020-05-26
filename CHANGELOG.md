@@ -1,5 +1,10 @@
 # Changelog
 
+## v2.2.2 (26 may 2020)
+
+- login user/pass for rabbitmq
+- pip updates
+
 ## v2.2.1 (6 may 2020)
 
 - login user/pass for flower gui
