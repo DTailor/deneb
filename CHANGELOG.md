@@ -1,5 +1,9 @@
 # Changelog
 
+## v2.2.3 (26 may 2020)
+
+- flower use login creds for rabbitmq (fix)
+
 ## v2.2.2 (26 may 2020)
 
 - login user/pass for rabbitmq

@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "deneb"
-version = "2.2.2"
+version = "2.2.3"
 description = "deneb project"
 authors = ["DTailor <dann.croitoru@gmail.com>"]
 license = "MIT"
