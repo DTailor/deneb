@@ -1,5 +1,9 @@
 # Changelog
 
+## v2.2.4 (28 may 2020)
+
+- all services must (done) use login creds for rabbitmq (fix)
+
 ## v2.2.3 (26 may 2020)
 
 - flower use login creds for rabbitmq (fix)
