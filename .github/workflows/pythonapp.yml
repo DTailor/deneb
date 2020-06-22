@@ -26,7 +26,5 @@ jobs:
         python -m pip install poetry
         poetry install
     - name: Test with pytest
-      env:
-        DENEB_PLAYLIST_NAME_PREFIX: 'github'
       run: |
-        make test
+        DENEB_PLAYLIST_NAME_PREFIX=github make test
