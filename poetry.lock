@@ -829,7 +829,7 @@ description = "A SQL query builder API for Python"
 name = "pypika"
 optional = false
 python-versions = "*"
-version = "0.37.1"
+version = "0.37.16"
 
 [[package]]
 category = "dev"
@@ -1187,7 +1187,7 @@ docs = ["sphinx", "jaraco.packaging (>=3.2)", "rst.linker (>=1.9)"]
 testing = ["jaraco.itertools", "func-timeout"]
 
 [metadata]
-content-hash = "cf2d07e3429d5387c1a5bfe7e8b26b2a87b5275e0f34ff2d0c8bbdc154a3c1df"
+content-hash = "be9cc87f02cc1c89ee2ea858b285de1bd7fb7efa58cae5cb1d5cc297cbaebb62"
 python-versions = "^3.7"
 
 [metadata.files]
@@ -1704,7 +1704,7 @@ pyparsing = [
     {file = "pyparsing-2.4.7.tar.gz", hash = "sha256:c203ec8783bf771a155b207279b9bccb8dea02d8f0c9e5f8ead507bc3246ecc1"},
 ]
 pypika = [
-    {file = "PyPika-0.37.1.tar.gz", hash = "sha256:e2939312e3c209dd388281f973e7470b6969fdb332c85d4bf5b98923879b2d5f"},
+    {file = "PyPika-0.37.16.tar.gz", hash = "sha256:42b86fc00d767fe8d4d3d82acb3b55f76b32c211cc5dff9337fc0fbfe3d121cb"},
 ]
 pytest = [
     {file = "pytest-5.4.3-py3-none-any.whl", hash = "sha256:5c0db86b698e8f170ba4582a492248919255fcd4c79b1ee64ace34301fb589a1"},

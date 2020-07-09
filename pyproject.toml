@@ -21,7 +21,7 @@ python-dotenv = "^0.14.0"
 uvloop = "^0.14.0"
 flower = "^0.9.4"
 celery = "^4.4.2"
-pypika = "0.37.1"
+pypika = "0.37.16"
 
 [tool.poetry.dev-dependencies]
 ipdb = "^0.13.2"
