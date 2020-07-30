@@ -69,6 +69,9 @@ async def fetch_all(sp: Spotter, data: Dict) -> List[Dict]:
         if not data["next"]:
             break
         data = await sp.client.next(data)  # noqa: B305
+        # sp.client.next sometimes might return just `None`
+        if not data:
+            break
 
     return contents
 
