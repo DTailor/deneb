@@ -58,6 +58,9 @@ async def fetch_all_albums(sp: Spotter, data: dict) -> List[Dict]:
         if not should or not data["next"]:
             break
         data = await sp.client.next(data)  # noqa: B305
+        # sp.client.next sometimes might return just `None`
+        if not data:
+            break
 
     # there are some duplicates, remove them
     contents = list({v["id"]: v for v in contents}.values())
