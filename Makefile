@@ -2,7 +2,7 @@
 
 .PHONY : help
 
-PY_VERSION = 3.7.0
+PY_VERSION = 3.8.2
 
 help:
 	@echo "test - run tests"

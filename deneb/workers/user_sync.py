@@ -20,6 +20,8 @@ async def fetch_artists(sp: Spotter) -> List[Dict]:
         if not artists_data["artists"]["next"]:
             break
         artists_data = await sp.client.next(artists_data["artists"])  # noqa:B305
+        if not artists_data:
+            break
 
     clean_artists = list({v["id"]: v for v in artists}.values())
     return clean_artists

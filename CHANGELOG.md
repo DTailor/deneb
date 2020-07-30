@@ -1,5 +1,11 @@
 # Changelog
 
+## v2.2.5 (30 june 2020)
+
+- fix sentry errors when `extends()` called on list with a `dict`, but is `None`
+- switch CI on python3.8
+- package update
+
 ## v2.2.4 (28 may 2020)
 
 - all services must (done) use login creds for rabbitmq (fix)

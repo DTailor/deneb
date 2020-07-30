@@ -35,13 +35,8 @@ class User(Model):  # type: ignore
 
     async def async_data(self, sp):
         if "refresh_token" not in sp.client.client_credentials_manager.token_info:
-            raise ValueError(
-                f"""
-            no refresh token present.
-            TOK_INF: {sp.client.client_credentials_manager.token_info}
-            IN_DB: {self.spotify_token}
-            """
-            )
+            # refresh token is persistent; save only if present
+            return
         market, _ = await Market.get_or_create(name=sp.userdata["country"])
         await User.filter(id=self.id).update(
             username=sp.userdata["id"],
