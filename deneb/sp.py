@@ -30,8 +30,8 @@ async def spotify_client(credentials: SpotifyKeys, user: User):
         try:
             await user.async_data(sp)
         except ValueError as exc:
-            _LOGGER.exception(f"{sp.userdata['id']} on sync user with db")
-            push_sentry_error(exc, sp.userdata["id"], sp.userdata["display_name"])
+            _LOGGER.exception(f"{user.id} on sync user with db")
+            push_sentry_error(exc, user.id, sp.userdata["display_name"])
 
 
 class Spotter:

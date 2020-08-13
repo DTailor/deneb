@@ -22,4 +22,5 @@ async def init_db() -> None:
 async def close_db() -> None:
     await PoolTortoise.close_connections()
 
+
 __all__ = ["Album", "Artist", "Market", "User", "PoolTortoise", "init_db", "close_db"]

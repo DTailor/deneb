@@ -1,5 +1,11 @@
 # Changelog
 
+## v2.2.6 (13 august 2020)
+
+- skip process album if return `None`
+- switch to python 3.8.5
+- package update
+
 ## v2.2.5 (30 june 2020)
 
 - fix sentry errors when `extends()` called on list with a `dict`, but is `None`

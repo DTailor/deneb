@@ -64,6 +64,11 @@ async def fetch_all(sp: Spotter, data: Dict) -> List[Dict]:
     """fetch all items avaialble from spotify from first response"""
     contents = []  # type: List[Dict]
 
+    if not data:
+        # spotify can return `None` also on first request
+        # ignore for now, on next run should be ok
+        return contents
+
     while True:
         contents.extend(data["items"])
         if not data["next"]:

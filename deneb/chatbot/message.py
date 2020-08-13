@@ -29,7 +29,7 @@ async def send_message(fb_id: str, fb_alert: FBAlert, data: str):
         contents = {
             "recipient": {"id": fb_id},
             "message": {"text": "".join(clean_chunk)},
-            "tag": "ACCOUNT_UPDATE"
+            "tag": "ACCOUNT_UPDATE",
         }
         async with aiohttp.ClientSession() as session:
             async with session.post(
