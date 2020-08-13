@@ -6,6 +6,7 @@ from typing import Any, Dict, Optional, Union  # noqa
 import logzero
 import sentry_sdk
 from sentry_sdk.integrations.aiohttp import AioHttpIntegration
+from sentry_sdk.integrations.celery import CeleryIntegration
 from sentry_sdk.integrations.sqlalchemy import SqlalchemyIntegration
 
 from deneb.config import VERSION
@@ -47,7 +48,11 @@ def get_logger(name: str) -> Any:
     sentry_url = os.environ.get("SENTRY_URL")
     sentry_kwargs = {}  # type: Dict[str, Any]
 
-    sentry_kwargs["integrations"] = [AioHttpIntegration(), SqlalchemyIntegration()]
+    sentry_kwargs["integrations"] = [
+        AioHttpIntegration(),
+        SqlalchemyIntegration(),
+        CeleryIntegration(),
+    ]
     environ = os.environ.get("ENVIRON")
     if environ:
         sentry_kwargs["environment"] = environ
