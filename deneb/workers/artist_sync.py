@@ -74,6 +74,8 @@ async def fetch_albums(sp: Spotter, artist: Artist, retry: bool = True) -> List[
             artist.spotify_id, limit=50, album_type="album,single,appears_on"
         )
         albums = await fetch_all_albums(sp, data)
+        if not albums:
+            raise Exception(f"got `None` instead of albums for {artist}")
     except SpotifyException as exc:
         _LOGGER.warning(f"failed fetch artist albums for `{artist}`: {exc}")
         return []
