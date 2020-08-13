@@ -29,7 +29,7 @@ install:
 	poetry install --no-dev
 
 install-dev:
-	pip install --user poetry -U
+	pip install --user --pre poetry -U
 	poetry env use ${PY_VERSION}
 	poetry install
 
