@@ -81,10 +81,14 @@ async def fetch_albums(sp: Spotter, artist: Artist, retry: bool = True) -> List[
         return []
     except Exception as exc:
         if not retry:
-            _LOGGER.exception(f"{sp.userdata['id']} failed to fetch all {artist} albums")
+            _LOGGER.exception(
+                f"{sp.userdata['id']} failed to fetch all {artist} albums"
+            )
             push_sentry_error(exc, sp.userdata["id"], sp.userdata["display_name"])
             raise
-        _LOGGER.warning(f"{sp.userdata['id']} attempt another fetch all {artist} albums")
+        _LOGGER.warning(
+            f"{sp.userdata['id']} attempt another fetch all {artist} albums"
+        )
         albums = await fetch_albums(sp, artist, retry=False)
 
     return albums
