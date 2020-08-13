@@ -2,7 +2,7 @@
 
 .PHONY : help
 
-PY_VERSION = 3.8.2
+PY_VERSION = 3.8.5
 
 help:
 	@echo "test - run tests"
@@ -29,7 +29,7 @@ install:
 	poetry install --no-dev
 
 install-dev:
-	pip install --user --pre poetry -U
+	pip install --user poetry -U
 	poetry env use ${PY_VERSION}
 	poetry install
 

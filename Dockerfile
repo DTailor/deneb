@@ -1,4 +1,4 @@
-FROM python:3.8.2-buster
+FROM python:3.8.5-buster
 
 LABEL Name=deneb Version=1.0.0
 
