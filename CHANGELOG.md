@@ -1,5 +1,10 @@
 # Changelog
 
+## v2.2.7 (17 august 2020)
+
+- don't raise an error if empty albums return (the internal mechanism to discard old albums)
+- package update
+
 ## v2.2.6 (13 august 2020)
 
 - skip process album if return `None`
