@@ -3,6 +3,7 @@ import datetime
 from typing import List
 
 from spotipy.exceptions import SpotifyException
+from tenacity import retry, stop_after_attempt, wait_fixed
 
 from deneb.chatbot.message import send_message
 from deneb.config import Config
@@ -84,6 +85,11 @@ async def _fetch_year_tracks_from_saved(
     return current_year_tracks
 
 
+@retry(
+    reraise=True,
+    stop=stop_after_attempt(Config.JOB_MAX_ATTEMPTS_RETRY),
+    wait=wait_fixed(Config.JOB_WAIT_RETRY),
+)
 async def _handle_saved_songs_by_year_playlist(
     credentials: SpotifyKeys, user: User, year: str, dry_run: bool, fb_alert: FBAlert
 ) -> None:
