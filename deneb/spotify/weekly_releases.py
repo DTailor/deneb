@@ -8,6 +8,7 @@ from math import ceil
 from typing import Dict, Iterable, List, Optional, Tuple  # noqa:F401
 
 from spotipy.client import SpotifyException
+from tenacity import retry, stop_after_attempt, wait_fixed
 
 from deneb.chatbot.message import send_message
 from deneb.config import Config
@@ -59,6 +60,8 @@ def generate_playlist_name() -> str:
 async def _make_album_tracks(sp: Spotter, album: Album) -> AlbumTracks:
     tracks = []  # type: List[dict]
     album_data = await sp.client.album(album.uri)
+    if not album_data:
+        raise SpotifyException(f"failed fetch {album_data}")
     tracks = await fetch_all(sp, album_data["tracks"])
     return AlbumTracks(album_data, tracks)
 
@@ -82,6 +85,8 @@ async def _get_album_tracks(sp: Spotter, item: Album, is_album: bool) -> AlbumTr
         album = await _make_album_tracks(sp, item)
     else:
         track = await sp.client.track(item.uri)
+        if not track:
+            raise SpotifyException(f"failed fetch {track}")
         album = AlbumTracks(track["album"], [track])
     return album
 
@@ -254,6 +259,11 @@ async def update_user_playlist(
     return stats
 
 
+@retry(
+    reraise=True,
+    stop=stop_after_attempt(Config.JOB_MAX_ATTEMPTS_RETRY),
+    wait=wait_fixed(Config.JOB_WAIT_RETRY),
+)
 async def _handle_update_user_playlist(
     credentials: SpotifyKeys, user: User, dry_run: bool, fb_alert: FBAlert
 ):

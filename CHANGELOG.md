@@ -1,5 +1,12 @@
 # Changelog
 
+## v2.2.8 (05 september 2021)
+
+- retry policy for jobs
+- swtich to python 3.9
+- package update
+- rm dependabot
+
 ## v2.2.7 (17 august 2020)
 
 - don't raise an error if empty albums return (the internal mechanism to discard old albums)

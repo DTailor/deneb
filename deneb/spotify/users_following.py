@@ -2,6 +2,8 @@
 
 from typing import Any, Dict, List, Optional, Tuple  # noqa
 
+from tenacity import retry, stop_after_attempt, wait_fixed
+
 from deneb.config import Config
 from deneb.db import User
 from deneb.logger import get_logger, push_sentry_error
@@ -17,6 +19,11 @@ _LOGGER = get_logger(__name__)
 _CONFIG_ID = "weekly-playlist-update"
 
 
+@retry(
+    reraise=True,
+    stop=stop_after_attempt(Config.JOB_MAX_ATTEMPTS_RETRY),
+    wait=wait_fixed(Config.JOB_WAIT_RETRY),
+)
 async def _update_user_artists(
     credentials: SpotifyKeys, user: User, force_update: bool, dry_run: bool
 ):
@@ -24,6 +31,7 @@ async def _update_user_artists(
     user_config = WeeklyPlaylistUpdateConfig(**user.config[_CONFIG_ID])
     if not user_config.enabled:
         return
+    sp = None
     try:
         async with spotify_client(credentials, user) as sp:
             new_follows, lost_follows = await sync_user_followed_artists(
@@ -43,7 +51,12 @@ async def _update_user_artists(
                 _LOGGER.info(f"fetched {albums_nr} albums for {updated_nr} artists")
     except Exception as exc:
         _LOGGER.exception(f"{user} failed to update artists")
-        push_sentry_error(exc, sp.userdata["id"], sp.userdata["display_name"])
+        user_id = None
+        username = None
+        if sp:
+            user_id = sp.userdata["id"]
+            username = sp.userdata["display_name"]
+        push_sentry_error(exc, user_id, username)
 
 
 async def sync_users_artists(
