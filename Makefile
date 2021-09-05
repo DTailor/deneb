@@ -81,13 +81,13 @@ init-circle-venv:
 	make install-dev
 
 docker:
-	docker build --tag ${DOCKER_REPO} .
+	docker build --tag ${DOCKER_REPO}:${VERSION} .
 
 push:
-	docker push ${DOCKER_REPO}:{VERSION}
+	docker push ${DOCKER_REPO}:${VERSION}
 
 compose:
-	docker pull dtailor/deneb:{VERSION}
+	docker pull dtailor/deneb:${VERSION}
 	docker-compose down
 	docker-compose up --force-recreate -d
 	docker-compose logs -f
