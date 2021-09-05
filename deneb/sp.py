@@ -90,7 +90,7 @@ class AsyncSpotify(Spotify):  # pragma: no cover
         if args:
             kwargs.update(args)
         retries = self.max_retries
-        delay = 2
+        delay = 5
         while retries > 0:
             try:
                 return await self.__async_internal_call(method, url, payload, kwargs)
