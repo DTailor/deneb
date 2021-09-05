@@ -59,6 +59,8 @@ def generate_playlist_name() -> str:
 async def _make_album_tracks(sp: Spotter, album: Album) -> AlbumTracks:
     tracks = []  # type: List[dict]
     album_data = await sp.client.album(album.uri)
+    if not album_data:
+        raise SpotifyException(f"failed fetch {album_data}")
     tracks = await fetch_all(sp, album_data["tracks"])
     return AlbumTracks(album_data, tracks)
 
