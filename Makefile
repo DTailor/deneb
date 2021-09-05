@@ -84,10 +84,10 @@ docker:
 	docker build --tag ${DOCKER_REPO} .
 
 push:
-	docker push ${DOCKER_REPO}:latest
+	docker push ${DOCKER_REPO}:{VERSION}
 
 compose:
-	docker pull dtailor/deneb:latest --quiet
+	docker pull dtailor/deneb:{VERSION}
 	docker-compose down
 	docker-compose up --force-recreate -d
 	docker-compose logs -f
