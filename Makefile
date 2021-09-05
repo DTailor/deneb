@@ -2,7 +2,8 @@
 
 .PHONY : help
 
-PY_VERSION = 3.8.5
+POETRY_VERSION = 1.1.8
+PY_VERSION = 3.9
 
 help:
 	@echo "test - run tests"
@@ -25,13 +26,14 @@ test:
 	poetry run coverage html
 
 install:
-	poetry env use ${PY_VERSION}
-	poetry install --no-dev
+	pip3 install --user --pre poetry==${POETRY_VERSION} -U
+	python3 -m poetry env use ${PY_VERSION}
+	python3 -m poetry install --no-dev
 
 install-dev:
-	pip install --user --pre poetry -U
-	poetry env use ${PY_VERSION}
-	poetry install
+	pip3 install --user --pre poetry==${POETRY_VERSION} -U
+	python3 -m poetry env use ${PY_VERSION}
+	python3 -m poetry install
 
 reinstall-dev:
 	poetry env remove ${PY_VERSION} || true
@@ -79,7 +81,7 @@ init-circle-venv:
 	make install-dev
 
 docker:
-	docker build -t ${DOCKER_REPO} .
+	docker build --tag ${DOCKER_REPO} .
 
 push:
 	docker push ${DOCKER_REPO}:latest
