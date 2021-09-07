@@ -9,7 +9,7 @@ services:
       - my-rabbitmq:rabbitmq-inst
     env_file:
       - .env
-    command: poetry run celery -A celery_ship beat --broker=amqp://${RABBITMQ_DEFAULT_USER}:${RABBITMQ_DEFAULT_PASS}@rabbitmq-inst:5672// -l info
+    command: poetry run celery -A celery_ship beat -l info
     depends_on:
       - my-rabbitmq
   celery-worker:
@@ -20,7 +20,7 @@ services:
       - my-rabbitmq:rabbitmq-inst
     env_file:
       - .env
-    command: poetry run celery -A celery_ship worker --broker=amqp://${RABBITMQ_DEFAULT_USER}:${RABBITMQ_DEFAULT_PASS}@rabbitmq-inst:5672// -l info
+    command: poetry run celery -A celery_ship worker -l info
     depends_on:
       - my-rabbitmq
   celery-flower:
