@@ -2,7 +2,7 @@ version: '3'
 
 services:
   celery-beat:
-    image: dtailor/deneb:latest
+    image: "dtailor/deneb:${VERSION}"
     environment:
       TZ: "Europe/Bucharest"
     links:
@@ -13,7 +13,7 @@ services:
     depends_on:
       - my-rabbitmq
   celery-worker:
-    image: dtailor/deneb:latest
+    image: "dtailor/deneb:${VERSION}"
     environment:
       TZ: "Europe/Bucharest"
     links:
@@ -24,7 +24,7 @@ services:
     depends_on:
       - my-rabbitmq
   celery-flower:
-    image: dtailor/deneb:latest
+    image: "dtailor/deneb:${VERSION}"
     environment:
       TZ: "Europe/Bucharest"
     ports:
@@ -37,7 +37,7 @@ services:
     depends_on:
       - my-rabbitmq
   my-rabbitmq:
-    image: rabbitmq:3.8-management
+    image: rabbitmq:3.8.3-management
     container_name: rabbitmq
     hostname: rabbitmq
     environment:
