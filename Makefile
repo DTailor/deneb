@@ -21,26 +21,26 @@ help:
 	@echo "docker - build docker image."
 
 test:
-	poetry run pytest --junitxml test-results/results.xml
-	poetry run coverage report
-	poetry run coverage html
+	python3 -m poetry run pytest --junitxml test-results/results.xml
+	python3 -m poetry run coverage report
+	python3 -m poetry run coverage html
 
 install:
-	pip3 install --user --pre poetry==${POETRY_VERSION} -U
+	python3 -m pip install --user --pre poetry==${POETRY_VERSION} -U
 	python3 -m poetry env use ${PY_VERSION}
 	python3 -m poetry install --no-dev
 
 install-dev:
-	pip3 install --user --pre poetry==${POETRY_VERSION} -U
+	python3 -m pip install --user --pre poetry==${POETRY_VERSION} -U
 	python3 -m poetry env use ${PY_VERSION}
 	python3 -m poetry install
 
 reinstall-dev:
-	poetry env remove ${PY_VERSION} || true
+	python3 -m poetry env remove ${PY_VERSION} || true
 	make install-dev
 
 update:
-	poetry update
+	python3 -m poetry update
 
 clean:
 	rm -rf logfile*
@@ -59,13 +59,13 @@ git-tag:
 	git push --tags
 
 deploy-test:
-	poetry run fab compose-test ${BRANCH}
+	python3 -m poetry run fab compose-test ${BRANCH}
 
-deploy: docker push
-	poetry run fab compose ${VERSION}
+deploy:
+	python3 -m poetry run fab compose ${VERSION}
 
 migrate:
-	poetry run fab migrate
+	python3 -m poetry run fab migrate
 
 sentry:
 	sentry-cli --url https://sentry.io/ releases --org ${SENTRY_ORG} new -p deneb "${VERSION}"
@@ -89,5 +89,5 @@ push:
 compose:
 	docker pull dtailor/deneb:${VERSION}
 	docker-compose down
-	docker-compose up --force-recreate -d
+	docker-compose --env-file .env up --force-recreate -d
 	docker-compose logs -f

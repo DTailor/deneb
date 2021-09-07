@@ -2,29 +2,29 @@ version: '3'
 
 services:
   celery-beat:
-    image: dtailor/deneb:latest
+    image: "dtailor/deneb:${VERSION}"
     environment:
       TZ: "Europe/Bucharest"
     links:
       - my-rabbitmq:rabbitmq-inst
     env_file:
       - .env
-    command: poetry run celery -A celery_ship beat --broker=amqp://${RABBITMQ_DEFAULT_USER}:${RABBITMQ_DEFAULT_PASS}@rabbitmq-inst:5672// -l info
+    command: poetry run celery -A celery_ship beat -l info
     depends_on:
       - my-rabbitmq
   celery-worker:
-    image: dtailor/deneb:latest
+    image: "dtailor/deneb:${VERSION}"
     environment:
       TZ: "Europe/Bucharest"
     links:
       - my-rabbitmq:rabbitmq-inst
     env_file:
       - .env
-    command: poetry run celery -A celery_ship worker --broker=amqp://${RABBITMQ_DEFAULT_USER}:${RABBITMQ_DEFAULT_PASS}@rabbitmq-inst:5672// -l info
+    command: poetry run celery -A celery_ship worker -l info
     depends_on:
       - my-rabbitmq
   celery-flower:
-    image: dtailor/deneb:latest
+    image: "dtailor/deneb:${VERSION}"
     environment:
       TZ: "Europe/Bucharest"
     ports:
@@ -37,7 +37,7 @@ services:
     depends_on:
       - my-rabbitmq
   my-rabbitmq:
-    image: rabbitmq:3.8-management
+    image: rabbitmq:3.8.3-management
     container_name: rabbitmq
     hostname: rabbitmq
     environment:

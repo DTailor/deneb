@@ -1,5 +1,11 @@
 # Changelog
 
+## v2.2.9 (07 sept 2021)
+
+- build docker image remotely (apple m1 vs digitalocean droplet)
+- use env vars for dynamic docker images
+- update pip
+
 ## v2.2.8 (05 september 2021)
 
 - retry policy for jobs

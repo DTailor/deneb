@@ -33,6 +33,8 @@ def compose(c, version):
         captain.run("git fetch --tags")
         captain.run(f"git checkout {version}")
         captain.run(f"git pull origin {version}")
+        captain.run("make docker")
+        captain.run("make push")
         captain.run("make compose")
 
 
