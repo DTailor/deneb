@@ -89,5 +89,5 @@ push:
 compose:
 	docker pull dtailor/deneb:${VERSION}
 	docker-compose down
-	docker-compose up --env-file .env --force-recreate -d
+	docker-compose --env-file .env up --force-recreate -d
 	docker-compose logs -f
