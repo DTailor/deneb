@@ -78,8 +78,6 @@ docker run --network host  --env-file .env deneb pipenv run python -m deneb upda
 - Update `pyproject.toml` app version
 - Update `.env` app version (production also)
 <!-- Commit -->
-- `make docker`
-- `make push`
 - `git tag -a <version> -m "release <version>"`
 - `git push --tags`
 - `make migrate`

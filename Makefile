@@ -61,7 +61,7 @@ git-tag:
 deploy-test:
 	python3 -m poetry run fab compose-test ${BRANCH}
 
-deploy: docker push
+deploy:
 	python3 -m poetry run fab compose ${VERSION}
 
 migrate:
