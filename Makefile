@@ -26,12 +26,12 @@ test:
 	python3 -m poetry run coverage html
 
 install:
-	python3 -m pip3 install --user --pre poetry==${POETRY_VERSION} -U
+	python3 -m pip install --user --pre poetry==${POETRY_VERSION} -U
 	python3 -m poetry env use ${PY_VERSION}
 	python3 -m poetry install --no-dev
 
 install-dev:
-	python3 -m pip3 install --user --pre poetry==${POETRY_VERSION} -U
+	python3 -m pip install --user --pre poetry==${POETRY_VERSION} -U
 	python3 -m poetry env use ${PY_VERSION}
 	python3 -m poetry install
 
