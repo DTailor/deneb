@@ -1,5 +1,9 @@
 # Changelog
 
+## v2.2.10 (05 oct 2021)
+
+- rm tenacity (breaking flow)
+- update pip
 ## v2.2.9 (07 sept 2021)
 
 - build docker image remotely (apple m1 vs digitalocean droplet)
