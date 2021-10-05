@@ -2,8 +2,6 @@
 
 from typing import Any, Dict, List, Optional, Tuple  # noqa
 
-from tenacity import retry, stop_after_attempt, wait_fixed
-
 from deneb.config import Config
 from deneb.db import User
 from deneb.logger import get_logger, push_sentry_error
@@ -19,11 +17,6 @@ _LOGGER = get_logger(__name__)
 _CONFIG_ID = "weekly-playlist-update"
 
 
-@retry(
-    reraise=True,
-    stop=stop_after_attempt(Config.JOB_MAX_ATTEMPTS_RETRY),
-    wait=wait_fixed(Config.JOB_WAIT_RETRY),
-)
 async def _update_user_artists(
     credentials: SpotifyKeys, user: User, force_update: bool, dry_run: bool
 ):

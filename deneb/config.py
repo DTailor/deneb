@@ -1,7 +1,7 @@
 """Module to store app config"""
 import os
 
-VERSION = "v2.2.9"
+VERSION = "v2.2.10"
 
 
 class Config:
@@ -9,7 +9,3 @@ class Config:
     ALBUMS_TASKS_AMOUNT = 20
     ARTISTS_TASKS_AMOUNT = 20
     PLAYLIST_NAME_PREFIX = os.environ["DENEB_PLAYLIST_NAME_PREFIX"]
-
-    # JOB RETRY POLICY
-    JOB_MAX_ATTEMPTS_RETRY = 5
-    JOB_WAIT_RETRY = 10
